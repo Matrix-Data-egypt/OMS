@@ -28,7 +28,13 @@ export async function api(path, options = {}) {
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(data.message || 'Request failed');
+    const detail =
+      data.received != null
+        ? ` (received: "${data.received}")`
+        : data.allowed
+          ? ' — please restart the backend and try again'
+          : '';
+    throw new Error((data.message || 'Request failed') + detail);
   }
   return data;
 }

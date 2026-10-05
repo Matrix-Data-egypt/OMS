@@ -1,10 +1,23 @@
 import { useEffect, useState } from 'react';
 import { api, mediaUrl } from '../api';
 
+export const VIDEO_CATEGORIES = [
+  'Furniture',
+  'Electronics',
+  'Food and Beverages',
+  'Real Estate',
+  'Cosmetics',
+  'Pharmaceutical',
+  'Clothes',
+  'Paints',
+  'Banking and Finance',
+];
+
 const emptyForm = {
   brand: '',
   title: '',
   desc: '',
+  category: '',
   youtubeUrl: '',
   featured: true,
 };
@@ -45,10 +58,17 @@ export default function Videos() {
     setError('');
     setSaving(true);
     try {
+      if (!form.category) {
+        setError('Category is required');
+        setSaving(false);
+        return;
+      }
+
       const fd = new FormData();
       fd.append('brand', form.brand);
       fd.append('title', form.title);
       fd.append('desc', form.desc);
+      fd.append('category', form.category);
       fd.append('featured', String(form.featured));
       fd.append('type', mode);
       if (mode === 'youtube') {
@@ -123,6 +143,22 @@ export default function Videos() {
                 required
               />
             </div>
+          </div>
+
+          <div className="field">
+            <label>Category *</label>
+            <select
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              required
+            >
+              <option value="">Select a category…</option>
+              {VIDEO_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="field">
@@ -203,6 +239,7 @@ export default function Videos() {
               <div>
                 <h3>{v.title}</h3>
                 <div className="meta">
+                  {v.category ? `${v.category} · ` : ''}
                   {v.brand} · {v.type === 'youtube' ? 'YouTube' : 'Uploaded file'}
                   {v.featured ? ' · Featured' : ''}
                 </div>

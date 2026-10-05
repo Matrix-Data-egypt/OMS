@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
+
 const { port, frontendUrl, adminUrl } = require('./config');
 
 const authRoutes = require('./routes/auth');
@@ -11,32 +12,76 @@ const clientsRoutes = require('./routes/clients');
 
 const app = express();
 
+// CORS - تم تعديله ليقبل الاتصال من الـ Frontend تلقائياً دون قيود محلياً
 app.use(
   cors({
-    origin: [frontendUrl, adminUrl, 'http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'],
+    origin: true, 
     credentials: true,
   })
 );
+
+// Body parsers
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Uploaded files
+app.use(
+  '/uploads',
+  express.static(path.join(__dirname, '../uploads'))
+);
+
+// Health check
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'OMS API' });
+  res.json({
+    ok: true,
+    service: 'OMS API',
+  });
 });
 
+// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/briefs', briefsRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/videos', videosRoutes);
 app.use('/api/clients', clientsRoutes);
 
-// Express 5 error handler for multer etc.
-app.use((err, _req, res, _next) => {
-  console.error(err);
-  res.status(err.status || 500).json({ message: err.message || 'Server error' });
+// 404
+app.use((req, res) => {
+  res.status(404).json({
+    message: 'Route not found',
+    path: req.originalUrl,
+  });
 });
 
-app.listen(port, () => {
-  console.log(`OMS backend running on http://localhost:${port}`);
+// Error handler
+app.use((err, _req, res, _next) => {
+  console.error('Server error:', err);
+
+  res.status(err.status || 500).json({
+    message: err.message || 'Server error',
+  });
+});
+
+// Start server
+const server = app.listen(port, () => {
+  console.log('========================================');
+  console.log('OMS backend running on http://localhost:' + port);
+  console.log('CORS rules updated successfully.');
+  console.log('========================================');
+  console.log('Keep this terminal open. Press Ctrl+C to stop.');
+});
+
+// Server error
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error('');
+    console.error('Port ' + port + ' is already in use.');
+    console.error(
+      'Either another OMS backend is still running, or another application is using this port.'
+    );
+  } else {
+    console.error('Server failed to start:', err.message);
+  }
+
+  process.exit(1);
 });

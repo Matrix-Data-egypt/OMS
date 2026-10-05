@@ -9,6 +9,36 @@ const { toYouTubeEmbed, isYouTubeUrl } = require('../utils/youtube');
 
 const router = express.Router();
 
+const VIDEO_CATEGORIES = [
+  'Furniture',
+  'Electronics',
+  'Food and Beverages',
+  'Real Estate',
+  'Cosmetics',
+  'Pharmaceutical',
+  'Clothes',
+  'Paints',
+  'Banking and Finance',
+];
+
+function normalizeCategory(raw) {
+  if (raw == null) return '';
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return String(value)
+    .replace(/&amp;/gi, '&')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^Food\s*&\s*Beverages$/i, 'Food and Beverages');
+}
+
+function resolveCategory(raw) {
+  const normalized = normalizeCategory(raw);
+  if (!normalized) return null;
+  return (
+    VIDEO_CATEGORIES.find((cat) => cat.toLowerCase() === normalized.toLowerCase()) || null
+  );
+}
+
 const uploadsDir = path.join(__dirname, '../../uploads/videos');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -45,8 +75,17 @@ router.post('/', requireAdmin, upload.fields([
 ]), (req, res) => {
   try {
     const { brand, title, desc, youtubeUrl, type } = req.body || {};
+    const category = resolveCategory(req.body?.category);
+
     if (!brand?.trim() || !title?.trim()) {
       return res.status(400).json({ message: 'Brand and title are required' });
+    }
+    if (!category) {
+      return res.status(400).json({
+        message: 'A valid category is required',
+        received: normalizeCategory(req.body?.category) || null,
+        allowed: VIDEO_CATEGORIES,
+      });
     }
 
     const videoFile = req.files?.video?.[0];
@@ -74,6 +113,7 @@ router.post('/', requireAdmin, upload.fields([
       brand: brand.trim(),
       title: title.trim(),
       desc: (desc || '').trim(),
+      category,
       type: videoType,
       embedUrl,
       fileUrl,
@@ -97,6 +137,16 @@ router.put('/:id', requireAdmin, upload.fields([
   { name: 'video', maxCount: 1 },
   { name: 'thumbnail', maxCount: 1 },
 ]), (req, res) => {
+  const hasCategoryField = req.body?.category !== undefined && req.body?.category !== '';
+  const nextCategory = hasCategoryField ? resolveCategory(req.body.category) : null;
+  if (hasCategoryField && !nextCategory) {
+    return res.status(400).json({
+      message: 'A valid category is required',
+      received: normalizeCategory(req.body?.category) || null,
+      allowed: VIDEO_CATEGORIES,
+    });
+  }
+
   let updated = null;
   const videoFile = req.files?.video?.[0];
   const thumbFile = req.files?.thumbnail?.[0];
@@ -127,6 +177,7 @@ router.put('/:id', requireAdmin, upload.fields([
         brand: req.body.brand?.trim() || v.brand,
         title: req.body.title?.trim() || v.title,
         desc: req.body.desc !== undefined ? req.body.desc.trim() : v.desc,
+        category: nextCategory || v.category,
         type: videoType,
         embedUrl,
         fileUrl,
