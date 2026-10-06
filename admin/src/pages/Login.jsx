@@ -57,7 +57,6 @@ export default function Login() {
         <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
           {loading ? 'Signing in…' : 'Sign in'}
         </button>
-        <p className="hint">Default: admin / omsadmin123</p>
       </form>
     </div>
   );

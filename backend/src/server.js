@@ -2,7 +2,7 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 
-const { port, frontendUrl, adminUrl } = require('./config');
+const { port } = require('./config');
 
 const authRoutes = require('./routes/auth');
 const briefsRoutes = require('./routes/briefs');
@@ -12,7 +12,7 @@ const clientsRoutes = require('./routes/clients');
 
 const app = express();
 
-// CORS - تم تعديله ليقبل الاتصال من الـ Frontend تلقائياً دون قيود محلياً
+// CORS - يقبل الاتصال تلقائياً محلياً بدون قيود
 app.use(
   cors({
     origin: true, 
@@ -38,11 +38,11 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// API routes
+// API routes - مسارات مشروعك الأصلية النظيفة
 app.use('/api/auth', authRoutes);
 app.use('/api/briefs', briefsRoutes);
 app.use('/api/blog', blogRoutes);
-app.use('/api/videos', videosRoutes);
+app.use('/api/videos', videosRoutes); // سيتولى هذا الراوت دمج اليوتيوب بشكل آمن
 app.use('/api/clients', clientsRoutes);
 
 // 404
@@ -66,22 +66,15 @@ app.use((err, _req, res, _next) => {
 const server = app.listen(port, () => {
   console.log('========================================');
   console.log('OMS backend running on http://localhost:' + port);
-  console.log('CORS rules updated successfully.');
   console.log('========================================');
-  console.log('Keep this terminal open. Press Ctrl+C to stop.');
 });
 
 // Server error
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error('');
     console.error('Port ' + port + ' is already in use.');
-    console.error(
-      'Either another OMS backend is still running, or another application is using this port.'
-    );
   } else {
     console.error('Server failed to start:', err.message);
   }
-
   process.exit(1);
 });

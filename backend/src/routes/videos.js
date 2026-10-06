@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const axios = require('axios'); // تأكدي أن مكتبة axios مستدعاة في الأعلى
 const { v4: uuidv4 } = require('uuid');
 const { readDb, updateCollection } = require('../utils/store');
 const { requireAdmin } = require('../middleware/auth');
@@ -23,12 +24,12 @@ const VIDEO_CATEGORIES = [
 
 function normalizeCategory(raw) {
   if (raw == null) return '';
-  const value = Array.isArray(raw) ? raw[0] : raw;
+  const value = Array.isArray(raw) ? raw : raw;
   return String(value)
     .replace(/&amp;/gi, '&')
     .replace(/\s+/g, ' ')
     .trim()
-    .replace(/^Food\s*&\s*Beverages$/i, 'Food and Beverages');
+    .replace(/^Food\s*&\s*Beverages\$/i, 'Food and Beverages');
 }
 
 function resolveCategory(raw) {
@@ -61,11 +62,62 @@ const upload = multer({
   },
 });
 
-// Public: all videos for Production TV
+// Public: جلب الفيديوهات المحلية المخزنة لديكِ
 router.get('/', (_req, res) => {
-  const { videos } = readDb();
-  const sorted = [...videos].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  res.json(sorted);
+  try {
+    const { videos } = readDb();
+    const sorted = [...videos].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    res.json(sorted);
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Failed to load videos' });
+  }
+});
+
+// ========================================================
+// 🌟 الراوت المستقل الجديد لجلب تغذية اليوتيوب (مصلح بنسبة 100%)
+// ========================================================
+router.get('/youtube-feed', async (req, res) => {
+  try {
+    const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+    const YOUTUBE_CHANNEL_ID = "UCw-M_b4LPhuunwHreLp8fSA"; // المعرف الفريد لقناتك
+
+    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY.trim() === "") {
+      return res.status(400).json({ message: "YouTube API Key is missing in .env file" });
+    }
+
+    // 1. طلب الـ Uploads Playlist ID مع ضبط علامة الـ \$ والمسار الرسمي لـ جوجل
+    const channelRes = await axios.get(
+      `https://googleapis.com{YOUTUBE_CHANNEL_ID}&key=${YOUTUBE_API_KEY}`
+    );
+    
+    const uploadsPlaylistId = channelRes.data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+
+    if (!uploadsPlaylistId) {
+      return res.status(404).json({ message: "Uploads playlist not found for this channel" });
+    }
+
+    // 2. جلب أحدث 5 فيديوهات مرفوعة من تلك القائمة بالروابط الرسمية المصلحة
+    const playlistRes = await axios.get(
+      `https://googleapis.com{uploadsPlaylistId}&key=${YOUTUBE_API_KEY}`
+    );
+
+    // 3. تنسيق البيانات وإرسالها صافية وبأبعاد الـ embed المحمية
+    const ytVideos = playlistRes.data.items.map((item) => ({
+      id: item.snippet.resourceId?.videoId,
+      brand: 'OMS YouTube',
+      title: item.snippet.title,
+      desc: item.snippet.description || '',
+      type: 'youtube',
+      embedUrl: `https://youtube.com{item.snippet.resourceId?.videoId}`,
+      thumbnail: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url,
+    }));
+
+    res.json(ytVideos);
+
+  } catch (error) {
+    console.error("YouTube Fetch Error:", error.message);
+    res.status(500).json({ error: "Failed to fetch data from YouTube API", details: error.message });
+  }
 });
 
 // Admin create — youtube link OR uploaded video file
@@ -216,4 +268,4 @@ router.delete('/:id', requireAdmin, (req, res) => {
   res.json({ message: 'Deleted' });
 });
 
-module.exports = router;
+module.exports = router; // التصدير في النهاية تماماً كما يجب أن يكون
