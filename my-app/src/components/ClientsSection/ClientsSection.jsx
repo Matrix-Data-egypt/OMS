@@ -4,19 +4,28 @@ import { api, mediaUrl } from '../../api';
 
 export default function ClientsSection() {
   const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api('/api/clients')
-      .then(setClients)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    const fetchClients = async () => {
+      try {
+        const data = await api('/api/clients');
+        setClients(data || []);
+      } catch (err) {
+        setError(err.message || 'Failed to load clients.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchClients();
   }, []);
 
   return (
-    <div className="clients-page">
-      <section className="clients-hero">
+    <main className="clients-page" aria-busy={isLoading}>
+      {/* Hero Header Context */}
+      <header className="clients-hero">
         <span className="clients-badge">Trusted Partnerships</span>
         <h1 className="clients-heading">
           Our <span className="clients-italic">Clients.</span>
@@ -24,48 +33,56 @@ export default function ClientsSection() {
         <p className="clients-sub">
           Brands that chose OMS to move markets — strategy, creative, and production under one roof.
         </p>
-      </section>
+      </header>
 
-      <section className="clients-grid-wrap">
-        {loading && <p className="clients-status">Loading clients…</p>}
+      {/* Grid Canvas Wrapper */}
+      <section className="clients-grid-wrap" aria-label="Partner Directory">
+        {isLoading && <p className="clients-status">Loading clients…</p>}
         {error && <p className="clients-status clients-error">{error}</p>}
-        {!loading && !error && clients.length === 0 && (
+        {!isLoading && !error && clients.length === 0 && (
           <p className="clients-status">No clients listed yet.</p>
         )}
 
         <div className="clients-grid">
-          {clients.map((client) => {
-            const inner = (
-              <>
-                <div className="client-logo-frame">
-                  <img src={mediaUrl(client.logo)} alt={client.name} />
-                </div>
-                <h3 className="client-name">{client.name}</h3>
-              </>
-            );
-
-            if (client.website) {
-              return (
-                <a
-                  key={client.id}
-                  href={client.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="client-link"
-                >
-                  <div className="client-logo-card">{inner}</div>
-                </a>
-              );
-            }
-
-            return (
-              <div className="client-logo-card" key={client.id}>
-                {inner}
-              </div>
-            );
-          })}
+          {clients.map((client) => (
+            <ClientCard key={client.id} client={client} />
+          ))}
         </div>
       </section>
-    </div>
+    </main>
   );
+}
+
+// Sub-Component cleanly separating layout rendering logic 
+function ClientCard({ client }) {
+  const { name, logo, website } = client;
+  
+  const cardContent = (
+    <article className="client-logo-card">
+      <div className="client-logo-frame">
+        <img 
+          src={mediaUrl(logo)} 
+          alt={`${name} corporate logo`} 
+          loading="lazy"
+        />
+      </div>
+      <h2 className="client-name">{name}</h2>
+    </article>
+  );
+
+  if (website) {
+    return (
+      <a
+        href={website}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="client-link"
+        aria-label={`Visit ${name} official website`}
+      >
+        {cardContent}
+      </a>
+    );
+  }
+
+  return cardContent;
 }
