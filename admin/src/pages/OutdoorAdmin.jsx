@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api, mediaUrl } from '../api';
+import { useAuth } from '../AuthContext';
 
 const emptyForm = { companyName: '', description: '', imageUrl: '' };
 
 export default function OutdoorAdmin() {
+  const { isReadOnly } = useAuth();
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState(null);
@@ -93,19 +95,24 @@ export default function OutdoorAdmin() {
     <div>
       <div className="page-header">
         <div>
-          <h1>Outdoor Advertising</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1>Outdoor Advertising</h1>
+            {isReadOnly && <span className="badge badge-manager">وضع المشاهدة فقط</span>}
+          </div>
           <p>Manage Outdoor billboard campaigns & locations. Displayed on the website Outdoor page.</p>
         </div>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => {
-            if (showForm) reset();
-            else setShowForm(true);
-          }}
-        >
-          {showForm ? 'Cancel' : '+ Add Outdoor Item'}
-        </button>
+        {!isReadOnly && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              if (showForm) reset();
+              else setShowForm(true);
+            }}
+          >
+            {showForm ? 'Cancel' : '+ Add Outdoor Item'}
+          </button>
+        )}
       </div>
 
       {error && <div className="error-banner">{error}</div>}
@@ -237,22 +244,26 @@ export default function OutdoorAdmin() {
                       {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '—'}
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-sm"
-                          onClick={() => startEdit(item)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-sm"
-                          onClick={() => remove(item.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      {isReadOnly ? (
+                        <span style={{ fontSize: 12, color: 'var(--muted)' }}>مشاهدة فقط</span>
+                      ) : (
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm"
+                            onClick={() => startEdit(item)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm"
+                            onClick={() => remove(item.id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

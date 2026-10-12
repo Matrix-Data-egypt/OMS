@@ -5,7 +5,7 @@ const fs = require('fs');
 const axios = require('axios'); // تأكدي أن مكتبة axios مستدعاة في الأعلى
 const { v4: uuidv4 } = require('uuid');
 const { readDb, updateCollection } = require('../utils/store');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireContentAccess, requireWriteAccess } = require('../middleware/auth');
 const { toYouTubeEmbed, isYouTubeUrl } = require('../utils/youtube');
 
 const router = express.Router();
@@ -120,8 +120,8 @@ router.get('/youtube-feed', async (req, res) => {
   }
 });
 
-// Admin create — youtube link OR uploaded video file
-router.post('/', requireAdmin, upload.fields([
+// Content creation: Allowed for Admin and Data Entry. Forbidden for Manager (read-only) and Sales.
+router.post('/', requireContentAccess, requireWriteAccess, upload.fields([
   { name: 'video', maxCount: 1 },
   { name: 'thumbnail', maxCount: 1 },
 ]), (req, res) => {
@@ -185,7 +185,7 @@ router.post('/', requireAdmin, upload.fields([
   }
 });
 
-router.put('/:id', requireAdmin, upload.fields([
+router.put('/:id', requireContentAccess, requireWriteAccess, upload.fields([
   { name: 'video', maxCount: 1 },
   { name: 'thumbnail', maxCount: 1 },
 ]), (req, res) => {
@@ -253,7 +253,7 @@ router.put('/:id', requireAdmin, upload.fields([
   res.json(updated);
 });
 
-router.delete('/:id', requireAdmin, (req, res) => {
+router.delete('/:id', requireContentAccess, requireWriteAccess, (req, res) => {
   let found = false;
   updateCollection('videos', (list) =>
     list.filter((v) => {

@@ -36,12 +36,12 @@ export default function CampaignBlueprintStudio() {
   };
 
   return (
-    <section className="blueprint-studio-section" aria-label="Interactive Campaign Blueprint Studio">
+    <section className="blueprint-studio-section" aria-label="Interactive Campaign Planner">
       <div className="section-intro">
-        <span className="tag-purple-small">Interactive Blueprint Studio</span>
-        <h2>Architect Your Campaign Strategy</h2>
+        <span className="tag-purple-small">Build Your Campaign</span>
+        <h2>Plan Your Campaign Strategy</h2>
         <p className="section-intro-desc">
-          Configure your core objective, media distribution channels, and regional scope to generate an autonomous agency blueprint.
+          Select your objective, media channels, and target region to see how we can build a tailored campaign for your brand.
         </p>
       </div>
 
@@ -50,7 +50,7 @@ export default function CampaignBlueprintStudio() {
         <div className="studio-config-column">
           {/* Step 1: Objective */}
           <div className="studio-control-group">
-            <span className="studio-step-label">STEP 01 // CORE CAMPAIGN GOAL</span>
+            <span className="studio-step-label">STEP 01 // YOUR CAMPAIGN GOAL</span>
             <div className="studio-options-grid">
               {OBJECTIVES.map((obj) => (
                 <button
@@ -68,7 +68,7 @@ export default function CampaignBlueprintStudio() {
 
           {/* Step 2: Media Mix */}
           <div className="studio-control-group">
-            <span className="studio-step-label">STEP 02 // MEDIA DISTRIBUTION CHANNELS</span>
+            <span className="studio-step-label">STEP 02 // MEDIA CHANNELS</span>
             <div className="studio-channels-grid">
               {MEDIA_CHANNELS.map((ch) => {
                 const isChecked = selectedChannels.includes(ch.id);
@@ -92,7 +92,7 @@ export default function CampaignBlueprintStudio() {
 
           {/* Step 3: Geographic Scope */}
           <div className="studio-control-group">
-            <span className="studio-step-label">STEP 03 // GEOGRAPHIC & MARKET SCOPE</span>
+            <span className="studio-step-label">STEP 03 // YOUR TARGET MARKET</span>
             <div className="studio-regions-row">
               {REGIONS.map((reg) => (
                 <button
@@ -112,9 +112,9 @@ export default function CampaignBlueprintStudio() {
         <div className="studio-output-column">
           <div className="blueprint-manifest-header">
             <div className="manifest-badge-row">
-              <span className="manifest-code">OMS_BLUEPRINT_CONFIG</span>
+              <span className="manifest-code">OMS_CAMPAIGN_PLAN</span>
               <span className="manifest-status">
-                <span className="live-dot" /> SQUAD READY
+                <span className="live-dot" /> TEAM READY
               </span>
             </div>
             <h3 className="manifest-title">{activeObj.label}</h3>
@@ -123,35 +123,35 @@ export default function CampaignBlueprintStudio() {
 
           <div className="manifest-body-card">
             <div className="manifest-squad-row">
-              <span className="squad-label">ASSIGNED AGENT SQUAD:</span>
+              <span className="squad-label">DEDICATED TEAM:</span>
               <span className="squad-value">{activeObj.squad}</span>
             </div>
 
             <div className="manifest-deliverables-block">
-              <span className="deliv-title">ORCHESTRATED DELIVERABLES & PHASES:</span>
+              <span className="deliv-title">WHAT WE'LL DELIVER:</span>
               <ul className="deliv-list">
                 <li>
                   <span className="deliv-bullet">⚡</span>
-                  <span>Deep Audience Behavioral Synthesis & Competitive Mapping</span>
+                  <span>Market Research, Audience Analysis &amp; Competitive Insights</span>
                 </li>
                 <li>
                   <span className="deliv-bullet">⚡</span>
-                  <span>High-Fidelity Visual Scripts & Multi-Format Creative Production</span>
+                  <span>Premium Creative Concepts, Scripts &amp; Full Production</span>
                 </li>
                 <li>
                   <span className="deliv-bullet">⚡</span>
-                  <span>Cross-Channel Synchronized Placement ({selectedChannels.length} Media Channels Selected)</span>
+                  <span>Strategic Media Placement Across Your Selected Channels</span>
                 </li>
                 <li>
                   <span className="deliv-bullet">⚡</span>
-                  <span>Closed-Loop Attribution & Full-Funnel Executive Dashboard</span>
+                  <span>Transparent Reporting &amp; Campaign Performance Dashboard</span>
                 </li>
               </ul>
             </div>
 
             <div className="manifest-cta-box">
               <Link to="/contact" className="btn-manifest-deploy">
-                Initiate Brief with this Blueprint &rarr;
+                Get a Tailored Proposal &rarr;
               </Link>
             </div>
           </div>

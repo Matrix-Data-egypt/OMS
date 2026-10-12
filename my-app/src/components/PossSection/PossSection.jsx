@@ -66,30 +66,12 @@ export default function PossSection() {
     <div className="poss-page-container">
       {/* 1. Hero Section */}
       <section className="poss-hero-header">
-        <span className="poss-badge-gold">OMS POSS • POINT OF SALE & RETAIL ACTIVATION</span>
         <h1 className="poss-main-title">
           Engineered In-Store Impact & <span className="poss-text-italic">POS Branding.</span>
         </h1>
         <p className="poss-subtext">
           Converting consumer footfall into decisive purchase action. We design, manufacture, and deploy custom Point of Sale display units, retail kiosks, and brand activations across Egypt and the MENA region.
         </p>
-
-        <div className="poss-stats-bar">
-          <div className="stat-node">
-            <span className="stat-number">1,200+</span>
-            <span className="stat-label">Retail Units Fabricated</span>
-          </div>
-          <div className="stat-divider"></div>
-          <div className="stat-node">
-            <span className="stat-number">180+</span>
-            <span className="stat-label">Store Brand Takeovers</span>
-          </div>
-          <div className="stat-divider"></div>
-          <div className="stat-node">
-            <span className="stat-number">100%</span>
-            <span className="stat-label">Turnkey Production In-House</span>
-          </div>
-        </div>
       </section>
 
       {/* 2. Solutions Format Strip */}

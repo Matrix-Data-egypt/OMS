@@ -165,7 +165,6 @@ export default function ProductionTvSection() {
     <div className="prod-tv-container">
       {/* 1. Header */}
       <section className="prod-tv-header">
-        <span className="prod-badge-gold">OMS Cinema & Broadcasting Hub</span>
         <h1 className="prod-main-title">
           OMS Production <span className="prod-text-italic">TV Station.</span>
         </h1>

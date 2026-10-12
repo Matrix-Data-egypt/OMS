@@ -27,17 +27,17 @@ export default function AgentOrchestrator() {
   };
 
   return (
-    <section className="agent-orchestrator-section" aria-label="Autonomous AI Marketing Agents Fleet">
+    <section className="agent-orchestrator-section" aria-label="Our Core Services">
       <div className="section-intro">
-        <span className="tag-purple-small">Autonomous Agent Fleet</span>
-        <h2>Meet The Neural Marketing Agents</h2>
+        <span className="tag-purple-small">Our Services</span>
+        <h2>How We Deliver Results for Your Brand</h2>
         <p className="section-intro-desc">
-          Four specialized autonomous intelligence agents working concurrently across strategy, broadcast production, programmatic bidding, and audit-proof attribution.
+          Specialized teams working across market research, creative production, media placement, and campaign performance — all focused on achieving your business goals.
         </p>
       </div>
 
       {/* Agents Selector Tabs */}
-      <div className="agent-selector-nav" role="tablist" aria-label="Select Marketing Agent">
+      <div className="agent-selector-nav" role="tablist" aria-label="Select Service Area">
         {AGENT_FLEET.map((agent) => {
           const isSelected = agent.id === activeAgent.id;
           return (
@@ -78,8 +78,8 @@ export default function AgentOrchestrator() {
           </div>
 
           <div className="agent-match-score">
-            <span className="match-label">DEPLOYMENT READINESS</span>
-            <span className="match-value">READY TO DEPLOY</span>
+            <span className="match-label">SERVICE STATUS</span>
+            <span className="match-value">AVAILABLE NOW</span>
           </div>
         </div>
 
@@ -90,7 +90,7 @@ export default function AgentOrchestrator() {
             <span className="agent-subtag">{activeAgent.tag}</span>
             <p className="agent-summary-text">{activeAgent.summary}</p>
 
-            {/* Qualitative Badges (No arbitrary numbers) */}
+            {/* Service Highlights */}
             <div className="agent-kpi-matrix">
               {activeAgent.badges.map((badge, idx) => (
                 <div key={idx} className="kpi-mini-card">
@@ -100,9 +100,9 @@ export default function AgentOrchestrator() {
               ))}
             </div>
 
-            {/* Core Capabilities Checklist */}
+            {/* What We Deliver */}
             <div className="agent-capabilities-list">
-              <span className="caps-title">Autonomous Capabilities:</span>
+              <span className="caps-title">What We Deliver:</span>
               <ul>
                 {activeAgent.capabilities.map((cap, i) => (
                   <li key={i}>
@@ -116,7 +116,7 @@ export default function AgentOrchestrator() {
             {/* Action Buttons */}
             <div className="agent-card-actions">
               <Link to="/contact" className="btn-agent-deploy">
-                Deploy {activeAgent.code} into Campaign &rarr;
+                Get Started with {activeAgent.code} &rarr;
               </Link>
               <button
                 type="button"
@@ -124,7 +124,7 @@ export default function AgentOrchestrator() {
                 onClick={handleRunSimulation}
                 disabled={isSimulating}
               >
-                {isSimulating ? 'Executing Neural Pipeline...' : '⚡ Run Agent Live Simulation'}
+                {isSimulating ? 'Processing...' : '⚡ See How It Works'}
               </button>
             </div>
           </div>
@@ -138,20 +138,20 @@ export default function AgentOrchestrator() {
                   <span className="light-dot yellow" />
                   <span className="light-dot green" />
                 </div>
-                <span className="console-title">oms_neural_terminal // {activeAgent.code.toLowerCase()}.sh</span>
-                <span className="console-status-text">REALTIME STREAM</span>
+                <span className="console-title">oms_agency // {activeAgent.code.toLowerCase()}_workflow</span>
+                <span className="console-status-text">LIVE PROCESS</span>
               </div>
 
               <div className="console-body">
                 <div className="console-prompt-block">
-                  <span className="console-prompt-label">USER TASK INGESTED:</span>
+                  <span className="console-prompt-label">CLIENT BRIEF RECEIVED:</span>
                   <p className="console-prompt-text">"{activeAgent.liveSimulation.inputPrompt}"</p>
                 </div>
 
                 <div className="console-divider" />
 
                 <div className="console-logs-stream">
-                  <span className="console-stream-label">AGENT REASONING GRAPH:</span>
+                  <span className="console-stream-label">TEAM WORKFLOW:</span>
                   
                   {activeAgent.liveSimulation.neuralExecution.map((log, index) => {
                     const isVisible = simStep === 0 || simStep > index;
@@ -160,7 +160,7 @@ export default function AgentOrchestrator() {
                         key={index}
                         className={`console-log-row ${isVisible ? 'is-visible' : 'is-pending'}`}
                       >
-                        <span className="log-timestamp">[STAGE {index + 1}]</span>
+                        <span className="log-timestamp">[STEP {index + 1}]</span>
                         <span className="log-text">{log}</span>
                       </div>
                     );
@@ -171,7 +171,7 @@ export default function AgentOrchestrator() {
                 <div className="console-outcome-badge">
                   <div className="outcome-icon" aria-hidden="true">✓</div>
                   <div className="outcome-info">
-                    <span className="outcome-label">SYNTHESIS OUTCOME:</span>
+                    <span className="outcome-label">DELIVERABLE:</span>
                     <span className="outcome-metric">{activeAgent.liveSimulation.outputHighlight}</span>
                   </div>
                 </div>

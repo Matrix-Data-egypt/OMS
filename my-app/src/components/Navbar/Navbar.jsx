@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
 import './Navbar.css';
 
 const Navbar = ({ user, setUser }) => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const closeMenu = () => setMobileMenuOpen(false);
 
@@ -20,10 +22,7 @@ const Navbar = ({ user, setUser }) => {
               className="nav-logo-img"
             />
           </div>
-          <div className="nav-logo-text-group">
-            <span className="brand-tag-mini">AUTONOMOUS</span>
-            <span className="brand-sub-mini">AGENCY OS</span>
-          </div>
+
         </Link>
       </div>
 
@@ -64,12 +63,86 @@ const Navbar = ({ user, setUser }) => {
             Clients
           </Link>
         </li>
+        {/* Mobile Theme Toggle */}
+        <li className="nav-mobile-theme-row">
+          <div className="theme-toggle-group">
+            <button
+              type="button"
+              className={`theme-mode-btn ${theme === 'light' ? 'is-active' : ''}`}
+              onClick={() => setTheme('light')}
+              title="Light Mode (White)"
+              aria-label="Light Mode"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="theme-mode-icon">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
+              <span>Light</span>
+            </button>
+            <button
+              type="button"
+              className={`theme-mode-btn ${theme === 'dark' ? 'is-active' : ''}`}
+              onClick={() => setTheme('dark')}
+              title="Dark Mode (Black)"
+              aria-label="Dark Mode"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="theme-mode-icon">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+              <span>Dark</span>
+            </button>
+          </div>
+        </li>
       </ul>
 
       {/* Right Controls & CTAs */}
       <div className="nav-actions-section">
+        {/* Dark Mode / Light Mode Switcher — Placed right next to Start Project */}
+        <div className="theme-toggle-group nav-theme-desktop" role="group" aria-label="Theme mode switcher">
+          <button
+            type="button"
+            className={`theme-mode-btn ${theme === 'light' ? 'is-active' : ''}`}
+            onClick={() => setTheme('light')}
+            title="Light Mode (White Background)"
+            aria-label="Light Mode"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="theme-mode-icon">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+            <span className="theme-btn-label">Light</span>
+          </button>
+
+          <button
+            type="button"
+            className={`theme-mode-btn ${theme === 'dark' ? 'is-active' : ''}`}
+            onClick={() => setTheme('dark')}
+            title="Dark Mode (Black Background)"
+            aria-label="Dark Mode"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="theme-mode-icon">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+            <span className="theme-btn-label">Dark</span>
+          </button>
+        </div>
+
         <Link to="/contact" className="nav-btn-primary" onClick={closeMenu}>
-          LAUNCH CAMPAIGN &rarr;
+          START PROJECT &rarr;
         </Link>
 
         {/* User / Admin Controls */}

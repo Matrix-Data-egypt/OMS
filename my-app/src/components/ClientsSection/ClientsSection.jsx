@@ -6,6 +6,7 @@ export default function ClientsSection() {
   const [clients, setClients] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -22,11 +23,18 @@ export default function ClientsSection() {
     fetchClients();
   }, []);
 
+  // Trigger entrance animation after data loads
+  useEffect(() => {
+    if (!isLoading) {
+      const timer = setTimeout(() => setVisible(true), 80);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
+
   return (
     <main className="clients-page" aria-busy={isLoading}>
       {/* Hero Header Context */}
-      <header className="clients-hero">
-        <span className="clients-badge">Trusted Partnerships</span>
+      <header className={`clients-hero ${visible ? 'hero-visible' : ''}`}>
         <h1 className="clients-heading">
           Our <span className="clients-italic">Clients.</span>
         </h1>
@@ -44,8 +52,13 @@ export default function ClientsSection() {
         )}
 
         <div className="clients-grid">
-          {clients.map((client) => (
-            <ClientCard key={client.id} client={client} />
+          {clients.map((client, index) => (
+            <ClientCard
+              key={client.id}
+              client={client}
+              index={index}
+              visible={visible}
+            />
           ))}
         </div>
       </section>
@@ -53,16 +66,21 @@ export default function ClientsSection() {
   );
 }
 
-// Sub-Component cleanly separating layout rendering logic 
-function ClientCard({ client }) {
+// Sub-Component cleanly separating layout rendering logic
+function ClientCard({ client, index, visible }) {
   const { name, logo, website } = client;
-  
+
+  const delay = Math.min(index * 80, 800); // max 800ms delay cap
+
   const cardContent = (
-    <article className="client-logo-card">
+    <article
+      className={`client-logo-card ${visible ? 'card-visible' : ''}`}
+      style={{ animationDelay: `${delay}ms`, transitionDelay: `${delay}ms` }}
+    >
       <div className="client-logo-frame">
-        <img 
-          src={mediaUrl(logo)} 
-          alt={`${name} corporate logo`} 
+        <img
+          src={mediaUrl(logo)}
+          alt={`${name} corporate logo`}
           loading="lazy"
         />
       </div>

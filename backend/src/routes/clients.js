@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { readDb, updateCollection } = require('../utils/store');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireContentAccess, requireWriteAccess } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -37,7 +37,7 @@ router.get('/', (_req, res) => {
   res.json(list);
 });
 
-router.post('/', requireAdmin, upload.single('logo'), (req, res) => {
+router.post('/', requireContentAccess, requireWriteAccess, upload.single('logo'), (req, res) => {
   try {
     const { name, website } = req.body || {};
     if (!name?.trim()) {
@@ -69,7 +69,7 @@ router.post('/', requireAdmin, upload.single('logo'), (req, res) => {
   }
 });
 
-router.put('/:id', requireAdmin, upload.single('logo'), (req, res) => {
+router.put('/:id', requireContentAccess, requireWriteAccess, upload.single('logo'), (req, res) => {
   let updated = null;
   updateCollection('clients', (list) =>
     list.map((c) => {
@@ -92,7 +92,7 @@ router.put('/:id', requireAdmin, upload.single('logo'), (req, res) => {
   res.json(updated);
 });
 
-router.delete('/:id', requireAdmin, (req, res) => {
+router.delete('/:id', requireContentAccess, requireWriteAccess, (req, res) => {
   let found = false;
   updateCollection('clients', (list) =>
     list.filter((c) => {

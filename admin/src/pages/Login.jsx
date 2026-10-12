@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../api';
+import { useAuth } from '../AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('admin');
+  const { login } = useAuth();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,12 +15,14 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const data = await api('/api/auth/login', {
-        method: 'POST',
-        body: { username, password },
-      });
-      localStorage.setItem('oms_admin_token', data.token);
-      navigate('/briefs');
+      const user = await login(username, password);
+      if (user.role === 'sales') {
+        navigate('/briefs');
+      } else if (user.role === 'data_entry') {
+        navigate('/videos');
+      } else {
+        navigate('/briefs');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -29,35 +32,47 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      <form className="login-card" onSubmit={handleSubmit}>
+      <div className="login-card" style={{ maxWidth: '480px' }}>
         <div className="login-brand">
           <div className="login-logo">O</div>
           <div>
             <strong>OMS Advertising</strong>
+            <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--muted)' }}>Enterprise Management System</span>
           </div>
         </div>
-        <h1>Admin Dashboard</h1>
-        <p className="sub">Separate panel for briefs, videos & blog — not part of the public site.</p>
+
+        <h1 style={{ fontSize: '1.75rem', marginBottom: '8px' }}>لوحة التحكم</h1>
+        <p className="sub" style={{ marginBottom: '20px', fontSize: '0.9rem' }}>
+          قم بتسجيل الدخول للوصول إلى لوحة التحكم
+        </p>
 
         {error && <div className="error-banner">{error}</div>}
 
-        <div className="field">
-          <label>Username</label>
-          <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
-        </div>
-        <div className="field">
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-          />
-        </div>
-        <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
-          {loading ? 'Signing in…' : 'Sign in'}
-        </button>
-      </form>
+        <form onSubmit={handleSubmit}>
+          <div className="field">
+            <label>اسم المستخدم (Username)</label>
+            <input 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)} 
+              autoComplete="username" 
+              required
+            />
+          </div>
+          <div className="field">
+            <label>كلمة المرور (Password)</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </div>
+          <button className="btn btn-primary btn-block" type="submit" disabled={loading} style={{ marginTop: '14px' }}>
+            {loading ? 'جاري التحقق…' : 'تسجيل الدخول'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

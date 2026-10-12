@@ -1,7 +1,7 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { readDb, updateCollection } = require('../utils/store');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireBriefsAccess, requireWriteAccess } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -64,20 +64,21 @@ router.post('/', (req, res) => {
   res.status(201).json({ message: 'Brief submitted successfully', brief: { id: brief.id } });
 });
 
-// Admin: list all briefs
-router.get('/', requireAdmin, (_req, res) => {
+// Start Project: Accessible by Admin, Manager (read-only), and Sales team. Forbidden for Data Entry.
+router.get('/', requireBriefsAccess, (_req, res) => {
   const { briefs } = readDb();
   res.json(briefs);
 });
 
-router.get('/:id', requireAdmin, (req, res) => {
+router.get('/:id', requireBriefsAccess, (req, res) => {
   const { briefs } = readDb();
   const brief = briefs.find((b) => b.id === req.params.id);
   if (!brief) return res.status(404).json({ message: 'Brief not found' });
   res.json(brief);
 });
 
-router.patch('/:id/status', requireAdmin, (req, res) => {
+// Status update: Accessible by Admin and Sales team. Blocked for Manager (read-only) and Data Entry.
+router.patch('/:id/status', requireBriefsAccess, requireWriteAccess, (req, res) => {
   const { status } = req.body || {};
   const allowed = ['new', 'in_review', 'contacted', 'closed'];
   if (!allowed.includes(status)) {
@@ -97,6 +98,7 @@ router.patch('/:id/status', requireAdmin, (req, res) => {
   res.json(updated);
 });
 
+// Deletion: Strict Admin only!
 router.delete('/:id', requireAdmin, (req, res) => {
   let found = false;
   updateCollection('briefs', (list) => {

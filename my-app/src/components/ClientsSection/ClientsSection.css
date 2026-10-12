@@ -204,3 +204,55 @@
     transition: color 0.2s ease;
   }
 }
+
+/* =====================================================
+   6. Entrance Animations (Page Load - Logo Cards)
+   ===================================================== */
+
+/* Hero Header Entrance */
+.clients-hero {
+  opacity: 0;
+  transform: translateY(-24px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.clients-hero.hero-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Each Logo Card — starts hidden */
+.client-logo-card {
+  opacity: 0;
+  transform: translateY(36px) scale(0.93);
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow var(--clients-transition),
+              border-color var(--clients-ease);
+}
+
+/* When .card-visible is added — card animates in */
+.client-logo-card.card-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Hover preserved after animation */
+.client-logo-card.card-visible:hover,
+.client-link:hover .client-logo-card.card-visible {
+  transform: translateY(-6px) scale(1) !important;
+  border-color: var(--clients-border-hover);
+  box-shadow: var(--clients-shadow-hover);
+}
+
+.client-logo-card.card-visible:hover .client-logo-frame,
+.client-link:hover .client-logo-card.card-visible .client-logo-frame {
+  background: var(--clients-bg-card);
+  transform: scale(1.03);
+}
+
+.client-logo-card.card-visible:hover .client-name,
+.client-link:hover .client-logo-card.card-visible .client-name {
+  color: var(--clients-red);
+}

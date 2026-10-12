@@ -15,6 +15,8 @@ import ClientsSection from './components/ClientsSection/ClientsSection';
 import Footer from './components/footer/Footer'; 
 import CustomCursor from './components/CustomCursor/CustomCursor';
 
+import { ThemeProvider } from './context/ThemeContext';
+
 function AppContent() {
   const location = useLocation();
   
@@ -50,9 +52,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </ThemeProvider>
   );
 }
 

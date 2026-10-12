@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api, mediaUrl } from '../api';
+import { useAuth } from '../AuthContext';
 
 const emptyForm = { name: '', website: '', logoUrl: '' };
 
 export default function ClientsAdmin() {
+  const { isReadOnly } = useAuth();
   const [clients, setClients] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [logoFile, setLogoFile] = useState(null);
@@ -65,12 +67,17 @@ export default function ClientsAdmin() {
     <div>
       <div className="page-header">
         <div>
-          <h1>Clients</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1>Clients</h1>
+            {isReadOnly && <span className="badge badge-manager">وضع المشاهدة فقط</span>}
+          </div>
           <p>Add client name + logo — they appear on the website Clients page.</p>
         </div>
-        <button type="button" className="btn btn-primary" onClick={() => setShowForm(true)}>
-          + Add client
-        </button>
+        {!isReadOnly && (
+          <button type="button" className="btn btn-primary" onClick={() => setShowForm(true)}>
+            + Add client
+          </button>
+        )}
       </div>
 
       {error && <div className="error-banner">{error}</div>}
@@ -140,9 +147,13 @@ export default function ClientsAdmin() {
                 <div className="meta">{c.website || 'No website'}</div>
               </div>
               <div className="row-actions">
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => remove(c.id)}>
-                  Delete
-                </button>
+                {isReadOnly ? (
+                  <span style={{ fontSize: 12, color: 'var(--muted)' }}>مشاهدة فقط</span>
+                ) : (
+                  <button type="button" className="btn btn-danger btn-sm" onClick={() => remove(c.id)}>
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))

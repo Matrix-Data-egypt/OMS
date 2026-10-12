@@ -20,7 +20,7 @@ export default function SignUpSection({ setUser }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+  
     if (!formData.fullName.trim()) return alert('لقد نسيت كتابة خانة: الاسم الكامل (Full Name)');
     if (!formData.email.trim()) return alert('لقد نسيت كتابة خانة: البريد الإلكتروني (Email Address)');
     if (!formData.confirmEmail.trim()) return alert('لقد نسيت كتابة خانة: تأكيد البريد الإلكتروني (Confirm Email)');

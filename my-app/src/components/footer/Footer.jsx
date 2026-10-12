@@ -34,10 +34,6 @@ export default function Footer() {
       {/* Action Prompt Banner */}
       <section className="footer-top-section" aria-label="Agency Call to Action">
         <div className="footer-top-text">
-          <div className="footer-status-pill">
-            <span className="footer-status-dot" />
-            <span>OMS Autonomous Engine v4.2.1 • Operational</span>
-          </div>
           <h2 className="footer-main-title">
             HAVE A CHALLENGE<br />
             <span className="footer-title-highlight">WORTH SCALING?</span>

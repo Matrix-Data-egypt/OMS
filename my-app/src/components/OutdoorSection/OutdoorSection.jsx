@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './OutdoorSection.css';
 import { api, mediaUrl } from '../../api';
-import PageHero from '../PageHero/PageHero';
 
 // Fallback showcase items if database is empty or loading
 const FALLBACK_OUTDOOR = [
@@ -75,23 +74,6 @@ export default function OutdoorSection() {
         <p className="outdoor-subtext">
           Dominating Egypt&apos;s most strategic arterial corridors, highways, and premium metropolitan hubs with unmissable scale, commanding frequency, and precision location engineering.
         </p>
-
-        <div className="outdoor-stats-bar">
-          <div className="stat-node">
-            <span className="stat-number">450+</span>
-            <span className="stat-label">Prime Billboard Faces</span>
-          </div>
-          <div className="stat-divider"></div>
-          <div className="stat-node">
-            <span className="stat-number">3.2M+</span>
-            <span className="stat-label">Daily Commuter Impressions</span>
-          </div>
-          <div className="stat-divider"></div>
-          <div className="stat-node">
-            <span className="stat-number">99.8%</span>
-            <span className="stat-label">Corridor Uptime & Illumination</span>
-          </div>
-        </div>
       </section>
 
       {/* 2. Media Formats Strip */}

@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { readDb, updateCollection } = require('../utils/store');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireContentAccess, requireWriteAccess } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -45,8 +45,8 @@ router.get('/:id', (req, res) => {
   res.json(item);
 });
 
-// Create
-router.post('/', requireAdmin, upload.single('image'), (req, res) => {
+// Create - Allowed for Admin and Data Entry
+router.post('/', requireContentAccess, requireWriteAccess, upload.single('image'), (req, res) => {
   try {
     const { companyName, description } = req.body || {};
     if (!companyName?.trim()) {
@@ -78,8 +78,8 @@ router.post('/', requireAdmin, upload.single('image'), (req, res) => {
   }
 });
 
-// Update
-router.put('/:id', requireAdmin, upload.single('image'), (req, res) => {
+// Update - Allowed for Admin and Data Entry
+router.put('/:id', requireContentAccess, requireWriteAccess, upload.single('image'), (req, res) => {
   let updated = null;
   updateCollection('outdoor', (list) =>
     list.map((c) => {
@@ -103,8 +103,8 @@ router.put('/:id', requireAdmin, upload.single('image'), (req, res) => {
   res.json(updated);
 });
 
-// Delete
-router.delete('/:id', requireAdmin, (req, res) => {
+// Delete - Allowed for Admin and Data Entry
+router.delete('/:id', requireContentAccess, requireWriteAccess, (req, res) => {
   let found = false;
   updateCollection('outdoor', (list) =>
     list.filter((c) => {

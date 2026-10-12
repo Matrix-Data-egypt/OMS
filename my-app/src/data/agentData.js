@@ -1,134 +1,134 @@
 /**
- * OMS Autonomous Marketing Agents & Platform Configuration Data
- * Pure qualitative excellence, capabilities, and strategic workflows (No arbitrary numbers).
+ * OMS Advertising Platform Configuration Data
+ * Generic, client-friendly content with no arbitrary numbers.
  */
 
 export const CORE_PILLARS = [
-  { id: 'pillar-1', title: 'Autonomous Intelligence', desc: 'Predictive audience research & competitor tracking' },
-  { id: 'pillar-2', title: 'Creative Firepower', desc: 'Cinematic TV broadcast & multi-format ad synthesis' },
-  { id: 'pillar-3', title: 'Omni-Channel Media', desc: 'Synchronized prime TV, mega billboards & digital' },
-  { id: 'pillar-4', title: 'Closed-Loop Attribution', desc: 'Audit-proof tracking connecting media to real revenue' },
+  { id: 'pillar-1', title: 'Strategic Intelligence', desc: 'In-depth market research & audience insight discovery' },
+  { id: 'pillar-2', title: 'Creative Excellence', desc: 'Premium visual production & compelling storytelling' },
+  { id: 'pillar-3', title: 'Omni-Channel Reach', desc: 'TV, outdoor billboards, digital & experiential media' },
+  { id: 'pillar-4', title: 'Measurable Results', desc: 'Transparent reporting connecting media to real outcomes' },
 ];
 
 export const AGENT_FLEET = [
   {
     id: 'agent-aura',
-    code: 'AURA',
-    name: 'Audience Intelligence Agent',
-    tag: 'Deep Market Research & Consumer Intent',
+    code: 'RESEARCH',
+    name: 'Market Intelligence & Research',
+    tag: 'Deep Market Research & Consumer Insight',
     status: 'ACTIVE',
-    version: 'Enterprise Edition',
+    version: 'Strategic Edition',
     avatarGradient: 'linear-gradient(135deg, #cc1a1a 0%, #f59e0b 100%)',
-    summary: 'Continuously monitors consumer touchpoints and digital culture in Egypt & MENA. Uncovers high-intent audience clusters, evolving tastes, and market gaps before competitors.',
+    summary: 'We continuously monitor market trends and consumer behavior across Egypt & MENA. Our research uncovers high-value audience clusters, evolving preferences, and market opportunities before your competition.',
     badges: [
-      { label: 'Audience Clustering', val: 'Sub-second' },
-      { label: 'Intent Recognition', val: 'Semantic' },
-      { label: 'Market Scanning', val: 'Continuous' },
+      { label: 'Audience Analysis', val: 'In-Depth' },
+      { label: 'Competitor Tracking', val: 'Continuous' },
+      { label: 'Market Scanning', val: 'Ongoing' },
     ],
     capabilities: [
-      'Multi-source competitive sentiment and brand positioning audits',
-      'Real-time consumer behavioral graph synthesis',
-      'High-affinity demographic and psychographic segmentation',
-      'Continuous trend forecasting and audience fatigue prevention'
+      'Competitive landscape audits and brand positioning analysis',
+      'Consumer behavioral research and trend mapping',
+      'Demographic and psychographic audience segmentation',
+      'Market opportunity identification and gap analysis'
     ],
     liveSimulation: {
-      inputPrompt: 'Audit consumer sentiment & high-intent buyer shifts across regional markets...',
+      inputPrompt: 'Analyze consumer sentiment & identify high-value market opportunities...',
       neuralExecution: [
-        '[AURA]: Ingesting search signals, digital conversations, and regional buying behavior...',
-        '[AURA]: Identified high-affinity buyer segments and unmet consumer aspirations...',
-        '[AURA]: Strategic audience blueprint formulated. Synchronizing with CREA creative pipeline.'
+        '[RESEARCH]: Gathering market data, consumer insights, and competitor positioning...',
+        '[RESEARCH]: Identified key audience segments and untapped market opportunities...',
+        '[RESEARCH]: Strategic audience blueprint formulated. Aligning with creative team.'
       ],
-      outputHighlight: 'Strategic Target Audience Matrix Formulated'
+      outputHighlight: 'Strategic Market Blueprint Delivered'
     }
   },
   {
     id: 'agent-crea',
-    code: 'CREA',
-    name: 'Creative Synthesis & TV Agent',
-    tag: 'Cinematic Storytelling & Visual Production',
+    code: 'CREATIVE',
+    name: 'Creative Production & Storytelling',
+    tag: 'Premium Visual Production & Brand Narrative',
     status: 'ACTIVE',
     version: 'Studio Edition',
     avatarGradient: 'linear-gradient(135deg, #7c3aed 0%, #ec4899 100%)',
-    summary: 'Orchestrates compelling campaign narratives, TV broadcast storyboards, 3D outdoor billboard visual concepts, and viral digital hook variations.',
+    summary: 'We craft compelling campaign narratives, TV broadcast concepts, outdoor billboard visuals, and multi-format creative assets that resonate with your target audience and elevate your brand.',
     badges: [
-      { label: 'Visual Narratives', val: 'Cinematic 4K' },
-      { label: 'Format Adaptation', val: 'Omni-Channel' },
-      { label: 'Cultural Relevance', val: 'Native MENA' },
+      { label: 'Visual Quality', val: 'Premium Grade' },
+      { label: 'Format Reach', val: 'Omni-Channel' },
+      { label: 'Cultural Fit', val: 'Locally Relevant' },
     ],
     capabilities: [
-      'Broadcast-grade TV commercial script architecture & scene breakdowns',
-      'High-engagement hook variants designed for digital algorithms',
-      'Outdoor 3D billboard and digital screen anamorphic visual concepts',
-      'Authentic regional cultural storytelling tailored to brand DNA'
+      'TV commercial concepts, scripts & full production management',
+      'High-impact outdoor billboard & digital screen design',
+      'Social media content crafted for maximum platform engagement',
+      'Brand storytelling rooted in authentic cultural relevance'
     ],
     liveSimulation: {
-      inputPrompt: 'Synthesize TV broadcast storyboard & high-engagement social narrative...',
+      inputPrompt: 'Develop a compelling brand narrative and visual campaign concept...',
       neuralExecution: [
-        '[CREA]: Analyzing high-resonance emotional drivers and industry benchmarks...',
-        '[CREA]: Rendering full narrative arc: Hook, Friction, Brand Solution, Emotional Climax...',
-        '[CREA]: Storyboards formatted for TV prime-time networks and mobile vertical video.'
+        '[CREATIVE]: Analyzing brand identity, market positioning, and audience preferences...',
+        '[CREATIVE]: Building campaign narrative: Brand Story, Core Message, Visual Direction...',
+        '[CREATIVE]: Creative assets formatted for TV broadcast, outdoor, and digital platforms.'
       ],
-      outputHighlight: 'Broadcast-Grade Storyboards & Scripts Synthesized'
+      outputHighlight: 'Premium Campaign Creative Concepts Ready'
     }
   },
   {
     id: 'agent-bid',
-    code: 'BID',
-    name: 'Algorithmic Media Buyer Agent',
-    tag: 'Omni-Channel Arbitrage & Placement',
+    code: 'MEDIA',
+    name: 'Media Planning & Buying',
+    tag: 'Strategic Media Placement & Budget Optimization',
     status: 'ACTIVE',
-    version: 'Arbitrage Engine',
+    version: 'Placement Engine',
     avatarGradient: 'linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%)',
-    summary: 'Synchronizes multi-channel ad spend across TV networks, outdoor mega LED screens, Meta, Google, TikTok, and programmatics for zero waste.',
+    summary: 'We plan and execute media placement across TV networks, outdoor screens, digital platforms, and print media — ensuring your message reaches the right audience at the right moment.',
     badges: [
-      { label: 'Cross-Network Sync', val: 'Synchronized' },
-      { label: 'Budget Reallocation', val: 'Dynamic' },
-      { label: 'Placement Quality', val: 'Prime-Tier' },
+      { label: 'Media Coverage', val: 'Full Spectrum' },
+      { label: 'Budget Control', val: 'Optimized' },
+      { label: 'Placement Quality', val: 'Prime Tier' },
     ],
     capabilities: [
-      'Automated dayparting and bid elasticity optimization',
-      'Dynamic budget shift toward highest-performing regional channels',
-      'Prime-Time TV network negotiation and placement scheduling',
-      'Synchronized physical billboard and digital retargeting loops'
+      'Strategic media mix planning across offline and online channels',
+      'TV network negotiations and prime-time slot procurement',
+      'Digital platform management across Meta, Google & TikTok',
+      'Outdoor billboard and transit media placement coordination'
     ],
     liveSimulation: {
-      inputPrompt: 'Orchestrate media budget allocation between prime outdoor screens & digital...',
+      inputPrompt: 'Plan optimal media distribution to maximize campaign reach and impact...',
       neuralExecution: [
-        '[BID]: Auditing vehicular traffic densities and digital ad auction inventory...',
-        '[BID]: Coordinated deployment across prime highway screens with digital geofencing...',
-        '[BID]: Bid elasticity calibrated for maximum impression density during peak hours.'
+        '[MEDIA]: Assessing available media inventory and audience reach data...',
+        '[MEDIA]: Allocating media budget across prime TV slots and high-traffic outdoor locations...',
+        '[MEDIA]: Media schedule confirmed for maximum audience exposure during peak windows.'
       ],
-      outputHighlight: 'Optimized Media Distribution Model Deployed'
+      outputHighlight: 'Optimized Media Distribution Plan Activated'
     }
   },
   {
     id: 'agent-nexus',
-    code: 'NEXUS',
-    name: 'Attribution & Revenue Agent',
-    tag: 'Closed-Loop Conversion Tracking',
+    code: 'RESULTS',
+    name: 'Performance Tracking & Reporting',
+    tag: 'Transparent Campaign Measurement & Insights',
     status: 'ACTIVE',
-    version: 'Attribution Core',
+    version: 'Analytics Core',
     avatarGradient: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-    summary: 'Multi-touch closed-loop attribution engine. Unifies physical billboard impressions, TV spots, and digital touchpoints into single-truth revenue reporting.',
+    summary: 'We provide clear, transparent reporting on your campaign\'s performance. From TV reach to digital conversions and outdoor impressions, our reports give you a complete picture of your investment.',
     badges: [
-      { label: 'Attribution Model', val: 'Multi-Touch' },
-      { label: 'Data Latency', val: 'Live Stream' },
-      { label: 'Reporting Depth', val: 'C-Suite Ready' },
+      { label: 'Reporting Style', val: 'Clear & Concise' },
+      { label: 'Data Access', val: 'Real Time' },
+      { label: 'Report Format', val: 'Executive Ready' },
     ],
     capabilities: [
-      'Multi-touch algorithmic attribution modeling (MTA + MMM)',
-      'Cross-channel offline-to-online conversion linkage',
-      'Customer lifetime value tracking and retention modeling',
-      'Audit-proof executive dashboards and transparent reporting'
+      'Comprehensive cross-channel campaign performance reporting',
+      'Audience reach, frequency, and engagement analysis',
+      'Brand awareness lift and market sentiment tracking',
+      'Transparent ROI documentation and strategic recommendations'
     ],
     liveSimulation: {
-      inputPrompt: 'Correlate prime outdoor billboard impressions with digital pipeline conversions...',
+      inputPrompt: 'Compile campaign performance data and generate executive insights report...',
       neuralExecution: [
-        '[NEXUS]: Mapping geofenced device touchpoints with transactional buyer journey...',
-        '[NEXUS]: Validated cross-channel synergy between highway billboards and direct inquiries...',
-        '[NEXUS]: Unified attribution graph verified for executive leadership audit.'
+        '[RESULTS]: Aggregating performance data across all active media channels...',
+        '[RESULTS]: Measuring brand reach, engagement, and campaign effectiveness metrics...',
+        '[RESULTS]: Comprehensive performance report prepared for executive review.'
       ],
-      outputHighlight: 'Full-Funnel Revenue Linkage Confirmed'
+      outputHighlight: 'Full Campaign Performance Report Delivered'
     }
   }
 ];
@@ -136,110 +136,83 @@ export const AGENT_FLEET = [
 export const CAMPAIGN_OBJECTIVES = [
   {
     id: "obj-1",
-    tag: "Market Authority",
-    title: "Brand Equity & Category Monopoly",
-    desc: "Position your brand as the undeniable market benchmark using synchronized TV broadcasts, iconic outdoor billboards, and high-frequency digital immersion.",
-    agentPill: "AURA + CREA SQUAD",
-    strategicBenefit: "Maximum Brand Recall"
+    tag: "Brand Building",
+    title: "Brand Awareness & Market Presence",
+    desc: "Establish your brand as a recognized name in your market using TV, outdoor billboards, and consistent digital presence across all key touchpoints.",
+    agentPill: "RESEARCH + CREATIVE",
+    strategicBenefit: "Strong Brand Recall"
   },
   {
     id: "obj-2",
-    tag: "Hyper-Growth",
-    title: "Commercial Product Launch",
-    desc: "Ignite immediate market frenzy through multi-channel programmatic deployment targeting high-intent purchasers across every screen.",
-    agentPill: "BID AUTONOMOUS",
-    strategicBenefit: "Accelerated Traction"
+    tag: "Product Launch",
+    title: "New Product or Service Launch",
+    desc: "Create powerful market impact for your new offering through a coordinated multi-channel campaign that builds excitement and drives rapid adoption.",
+    agentPill: "CREATIVE + MEDIA",
+    strategicBenefit: "Fast Market Entry"
   },
   {
     id: "obj-3",
-    tag: "Enterprise B2B",
-    title: "High-Ticket Lead Acquisition",
-    desc: "Precision account-based marketing engineered specifically for executive decision-makers across MENA with bespoke value propositions.",
-    agentPill: "AURA INTELLIGENCE",
-    strategicBenefit: "Qualified Pipeline"
+    tag: "Lead Generation",
+    title: "Customer Acquisition & Lead Growth",
+    desc: "Attract high-quality prospects and convert them into paying customers using targeted media strategies tailored to your ideal buyer profile.",
+    agentPill: "RESEARCH + RESULTS",
+    strategicBenefit: "Qualified Leads"
   },
   {
     id: "obj-4",
-    tag: "Cinematic Media",
-    title: "TV Broadcast & Production",
-    desc: "Broadcast-quality cinematic commercials crafted for TV prime-time networks and seamlessly adapted for social platforms.",
-    agentPill: "CREA PRODUCTION",
-    strategicBenefit: "Cinema Grade Visuals"
+    tag: "TV & Broadcast",
+    title: "Television & Radio Production",
+    desc: "Premium quality TV commercials and radio spots crafted to tell your brand story powerfully and professionally on Egypt's leading broadcast networks.",
+    agentPill: "CREATIVE STUDIO",
+    strategicBenefit: "Premium Brand Image"
   },
   {
     id: "obj-5",
-    tag: "Pure Performance",
-    title: "Full-Funnel Growth Engineering",
-    desc: "Integrated digital conversion engines leveraging intelligent bidding to continually expand revenue while optimizing acquisition efficiency.",
-    agentPill: "NEXUS ENGINE",
-    strategicBenefit: "Compound Growth"
+    tag: "Sales Growth",
+    title: "Revenue & Sales Acceleration",
+    desc: "Drive measurable sales growth through integrated campaigns combining awareness-building media with performance-focused digital execution.",
+    agentPill: "FULL TEAM",
+    strategicBenefit: "Revenue Growth"
   },
   {
     id: "obj-6",
-    tag: "Experiential Impact",
-    title: "POSS & Ground Activations",
-    desc: "High-impact point-of-sale displays and immersive physical activations strategically coupled with digital retargeting pixels.",
-    agentPill: "INTEGRATED PHYSICAL",
-    strategicBenefit: "Real-World Dominance"
+    tag: "Events & BTL",
+    title: "Activations & On-Ground Experiences",
+    desc: "Create memorable brand experiences through point-of-sale displays, experiential activations, and events that connect directly with your customers.",
+    agentPill: "EXPERIENTIAL TEAM",
+    strategicBenefit: "Direct Engagement"
   }
 ];
 
 export const TIMELINE_STEPS = [
   {
     step: 1,
-    title: 'Market Intelligence & Deep Audit',
+    title: 'Discovery & Market Research',
     phase: 'PHASE 01 // DISCOVERY',
-    desc: 'Agents ingest market signals, competitor campaigns, media pricing, and consumer demand curves to map strategic revenue opportunities.'
+    desc: 'We begin by deeply understanding your business, target audience, competitive landscape, and market opportunities to build a solid strategic foundation.'
   },
   {
     step: 2,
-    title: 'Strategy Architecture & Route Map',
-    phase: 'PHASE 02 // ARCHITECTURE',
-    desc: 'Synthesizing target audience personas, core commercial KPIs, high-converting pathways, and cross-channel media distribution budgets.'
+    title: 'Strategy & Campaign Architecture',
+    phase: 'PHASE 02 // STRATEGY',
+    desc: 'Our team crafts a tailored campaign strategy that defines your messaging, media mix, budget allocation, and timeline to achieve your specific business goals.'
   },
   {
     step: 3,
-    title: 'High-Impact Creative Production',
-    phase: 'PHASE 03 // CRAFTSMANSHIP',
-    desc: 'Forging high-converting creative assets: broadcast-grade TV commercials, interactive concepts, high-impact social ads, and iconic outdoor designs.'
+    title: 'Creative Development & Production',
+    phase: 'PHASE 03 // PRODUCTION',
+    desc: 'Our creative team produces premium campaign assets including TV commercials, outdoor visuals, digital content, and all materials needed across your chosen channels.'
   },
   {
     step: 4,
-    title: 'Multi-Channel Media Deployment',
-    phase: 'PHASE 04 // DEPLOYMENT',
-    desc: 'Simultaneous deployment across premier TV networks, prime outdoor billboards, and digital networks with intelligent real-time allocation.'
+    title: 'Media Placement & Campaign Launch',
+    phase: 'PHASE 04 // LAUNCH',
+    desc: 'We execute your campaign across all planned channels simultaneously — TV networks, outdoor locations, and digital platforms — with precise timing and coordination.'
   },
   {
     step: 5,
-    title: 'Closed-Loop Attribution & Scaling',
-    phase: 'PHASE 05 // EXPANSION',
-    desc: 'Real-time telemetry auditing. Isolating high-performing vectors, eliminating underperforming spend, and locking compounding commercial scale.'
-  }
-];
-
-export const SECURITY_STANDARDS = [
-  {
-    id: 'sec-1',
-    badge: 'ENTERPRISE SECURITY',
-    title: 'Zero Data Retention for AI Models',
-    desc: 'Your proprietary business data, customer records, and ad creative IP are never used to train public models. Strict private pipeline isolation.'
-  },
-  {
-    id: 'sec-2',
-    badge: 'ENCRYPTION AT REST & TRANSIT',
-    title: 'AES-256 & TLS 1.3 Strict Protocols',
-    desc: 'All communications, credentials, media assets, and analytics telemetry are secured with military-grade cipher suites.'
-  },
-  {
-    id: 'sec-3',
-    badge: 'REGULATORY COMPLIANCE',
-    title: 'GDPR & Egyptian Data Protection Law Aligned',
-    desc: 'Fully aligned with Egyptian Personal Data Protection Law (Law No. 151) and international GDPR / CCPA standards.'
-  },
-  {
-    id: 'sec-4',
-    badge: 'AUDIT & ACCESS GOVERNANCE',
-    title: 'Role-Based Access Control (RBAC) & Audit Logs',
-    desc: 'Granular permissions, session timeouts, and immutable audit logging for every agent action, media spend adjustment, and campaign deploy.'
+    title: 'Performance Review & Optimization',
+    phase: 'PHASE 05 // GROWTH',
+    desc: 'We continuously monitor campaign performance, share transparent reports with your team, and make strategic adjustments to maximize your results and investment return.'
   }
 ];
