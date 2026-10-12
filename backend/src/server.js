@@ -9,6 +9,8 @@ const briefsRoutes = require('./routes/briefs');
 const blogRoutes = require('./routes/blog');
 const videosRoutes = require('./routes/videos');
 const clientsRoutes = require('./routes/clients');
+const outdoorRoutes = require('./routes/outdoor');
+const possRoutes = require('./routes/poss');
 
 const app = express();
 
@@ -44,6 +46,8 @@ app.use('/api/briefs', briefsRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/videos', videosRoutes); // سيتولى هذا الراوت دمج اليوتيوب بشكل آمن
 app.use('/api/clients', clientsRoutes);
+app.use('/api/outdoor', outdoorRoutes);
+app.use('/api/poss', possRoutes);
 
 // 404
 app.use((req, res) => {

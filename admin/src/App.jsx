@@ -5,7 +5,8 @@ import Login from './pages/Login';
 import Layout from './pages/Layout';
 import Briefs from './pages/Briefs';
 import Videos from './pages/Videos';
-import BlogAdmin from './pages/BlogAdmin';
+import OutdoorAdmin from './pages/OutdoorAdmin';
+import PossAdmin from './pages/PossAdmin';
 import ClientsAdmin from './pages/ClientsAdmin';
 
 function Protected({ children }) {
@@ -48,7 +49,8 @@ export default function App() {
         <Route index element={<Navigate to="/briefs" replace />} />
         <Route path="briefs" element={<Briefs />} />
         <Route path="videos" element={<Videos />} />
-        <Route path="blog" element={<BlogAdmin />} />
+        <Route path="outdoor" element={<OutdoorAdmin />} />
+        <Route path="poss" element={<PossAdmin />} />
         <Route path="clients" element={<ClientsAdmin />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

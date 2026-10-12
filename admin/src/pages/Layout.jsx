@@ -25,8 +25,11 @@ export default function Layout() {
         <NavLink to="/videos" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
           Production TV
         </NavLink>
-        <NavLink to="/blog" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          Blog
+        <NavLink to="/outdoor" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+          Outdoor
+        </NavLink>
+        <NavLink to="/poss" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+          POSS
         </NavLink>
         <NavLink to="/clients" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
           Clients

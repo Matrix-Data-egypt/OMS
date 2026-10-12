@@ -9,6 +9,8 @@ const defaultDb = {
   blogPosts: [],
   videos: [],
   clients: [],
+  outdoor: [],
+  poss: [],
 };
 
 function ensureDb() {
@@ -29,6 +31,8 @@ function readDb() {
     blogPosts: [],
     videos: [],
     clients: [],
+    outdoor: [],
+    poss: [],
     ...parsed,
   };
 }
