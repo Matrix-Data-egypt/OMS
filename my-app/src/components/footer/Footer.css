@@ -1,79 +1,125 @@
+/* ==========================================================================
+   OMS Footer Styles - Dark Cyber-Luxury
+   ========================================================================== */
+
 .custom-footer {
-  background-color: #F8F6F9; /* نفس لون الخلفية المائل للوردي الفاتح في الصورة */
-  color: #1A1A1A;
-  padding: 60px 80px 30px 80px;
-  font-family: system-ui, -apple-system, sans-serif;
+  background-color: #06040a;
+  color: #ffffff;
+  padding: 70px 80px 35px 80px;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 2;
 }
 
 .footer-top-section {
   display: flex;
   justify-content: space-between;
-  alignItems: flex-start;
-  margin-bottom: 80px;
+  align-items: flex-start;
+  margin-bottom: 70px;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
-.footer-sub-heading {
-  font-size: 0.8rem;
-  letter-spacing: 1px;
-  color: #C68A4C; /* اللون الخردلي للنص الصغير */
-  font-weight: 600;
-  display: block;
-  margin-bottom: 15px;
+.footer-top-text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.footer-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
 }
 
 .footer-main-title {
-  font-size: 3rem;
-  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(2.4rem, 4.5vw, 3.4rem);
+  font-weight: 900;
   line-height: 1.1;
   margin: 0;
-  letter-spacing: -1px;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.footer-title-highlight {
+  background: linear-gradient(135deg, #cc1a1a 0%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .footer-button-container {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 240px;
 }
 
 .footer-primary-btn {
-  background-color: #a21b1b; /* اللون البنفسجي للزر الرئيسي */
-  color: #FFF;
-  border: none;
+  background: linear-gradient(135deg, #cc1a1a 0%, #e11d48 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 14px 28px;
   font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  letter-spacing: 0.5px;
-  transition: opacity 0.2s ease;
+  font-weight: 800;
+  border-radius: 8px;
+  text-decoration: none;
+  text-align: center;
+  letter-spacing: 0.04em;
+  box-shadow: 0 6px 20px rgba(204, 26, 26, 0.4);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .footer-primary-btn:hover {
-  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(204, 26, 26, 0.6);
 }
 
 .footer-secondary-btn {
-  background-color: #ECE9F1;
-  color: #1A1A1A;
-  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
   padding: 14px 28px;
   font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  letter-spacing: 0.5px;
-  transition: background-color 0.2s ease;
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+  text-align: center;
+  letter-spacing: 0.04em;
+  transition: all 0.25s ease;
 }
 
 .footer-secondary-btn:hover {
-  background-color: #E2DFE8;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .footer-grid-section {
   display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 5 أعمدة ليناسب بياناتك + عمود المقر الرئيسي */
-  gap: 30px;
-  margin-bottom: 80px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  margin-bottom: 70px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 50px;
 }
 
 .footer-column {
@@ -82,11 +128,12 @@
 }
 
 .footer-column-title {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #1A1A1A;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #f59e0b;
   margin-bottom: 20px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.1em;
 }
 
 .footer-list {
@@ -99,91 +146,113 @@
 }
 
 .footer-link {
-  color: #555555;
+  color: #9ca3af;
   text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 400;
-  transition: color 0.2s ease;
+  font-size: 0.92rem;
+  font-weight: 500;
+  transition: color 0.2s ease, transform 0.2s ease;
+  display: inline-block;
 }
 
 .footer-link:hover {
-  color: #1A1A1A;
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+.footer-link-highlight {
+  color: #f59e0b;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: opacity 0.2s ease;
+}
+
+.footer-link-highlight:hover {
+  opacity: 0.85;
+}
+
+.footer-link-soon-disabled {
+  color: #555555;
+  font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-soon-badge {
+  font-size: 0.65rem;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #777777;
 }
 
 .footer-address-text {
-  color: #555555;
-  font-size: 0.9rem;
+  color: #9ca3af;
+  font-size: 0.92rem;
   line-height: 1.6;
-  margin: 0 0 15px 0;
+  margin: 0 0 12px 0;
 }
 
+/* Bottom Bar */
 .footer-bottom-bar {
-  border-top: 1px solid #E5E2E8;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.85rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
 }
 
 .footer-bottom-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
+}
+
+.footer-logo-pill {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
 }
 
 .footer-bottom-logo {
-  height: 34px;
+  height: 28px;
   width: auto;
   object-fit: contain;
-  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.footer-bottom-logo:hover {
-  opacity: 0.85;
-  transform: scale(1.03);
+.footer-copyright {
+  color: #6b7280;
+  margin: 0;
+  font-size: 0.84rem;
 }
 
 .footer-social-links {
   display: flex;
   gap: 20px;
-  color: #1A1A1A;
 }
 
-.footer-social-label {
-  font-weight: 500;
-}
-
-.footer-copyright {
-  color: #777777;
-  margin: 0;
-  font-size: 0.85rem;
-}
-
-/* دعم الشاشات الصغيرة والمتوسطة (Responsive) */
+/* Responsive */
 @media (max-width: 992px) {
-  .footer-top-section {
-    flex-direction: column;
-    gap: 30px;
+  .custom-footer {
+    padding: 50px 30px 25px 30px;
   }
   .footer-grid-section {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+@media (max-width: 600px) {
+  .footer-grid-section {
+    grid-template-columns: 1fr;
+  }
   .footer-bottom-bar {
     flex-direction: column;
     align-items: flex-start;
-    gap: 20px;
-  }
-}
-
-@media (max-width: 576px) {
-  .custom-footer {
-    padding: 40px 20px 20px 20px;
-  }
-  .footer-main-title {
-    font-size: 2rem;
-  }
-  .footer-grid-section {
-    grid-template-columns: 1fr;
   }
 }

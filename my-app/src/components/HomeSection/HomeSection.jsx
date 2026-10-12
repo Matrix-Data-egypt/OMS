@@ -1,78 +1,111 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; 
+import { Link } from 'react-router-dom';
+import NeuralCanvas from '../common/NeuralCanvas';
+import AgentOrchestrator from './AgentOrchestrator';
+import CampaignBlueprintStudio from './CampaignBlueprintStudio';
+import {
+  CORE_PILLARS,
+  CAMPAIGN_OBJECTIVES,
+  TIMELINE_STEPS
+} from '../../data/agentData';
 import './HomeSection.css';
-
-// 1. Static Configuration Data defined outside the component to optimize runtime memory
-const OBJECTIVES_DATA = [
-  { id: "obj-1", tag: 'Strategy', title: 'Build Brand Equity', desc: 'Define your core market positioning and build robust equity.' },
-  { id: "obj-2", tag: 'Growth', title: 'Launch a Product', desc: 'Create maximum commercial impact for your new market offerings.' },
-  { id: "obj-3", tag: 'B2B Blitz', title: 'Lead Generation', desc: 'High-intent acquisition campaigns targeting enterprise buyers.' },
-  { id: "obj-4", tag: 'Production', title: 'Video Commercials', desc: 'Cinematic storytelling designed for TV broadcast and digital channels.' },
-  { id: "obj-5", tag: 'Performance', title: 'Full Digital Conversion', desc: 'Full-funnel digital optimizations to extract maximum ROI.' },
-  { id: "obj-6", tag: 'Activation', title: 'Experimental Events', desc: 'Immersive ground events and experimental press activations.' }
-];
-
-const TIMELINE_STEPS = ['Research', 'Brief Architect', 'Creative Production', 'Media Optimization', 'Data Insights'];
-
-const TIMELINE_DETAILS = {
-  1: { title: 'Deep Market Research', desc: 'Analyzing audience behavior, mapping out competitors, and isolating key media intake opportunities.' },
-  2: { title: 'Brief Architecture', desc: 'Crafting definitive parameters, identifying strict KPIs, and solidifying the tactical route map.' },
-  3: { title: 'Creative Production', desc: 'Forging high-fire premium visuals, copies, and interactive concepts engineered around your identity.' },
-  4: { title: 'Media Optimization', desc: 'Deploying laser-targeted distribution models across digital, TV, and outdoor setups to minimize loss.' },
-  5: { title: 'Data Insights', desc: 'Auditing data signals post-launch, parsing conversion values, and locking down consistent scale.' }
-};
 
 export default function HomeSection() {
   const [activeStep, setActiveStep] = useState(1);
 
+  const activeTimelineObj = TIMELINE_STEPS.find((t) => t.step === activeStep) || TIMELINE_STEPS[0];
+
+  const handleScrollToOrchestrator = (e) => {
+    e.preventDefault();
+    const elem = document.getElementById('agent-fleet-section');
+    if (elem) {
+      elem.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <main className="home-container">
-      {/* Decorative ambient background blurs */}
+      {/* Interactive 60fps Neural Particle Mesh Background */}
+      <NeuralCanvas />
+
+      {/* Ambient glowing radial lights */}
       <div className="home-ambient-glow glow-1" aria-hidden="true" />
       <div className="home-ambient-glow glow-2" aria-hidden="true" />
-      
+      <div className="home-ambient-glow glow-3" aria-hidden="true" />
+
       {/* Hero Banner Section */}
       <header className="home-hero-clean">
-        <div 
-          className="hero-banner-bg" 
+        <div
+          className="hero-banner-bg"
           style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/hero-banner.png)` }}
         >
           <div className="hero-clean-content overlay">
-            <span className="hero-badge-top-clean">New Horizon Campaign Blueprint</span>
+            <div className="hero-badge-top-clean">
+              <span className="live-dot" />
+              <span>Autonomous Marketing Agents &amp; Full-Funnel Media</span>
+            </div>
+
             <h1 className="hero-main-title-clean">
               Turning Business Challenges<br />
               Into Brands That <span className="highlight-gold-clean">Move People.</span>
             </h1>
+
             <p className="hero-paragraph-clean">
-              We tie unified strategic thinking, creative fire, and rigorous performance optimizations across every channel to deliver absolute category dominance and concrete commercial revenue creation.
+              We merge autonomous intelligence agents, broadcast-grade creative fire, and synchronized multi-channel media buying across TV, Outdoor billboards, and digital networks to secure undisputed category dominance.
             </p>
+
             <div className="hero-buttons-clean">
               <Link to="/contact" className="btn-gold-action">
-                Find Campaign &darr;
+                Initiate Campaign Brief &rarr;
               </Link>
-              <Link to="/production-tv" className="btn-outline-action">
-                Consult Media Desk
-              </Link>
+              <a
+                href="#agent-fleet-section"
+                onClick={handleScrollToOrchestrator}
+                className="btn-outline-action"
+              >
+                Inspect Agent Fleet ⚡
+              </a>
+            </div>
+
+            {/* Strategic Pillars Bar (Qualitative - No arbitrary numbers) */}
+            <div className="hero-pillars-bar" aria-label="Core Strategic Pillars">
+              {CORE_PILLARS.map((pillar) => (
+                <div key={pillar.id} className="pillar-pill">
+                  <span className="pillar-title">{pillar.title}</span>
+                  <span className="pillar-desc">{pillar.desc}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </header>
 
-      {/* Strategy Timeline Section */}
+      {/* Flagship Feature: Autonomous Agent Orchestrator */}
+      <div id="agent-fleet-section">
+        <AgentOrchestrator />
+      </div>
+
+      {/* Interactive Campaign Strategy Blueprint Studio */}
+      <CampaignBlueprintStudio />
+
+      {/* Campaign Strategic Lifecycle Timeline */}
       <section className="strategy-timeline" aria-label="Campaign Strategic Lifecycle">
         <div className="section-intro">
           <span className="tag-purple-small">Unified Integration</span>
-          <h2>One Partner. The Whole Campaign.</h2>
+          <h2>One Partner. The Whole Campaign Lifecycle.</h2>
+          <p className="section-intro-desc">
+            From deep market intelligence to prime-time television broadcast and live telemetry auditing.
+          </p>
         </div>
-        
+
         <div className="timeline-steps-bar" role="tablist" aria-label="Strategy phases">
-          {TIMELINE_STEPS.map((step, idx) => {
-            const stepNum = idx + 1;
+          {TIMELINE_STEPS.map((item) => {
+            const stepNum = item.step;
             const isActive = activeStep === stepNum;
             return (
-              <button 
-                key={step} 
-                className={`timeline-node ${isActive ? 'active' : ''}`} 
+              <button
+                key={item.step}
+                className={`timeline-node ${isActive ? 'active' : ''}`}
                 onClick={() => setActiveStep(stepNum)}
                 role="tab"
                 aria-selected={isActive}
@@ -80,9 +113,9 @@ export default function HomeSection() {
                 id={`timeline-tab-${stepNum}`}
               >
                 <span className="node-num" aria-hidden="true">
-                  {String(stepNum).padStart(2, '0')}
+                  PHASE // {stepNum}
                 </span>
-                <span className="node-text">{step}</span>
+                <span className="node-text">{item.title}</span>
                 <div className="node-active-bar" />
               </button>
             );
@@ -90,29 +123,33 @@ export default function HomeSection() {
         </div>
 
         {/* Dynamic Context Canvas */}
-        <div 
-          className="timeline-dynamic-content" 
-          role="tabpanel" 
-          id="timeline-panel" 
+        <div
+          className="timeline-dynamic-content"
+          role="tabpanel"
+          id="timeline-panel"
           aria-labelledby={`timeline-tab-${activeStep}`}
           aria-live="polite"
         >
           <span className="timeline-content-badge">
-            PHASE 0{activeStep} ARCHITECTURE
+            {activeTimelineObj.phase}
           </span>
-          <h3>{TIMELINE_DETAILS[activeStep].title}</h3>
-          <p>{TIMELINE_DETAILS[activeStep].desc}</p>
+          <h3>{activeTimelineObj.title}</h3>
+          <p>{activeTimelineObj.desc}</p>
         </div>
       </section>
 
       {/* Objectives Matcher Section */}
       <section className="objectives-section" aria-label="Campaign Goals Selector">
         <div className="section-intro">
-          <span className="tag-purple-small">Campaign Matcher</span>
+          <span className="tag-purple-small">Campaign Goal Matcher</span>
           <h2>What are you trying to achieve?</h2>
+          <p className="section-intro-desc">
+            Select your primary objective to activate specialized agent squad configurations.
+          </p>
         </div>
+
         <div className="objectives-grid">
-          {OBJECTIVES_DATA.map((obj) => (
+          {CAMPAIGN_OBJECTIVES.map((obj) => (
             <ObjectiveCard key={obj.id} obj={obj} />
           ))}
         </div>
@@ -121,91 +158,104 @@ export default function HomeSection() {
       {/* Marketing Frameworks & Capabilities Section */}
       <section className="home-services-section" aria-label="Corporate Capabilities">
         <div className="section-intro">
-          <span className="tag-purple-small">OMS Core Capabilities</span>
-          <h2>Our Strategic Marketing Frameworks</h2>
+          <span className="tag-purple-small">OMS Core Infrastructure</span>
+          <h2>Integrated Marketing & Media Frameworks</h2>
+          <p className="section-intro-desc">
+            Proven offline execution powerhouses seamlessly orchestrated by next-generation digital intelligence.
+          </p>
         </div>
 
         <div className="home-services-layout-grid">
           <FrameworkGroup />
         </div>
       </section>
+
     </main>
   );
 }
 
 function ObjectiveCard({ obj }) {
-  const { tag, title, desc } = obj;
+  const { tag, title, desc, agentPill, strategicBenefit } = obj;
   return (
     <article className="objective-card">
       <div className="obj-card-top">
         <span className="obj-tag">{tag}</span>
-        <span className="obj-arrow-cue" aria-hidden="true">&rarr;</span>
+        {strategicBenefit && <span className="obj-kpi-pill">{strategicBenefit}</span>}
       </div>
       <h3>{title}</h3>
       <p>{desc}</p>
+      <div className="obj-card-bottom">
+        <span className="obj-agent-pill">
+          <span className="agent-dot" /> {agentPill}
+        </span>
+        <span className="obj-arrow-cue" aria-hidden="true">&rarr;</span>
+      </div>
     </article>
   );
 }
 
 function FrameworkGroup() {
   const traditionalBullets = [
-    'Media Buying "TV & Radio"', 'Production', 'Indoor & Outdoor Adv.',
-    'PR "Booths & Events"', 'Designs & Printing Services',
-    'CI & Branding', 'Digital Marketing & Social Media', 'BTL'
+    'Media Buying "TV & Radio"',
+    'Production & Cinematic TVCs',
+    'Indoor & Outdoor Mega Billboards',
+    'PR "Booths & Experiential Events"',
+    'Designs & Ultra-Premium Printing',
+    'CI & Strategic Brand Architecture',
+    'Digital Marketing & Social Algorithmic Blitz',
+    'BTL & Ground Activations'
   ];
 
   return (
     <article className="home-service-group-card">
       <div className="group-card-header">
-        <span className="framework-num-pill">01 / CAPABILITY</span>
-        <h3>Traditional Marketing</h3>
+        <span className="framework-num-pill">CAPABILITY // CORE INFRASTRUCTURE</span>
+        <h3>Integrated Full-Funnel Capabilities</h3>
         <ul className="group-bullets-preview">
           {traditionalBullets.map((bullet) => (
-            <li key={bullet}>{bullet}</li>
+            <li key={bullet}>
+              <span className="bullet-glow-dot" />
+              <span>{bullet}</span>
+            </li>
           ))}
         </ul>
+        <div className="framework-bottom-cta">
+          <Link to="/work" className="framework-link-btn">
+            Explore All Capabilities &amp; Work &rarr;
+          </Link>
+        </div>
       </div>
 
       <div className="group-detailed-subcards-stack">
         <div className="detailed-subcard">
           <div className="subcard-glow-line" aria-hidden="true" />
-          <h4>Branding</h4>
+          <h4>Brand Architecture &amp; Identity</h4>
           <p>
-            Your brand is not a product, a website, a logo or your company name. It's a hard-to-pin-down feeling. 
-            It's also the thing that separates a mediocre brand from a great one. At OMS, we will work with you to 
-            develop a comprehensive brand strategy that helps position your company, and ensure that it stands out 
-            and remains memorable in the mind of the consumer.
+            Your brand is not a mere logo or company name. It is an emotional gravity well. At OMS, we architect distinct positioning strategies that ensure your brand cuts through noise and commands instant market authority.
           </p>
         </div>
 
         <div className="detailed-subcard">
           <div className="subcard-glow-line" aria-hidden="true" />
-          <h4>Indoor &amp; Outdoor Advertising</h4>
+          <h4>Indoor &amp; Outdoor Advertising (OOH)</h4>
           <p>
-            The presence of indoor &amp; outdoor advertising continually reaches consumers where they live, work, 
-            shop and play to deliver your marketing message as they travel throughout their daily life. With repeated 
-            familiarity, exposure and retention, OMS will help you reach your targeted audience to make a choice at 
-            the point of decision.
+            Mega billboards, digital screens, and high-frequency transit placements reaching millions across Cairo, Alexandria, and prime regional highways. Synchronized with digital retargeting pixels for closed-loop conversions.
           </p>
         </div>
 
         <div className="detailed-subcard">
           <div className="subcard-glow-line" aria-hidden="true" />
-          <h4>PR "Booths &amp; Events"</h4>
+          <h4>PR &amp; Experiential Brand Activations</h4>
           <p>
-            Our wealth of PR experience and know-how, combined with our addiction to perfection, means great things 
-            for your business. We love to build fruitful relationships with our clients, using our tried-and-true 
-            business processes, excellent communication, and red carpet treatment.
+            Red-carpet PR events, trade show pavilions, and ground activations designed to create viral social buzz and foster high-trust commercial relationships.
           </p>
         </div>
 
         <div className="detailed-subcard">
           <div className="subcard-glow-line" aria-hidden="true" />
-          <h4>Media Buying "TV &amp; Radio"</h4>
+          <h4>Media Buying "TV &amp; Radio Broadcasting"</h4>
           <p>
-            Media planning and buying are foundational channels for high-reach awareness execution. Our agency models 
-            negotiate directly with elite broadcasting channels across Egypt and the MENA networks, securing strategic, 
-            prime-time advertising placements that yield maximum impression delivery at fully optimized media costs.
+            Direct algorithmic and prime-time negotiations with Egypt and MENA’s premier TV networks. Delivering maximum gross rating points at optimized media investment costs.
           </p>
         </div>
       </div>

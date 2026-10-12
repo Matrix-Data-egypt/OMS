@@ -1,4 +1,4 @@
-/* Custom Cursor Styles */
+/* Custom Cursor Styles - Futuristic Cyber Glow */
 .custom-cursor-root {
   pointer-events: none;
   position: fixed;
@@ -24,9 +24,10 @@
   height: 6px;
   margin-top: -3px;
   margin-left: -3px;
-  background-color: #a21b1b;
+  background-color: #f43f5e;
   border-radius: 50%;
   pointer-events: none;
+  box-shadow: 0 0 10px #f43f5e;
   transition: transform 0.05s linear, background-color 0.2s ease;
   will-change: transform;
 }
@@ -36,35 +37,38 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 34px;
-  height: 34px;
-  margin-top: -17px;
-  margin-left: -17px;
-  border: 1.5px solid rgba(162, 27, 27, 0.55);
-  background: rgba(162, 27, 27, 0.04);
+  width: 36px;
+  height: 36px;
+  margin-top: -18px;
+  margin-left: -18px;
+  border: 1.5px solid rgba(244, 63, 94, 0.45);
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.08) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
   transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               margin 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.25s ease,
-              background-color 0.25s ease;
+              background-color 0.25s ease,
+              box-shadow 0.25s ease;
   will-change: transform;
 }
 
 /* Hovered state on interactive elements */
 .custom-cursor-root.is-hovered .custom-cursor-ring {
-  width: 54px;
-  height: 54px;
-  margin-top: -27px;
-  margin-left: -27px;
-  border-color: #a21b1b;
-  background: rgba(162, 27, 27, 0.12);
+  width: 58px;
+  height: 58px;
+  margin-top: -29px;
+  margin-left: -29px;
+  border-color: #f59e0b;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 80%);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
 }
 
 .custom-cursor-root.is-hovered .custom-cursor-dot {
-  background-color: #C68A4C;
-  transform: scale(1.4);
+  background-color: #f59e0b;
+  box-shadow: 0 0 12px #f59e0b;
+  transform: scale(1.5);
 }
 
 /* Hide on touch devices */

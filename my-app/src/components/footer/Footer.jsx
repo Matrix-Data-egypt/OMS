@@ -1,26 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './Footer.css'; 
+import './Footer.css';
 
 const FOOTER_SECTIONS = [
   {
     id: "sec-company",
     title: "Company",
     links: [
-      { id: "lnk-about", name: "About", soon: false, to: "/about" },
-      { id: "lnk-outdoor", name: "Outdoor", soon: false, to: "/outdoor" },
-      { id: "lnk-poss", name: "POSS", soon: false, to: "/poss" },
-      { id: "lnk-press", name: "Press", soon: false, to: "/contact" }
+      { id: "lnk-about", name: "About & Manifesto", soon: false, to: "/about" },
+      { id: "lnk-work", name: "Work & Capabilities", soon: false, to: "/work" },
+      { id: "lnk-outdoor", name: "Outdoor Network", soon: false, to: "/outdoor" },
+      { id: "lnk-poss", name: "POSS Displays", soon: false, to: "/poss" },
+      { id: "lnk-tv", name: "TV Production", soon: false, to: "/production-tv" }
     ],
   },
   {
     id: "sec-resources",
-    title: "Resources",
+    title: "Intelligence & Platform",
     links: [
-      { id: "lnk-community", name: "Community", soon: true },
-      { id: "lnk-help", name: "Help Center", soon: true },
-      { id: "lnk-templates", name: "Templates", soon: true },
-      { id: "lnk-guides", name: "Guides", soon: true }
+      { id: "lnk-agents", name: "Agent Orchestrator", soon: false, to: "/#agent-fleet-section" },
+      { id: "lnk-community", name: "Community Sandbox", soon: true },
+      { id: "lnk-help", name: "Client Knowledgebase", soon: true },
+      { id: "lnk-guides", name: "Campaign Blueprints", soon: true }
     ],
   },
 ];
@@ -32,14 +33,20 @@ export default function Footer() {
     <footer className="custom-footer">
       {/* Action Prompt Banner */}
       <section className="footer-top-section" aria-label="Agency Call to Action">
-        <div>
-          <span className="footer-sub-heading">INTEGRATED AGENCY NETWORK • EGYPT &amp; MENA</span>
-          <h2 className="footer-main-title">HAVE A CHALLENGE<br />WORTH SOLVING?</h2>
+        <div className="footer-top-text">
+          <div className="footer-status-pill">
+            <span className="footer-status-dot" />
+            <span>OMS Autonomous Engine v4.2.1 • Operational</span>
+          </div>
+          <h2 className="footer-main-title">
+            HAVE A CHALLENGE<br />
+            <span className="footer-title-highlight">WORTH SCALING?</span>
+          </h2>
         </div>
-        
+
         <div className="footer-button-container">
           <Link to="/contact" className="footer-primary-btn">
-            INITIATE BRIEF
+            INITIATE CAMPAIGN BRIEF &rarr;
           </Link>
           <Link to="/production-tv" className="footer-secondary-btn">
             VIEW CREDENTIALS
@@ -47,16 +54,20 @@ export default function Footer() {
         </div>
       </section>
 
-      {/* Main Structural Information Columns */}
+      {/* Main Structural Columns */}
       <section className="footer-grid-section" aria-label="Corporate Directory">
         {FOOTER_SECTIONS.map((section) => (
           <FooterColumn key={section.id} section={section} />
         ))}
-        
+
         <div className="footer-column">
-          <h4 className="footer-column-title">EMAIL</h4>
+          <h4 className="footer-column-title">HEADQUARTERS & DESK</h4>
           <p className="footer-address-text">
-            <a href="mailto:info@omsegy.agency" className="footer-link">
+            Cairo &amp; Giza Media Corridors<br />
+            Regional Presence: Egypt &amp; MENA
+          </p>
+          <p className="footer-address-text">
+            <a href="mailto:info@omsegy.agency" className="footer-link-highlight">
               info@omsegy.agency
             </a>
           </p>
@@ -67,14 +78,16 @@ export default function Footer() {
       <section className="footer-bottom-bar" aria-label="Legal &amp; Social">
         <div className="footer-bottom-left">
           <Link to="/" className="footer-logo-link" aria-label="Go to homepage">
-            <img 
-              src="/oms-logo-no-names.png" 
-              alt="OMS Corporate Logo" 
-              className="footer-bottom-logo" 
-            />
+            <div className="footer-logo-pill">
+              <img
+                src="/oms-logo-no-names.png"
+                alt="OMS Corporate Logo"
+                className="footer-bottom-logo"
+              />
+            </div>
           </Link>
           <p className="footer-copyright">
-            &copy; {currentYear} OMS Advertising. All rights reserved.
+            &copy; {currentYear} OMS Advertising &amp; Autonomous Marketing Systems. All rights reserved.
           </p>
         </div>
 
@@ -89,7 +102,6 @@ export default function Footer() {
   );
 }
 
-// Clean Sub-Component rendering directory matrices
 function FooterColumn({ section }) {
   return (
     <div className="footer-column">
