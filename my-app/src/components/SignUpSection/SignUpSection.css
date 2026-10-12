@@ -1,0 +1,241 @@
+/* الحاوية الأساسية الممتدة بكامل الشاشة */
+.exact-signup-container {
+  background-color: #FAF9F6;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* الكارد الرئيسي المفتوح بنسبة انقسام النصف */
+.exact-signup-card {
+  background-color: #ffffff;
+  width: 100%;
+  max-w: 66rem;
+  min-height: 42rem;
+  border-radius: 0.5rem; /* حواف ناعمة مطابقة تماماً للصورة */
+  display: grid;
+  grid-template-cols: 1fr;
+  overflow: hidden;
+  box-shadow: 0 20px 30px rgba(36, 17, 17, 0.04);
+}
+
+@media (min-width: 1024px) {
+  .exact-signup-card {
+    grid-template-cols: 1fr 1fr;
+  }
+}
+
+/* الشق الأيسر: الرسوم الترحيبية التفاعلية */
+.signup-left-panel-animated {
+  background: linear-gradient(180deg, #951d1d 0%, #4b1b1b 100%);
+  color: #ffffff;
+  padding: 4rem 3rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* طبقة الشبكة الهندسية الفاخرة (Grid Overlay Blueprint) */
+.signup-grid-blueprint {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  z-index: 1;
+}
+
+.signup-panel-content {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.signup-top-brand {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+}
+
+.signup-center-message {
+  margin: auto 0;
+  text-align: center;
+}
+
+.signup-welcome-sub {
+  font-size: 1.1rem;
+  color: #fc8484;
+  margin: 0;
+}
+
+/* أنيميشن النبض الهادئ للترحيب بالشركة بـ CSS التفاعلي */
+.signup-welcome-main {
+  font-size: 2.75rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  margin: 0.5rem 0 0.85rem 0;
+  animation: signupPulse 3s infinite ease-in-out;
+}
+
+.signup-accent-line {
+  width: 2.5rem;
+  height: 3px;
+  background-color: #f59e0b; /* مؤشر خط ذهبي أفقي صغير */
+  margin: 0 auto 1.5rem auto;
+  border-radius: 2px;
+}
+
+.signup-welcome-desc {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  line-height: 1.6;
+  max-w: 23rem;
+  margin: 0 auto;
+}
+
+/* الدوائر التزيينية والـ Glow الضوئي بالخلفية للأنيميشن */
+.signup-geo-circle {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  z-index: 2;
+}
+.circle-1 { width: 5rem; height: 5rem; top: 10%; right: -2rem; animation: floatSlow 6s infinite alternate; }
+.circle-2 { width: 8rem; height: 8rem; bottom: 5%; left: -3rem; }
+
+.signup-floating-glow {
+  position: absolute;
+  width: 15rem;
+  height: 15rem;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+  top: 40%;
+  left: 30%;
+  z-index: 1;
+}
+
+/* ------------------------------------------------------------- */
+
+/* الشق الأيمن: واجهة الخانات المتراصة */
+.signup-right-panel-form {
+  background-color: #ffffff;
+  padding: 4rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .signup-right-panel-form {
+    padding: 4rem 3.5rem;
+  }
+}
+
+.signup-form-wrapper {
+  width: 100%;
+  max-w: 24rem;
+  text-align: center;
+}
+
+.signup-form-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #4b1b1b;
+  margin: 0;
+}
+
+.signup-form-subdesc {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 0.5rem 0 2rem 0;
+  line-height: 1.5;
+}
+
+.signup-exact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* مسافة متناسقة لدمج الحقول الستة بشكل مثالي */
+}
+
+/* جروب المدخلات الطولية والمؤشر البنفسجي السليم */
+.signup-input-group-box {
+  display: flex;
+  align-items: center;
+  background-color: #f9fafb;
+  border-radius: 0.25rem;
+  border: 1px solid #f3f4f6;
+  overflow: hidden;
+}
+
+.signup-vertical-purple-bar {
+  width: 4px;
+  height: 2.8rem;
+  background-color: #ed3a3a; /* الخط العمودي المطابق للصورة */
+  flex-shrink: 0;
+}
+
+.signup-input-group-box input, .signup-custom-select {
+  width: 100%;
+  padding: 0.75rem 1.1rem;
+  border: none;
+  background-color: transparent;
+  font-size: 0.95rem;
+  outline: none;
+  color: #1a1a1a;
+}
+
+.signup-input-group-box input::placeholder {
+  color: #cbcbcb;
+}
+
+/* القائمة المنسدلة المخصصة للـ Gender */
+.signup-custom-select {
+  cursor: pointer;
+  color: #1a1a1a;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://w3.org' viewBox='0 0 24 24' fill='none' stroke='%23cbcbcb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+}
+
+.signup-custom-select:invalid, .signup-custom-select option[value=""] {
+  color: #cbcbcb;
+}
+
+/* زر SUBSCRIBE الدائري العريض الطولي */
+.signup-subscribe-action-btn {
+  background-color: #ed3a3a;
+  color: #ffffff;
+  padding: 0.95rem;
+  border-radius: 1.5rem; /* حواف نصف دائرية عريضة بالكامل */
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  border: none;
+  cursor: pointer;
+  margin-top: 1.25rem;
+  box-shadow: 0 4px 10px rgba(255, 25, 25, 0.649);
+  transition: opacity 0.2s;
+}
+
+.signup-subscribe-action-btn:hover {
+  opacity: 0.92;
+}
+
+/* تأثيرات الأنيميشن البصرية */
+@keyframes signupPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.98); }
+}
+@keyframes floatSlow {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-10px); }
+}

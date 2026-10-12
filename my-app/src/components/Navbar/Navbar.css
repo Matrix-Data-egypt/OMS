@@ -1,0 +1,201 @@
+/* الحاوية الرئيسية للشريط العلوى - Glassmorphic Sticky Navbar */
+.custom-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(248, 246, 249, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 14px 44px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.03);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ==========================================================================
+   الجزء الأيسر: الشعارات والبراند 
+   ========================================================================== */
+.nav-brand-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-logo-link {
+    transition: transform 0.25s ease;
+}
+
+.nav-logo-link:hover {
+    transform: scale(1.03);
+}
+
+/* اللوجو البرتقالي الصغير */
+.nav-logo-orange {
+    background-color: #E27B35;
+    color: #FFFFFF;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* النص الفرعي بجانب اللوجو البرتقالي */
+.nav-logo-subtext {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.55rem;
+    color: #A19EB0;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: 0.5px;
+    border-right: 1px solid #E5E2E8;
+    padding-right: 12px;
+}
+
+/* اسم الشركة الرئيسي */
+.nav-brand-name {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #1A1A1A;
+    letter-spacing: 0.2px;
+}
+
+/* ==========================================================================
+   الجزء الأوسط: قائمة الروابط التفاعلية مع أنيميشن تحت الرابط
+   ========================================================================== */
+.nav-menu-links {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 28px;
+    align-items: center;
+}
+
+.nav-item {
+    text-decoration: none;
+    color: #555555;
+    font-size: 0.9rem;
+    font-weight: 600;
+    position: relative;
+    padding: 6px 0;
+    transition: color 0.25s ease;
+}
+
+.nav-item::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #a21b1b;
+    border-radius: 2px;
+    transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-item:hover {
+    color: #1A1A1A;
+}
+
+.nav-item:hover::after {
+    width: 100%;
+}
+
+/* تمييز الرابط النشط */
+.active-link {
+    color: #a21b1b !important; 
+    font-weight: 700;
+}
+
+.active-link::after {
+    width: 100% !important;
+}
+
+/* ==========================================================================
+   الجزء الأيمن: بيانات الاتصال والأزرار
+   ========================================================================== */
+.nav-actions-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-contact-desk {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.desk-label {
+    font-size: 0.65rem;
+    color: #777777;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* زر بدء المشروع الراقي باللون الأحمر المميز مع توهج ناعم */
+.nav-btn-primary {
+    background: linear-gradient(135deg, #a21b1b 0%, #cc1a1a 100%);
+    color: #FFFFFF;
+    text-decoration: none;
+    padding: 12px 24px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(162, 27, 27, 0.28);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-block;
+}
+
+.nav-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(162, 27, 27, 0.42);
+    opacity: 1;
+}
+
+/* الدائرة لأيقونة المستخدم وتسجيل الخروج */
+.nav-btn-user {
+    background-color: #8b3737;
+    color: #FFFFFF;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(139, 55, 55, 0.25);
+    transition: transform 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.nav-btn-user:hover {
+    transform: scale(1.08);
+    background-color: #a21b1b;
+    box-shadow: 0 5px 16px rgba(162, 27, 27, 0.35);
+}
+
+.nav-btn-user svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ==========================================================================
+   دعم شاشات التابلت والهواتف (Responsive)
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .custom-navbar {
+        padding: 12px 20px;
+    }
+    .nav-menu-links {
+        display: none;
+    }
+}

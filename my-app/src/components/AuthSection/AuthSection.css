@@ -1,0 +1,265 @@
+/* الحاوية الأساسية للشاشة كاملة */
+.exact-auth-container {
+  background-color: #FAF9F6;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+/* الكارد المحتوي على الشقين المتجاورين جنبًا إلى جنب */
+.exact-auth-card {
+  background-color: #ffffff;
+  width: 100%;
+  max-w: 64rem;
+  min-height: 38rem;
+  border-radius: 0.5rem;
+  display: grid;
+  grid-template-cols: 1fr; /* افتراضي للهواتف */
+  overflow: hidden;
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.04);
+}
+
+/* التبديل الهندسي ليصبحا جنبًا إلى جنب على شاشات الكومبيوتر */
+@media (min-width: 1024px) {
+  .exact-auth-card {
+    grid-template-cols: 1fr 1fr; /* انقسام عمودي متساوي للنصف */
+  }
+}
+
+/* الشق الأيسر البنفسجي */
+.exact-left-panel {
+  background: linear-gradient(180deg, #951d1d 0%, #4b1b1b 100%);
+  color: #ffffff;
+  padding: 3.5rem 3rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* الشبكة الهندسية المقتبسة من صورتك الأخيرة */
+.grid-overlay-blueprint {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-size: 30px 30px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  z-index: 1;
+}
+
+/* التموجات الرائعة المدمجة بالخلفية */
+.exact-left-panel::before, .exact-left-panel::after {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background-color: rgba(237, 58, 58, 0.15);
+  border-radius: 40%;
+  z-index: 2;
+}
+
+.exact-left-panel::before {
+  top: -150%;
+  left: -50%;
+}
+
+.exact-left-panel::after {
+  bottom: -150%;
+  left: -30%;
+  background-color: rgba(245, 158, 11, 0.03);
+}
+
+.panel-content-wrapper {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.company-top-tag {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.center-text-group {
+  margin: auto 0;
+  text-align: center;
+}
+
+.welcome-sub {
+  font-size: 1.1rem;
+  color: #fc8484;
+  margin: 0;
+}
+
+.welcome-main {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  margin: 0.5rem 0;
+}
+
+.exact-accent-line {
+  width: 2.5rem;
+  height: 3px;
+  background-color: #f59e0b; /* الخط الذهبي الصغير التزييني */
+  margin: 0 auto 1.5rem auto;
+  border-radius: 2px;
+}
+
+.welcome-desc {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  line-height: 1.6;
+  max-w: 23rem;
+  margin: 0 auto;
+}
+
+/* الدوائر الديكورية */
+.geo-circle {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  z-index: 2;
+}
+.circle-top { width: 3rem; height: 3rem; top: 2rem; right: 3rem; }
+.circle-bottom { width: 4rem; height: 4rem; bottom: 3rem; left: 2rem; }
+
+/* ------------------------------------------------------------- */
+
+/* الشق الأيمن المخصص للفورم */
+.exact-right-panel {
+  background-color: #ffffff;
+  padding: 4rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .exact-right-panel { padding: 4rem; }
+}
+
+.exact-form-wrapper {
+  width: 100%;
+  max-w: 24rem;
+  text-align: center;
+}
+
+.exact-login-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #1a1625;
+  margin: 0;
+}
+
+.exact-login-subdesc {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 0.5rem 0 2.5rem 0;
+  line-height: 1.5;
+}
+
+.exact-form-element {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.exact-input-box-group {
+  display: flex;
+  align-items: center;
+  background-color: #f9fafb;
+  border-radius: 0.25rem;
+  border: 1px solid #f3f4f6;
+  overflow: hidden;
+}
+
+.exact-vertical-color-bar {
+  width: 4px;
+  height: 3rem;
+  background-color: #ed3a3a; /* البار الرأسي البنفسجي */
+  flex-shrink: 0;
+}
+
+.exact-input-box-group input {
+  width: 100%;
+  padding: 0.85rem 1.2rem;
+  border: none;
+  background-color: transparent;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.exact-input-box-group input::placeholder {
+  color: #cbcbcb;
+}
+
+.exact-form-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.exact-checkbox-label {
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.exact-checkbox-label input {
+  accent-color: #ed3a3a;
+}
+
+.exact-member-link {
+  color: #ed3a3a;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.exact-subscribe-btn {
+  background-color: #ed3a3a;
+  color: #ffffff;
+  padding: 0.95rem;
+  border-radius: 1.5rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+  box-shadow: 0 4px 10px rgba(237, 58, 58, 0.15);
+  transition: opacity 0.2s;
+}
+
+.exact-subscribe-btn:hover {
+  opacity: 0.9;
+}
+
+/* 🎬 كود الأنيميشن التفاعلي الخاص بالنصوص والخط الذهبي ليعمل عند التحميل */
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
