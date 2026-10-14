@@ -1,0 +1,273 @@
+/* LanguageSwitcher.css */
+
+.lang-switcher-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: 12px;
+  z-index: 100;
+}
+
+/* Trigger Button */
+.lang-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: #f3f4f6;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Light Mode Overrides */
+[data-theme='light'] .lang-trigger-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #1a1a1a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.lang-trigger-btn:hover,
+.lang-trigger-btn.is-active {
+  background: rgba(204, 26, 26, 0.12);
+  border-color: rgba(204, 26, 26, 0.4);
+  box-shadow: 0 4px 16px rgba(204, 26, 26, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Animated 3D Spinning Earth Globe Icon */
+.earth-globe-wrapper {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.earth-globe-sphere {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 30% 30%, #38bdf8 0%, #0284c7 40%, #0369a1 80%, #0c4a6e 100%);
+  box-shadow: 
+    inset -2px -2px 5px rgba(0, 0, 0, 0.6),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.6),
+    0 0 10px rgba(56, 189, 248, 0.45);
+  animation: earthGlobeSpin 8s linear infinite;
+  overflow: hidden;
+}
+
+.earth-globe-svg {
+  width: 18px;
+  height: 18px;
+  color: rgba(255, 255, 255, 0.95);
+  stroke-width: 1.6;
+}
+
+.globe-circle {
+  stroke: rgba(255, 255, 255, 0.6);
+}
+
+.globe-meridian {
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-dasharray: 60;
+  animation: meridianFlow 4s linear infinite;
+}
+
+.globe-equator,
+.globe-parallel-north,
+.globe-parallel-south {
+  stroke: rgba(255, 255, 255, 0.55);
+}
+
+.earth-globe-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  pointer-events: none;
+  animation: earthPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes earthGlobeSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes meridianFlow {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(-1);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes earthPulse {
+  0% {
+    box-shadow: 0 0 4px rgba(56, 189, 248, 0.2);
+    opacity: 0.6;
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    opacity: 1;
+  }
+}
+
+/* Flag & Code Typography */
+.current-flag {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.current-lang-code {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lang-chevron {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.7;
+}
+
+.lang-chevron.rotate-open {
+  transform: rotate(180deg);
+}
+
+/* Floating Glassmorphic Dropdown */
+.lang-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  inset-inline-start: 0;
+  min-width: 180px;
+  background: rgba(18, 18, 22, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 8px 6px;
+  list-style: none;
+  margin: 0;
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: langDropdownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 1000;
+}
+
+[data-theme='light'] .lang-dropdown-menu {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+@keyframes langDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.lang-dropdown-header {
+  padding: 6px 10px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888899;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 4px;
+}
+
+[data-theme='light'] .lang-dropdown-header {
+  color: #666677;
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Option Button */
+.lang-option-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #e5e7eb;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: start;
+  transition: all 0.2s ease;
+}
+
+[data-theme='light'] .lang-option-btn {
+  color: #1f2937;
+}
+
+.lang-option-btn:hover {
+  background: rgba(204, 26, 26, 0.12);
+  color: #cc1a1a;
+  padding-inline-start: 14px;
+}
+
+.lang-option-btn.is-selected {
+  background: rgba(204, 26, 26, 0.18);
+  color: #e63946;
+  font-weight: 700;
+}
+
+.lang-option-flag {
+  font-size: 1.15rem;
+}
+
+.lang-option-name {
+  flex: 1;
+}
+
+.lang-option-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #9ca3af;
+}
+
+[data-theme='light'] .lang-option-badge {
+  background: rgba(0, 0, 0, 0.06);
+  color: #6b7280;
+}
+
+.lang-check-icon {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #cc1a1a;
+  margin-inline-start: 4px;
+}

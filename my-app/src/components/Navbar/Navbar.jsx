@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
+import LanguageSwitcher from './LanguageSwitcher';
 import './Navbar.css';
 
 const Navbar = ({ user, setUser }) => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { t } = useLanguage();
 
   const closeMenu = () => setMobileMenuOpen(false);
 
   return (
     <nav className="custom-navbar">
-      {/* Brand Logo with High-Contrast Badge */}
+      {/* Brand Logo with High-Contrast Badge and Language Switcher */}
       <div className="nav-brand-section">
         <Link to="/" className="nav-logo-link" onClick={closeMenu}>
           <div className="nav-logo-backdrop">
@@ -22,45 +25,47 @@ const Navbar = ({ user, setUser }) => {
               className="nav-logo-img"
             />
           </div>
-
         </Link>
+
+        {/* 🌐 Language Switcher with rotating 3D Earth Globe Icon & Flags */}
+        <LanguageSwitcher />
       </div>
 
       {/* Navigation Links */}
       <ul className={`nav-menu-links ${mobileMenuOpen ? 'is-open' : ''}`}>
         <li>
           <Link to="/" className={`nav-item ${location.pathname === '/' ? 'active-link' : ''}`} onClick={closeMenu}>
-            Home
+            {t('nav.home', 'Home')}
           </Link>
         </li>
         <li>
           <Link to="/work" className={`nav-item ${location.pathname === '/work' ? 'active-link' : ''}`} onClick={closeMenu}>
-            Work
+            {t('nav.work', 'Work')}
           </Link>
         </li>
         <li>
           <Link to="/outdoor" className={`nav-item ${location.pathname === '/outdoor' ? 'active-link' : ''}`} onClick={closeMenu}>
-            Outdoor
+            {t('nav.outdoor', 'Outdoor')}
           </Link>
         </li>
         <li>
           <Link to="/poss" className={`nav-item ${location.pathname === '/poss' ? 'active-link' : ''}`} onClick={closeMenu}>
-            POSS
+            {t('nav.poss', 'POSS')}
           </Link>
         </li>
         <li>
           <Link to="/about" className={`nav-item ${location.pathname === '/about' ? 'active-link' : ''}`} onClick={closeMenu}>
-            About
+            {t('nav.about', 'About')}
           </Link>
         </li>
         <li>
           <Link to="/production-tv" className={`nav-item ${location.pathname === '/production-tv' ? 'active-link' : ''}`} onClick={closeMenu}>
-            Production TV
+            {t('nav.productionTv', 'Production TV')}
           </Link>
         </li>
         <li>
           <Link to="/clients" className={`nav-item ${location.pathname === '/clients' ? 'active-link' : ''}`} onClick={closeMenu}>
-            Clients
+            {t('nav.clients', 'Clients')}
           </Link>
         </li>
         {/* Mobile Theme Toggle */}
@@ -84,19 +89,19 @@ const Navbar = ({ user, setUser }) => {
                 <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
               </svg>
-              <span>Light</span>
+              <span>{t('nav.light', 'Light')}</span>
             </button>
             <button
               type="button"
               className={`theme-mode-btn ${theme === 'dark' ? 'is-active' : ''}`}
               onClick={() => setTheme('dark')}
-              title="Dark Mode (Black)"
+              title="Dark Mode"
               aria-label="Dark Mode"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="theme-mode-icon">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
               </svg>
-              <span>Dark</span>
+              <span>{t('nav.dark', 'Dark')}</span>
             </button>
           </div>
         </li>
@@ -110,7 +115,7 @@ const Navbar = ({ user, setUser }) => {
             type="button"
             className={`theme-mode-btn ${theme === 'light' ? 'is-active' : ''}`}
             onClick={() => setTheme('light')}
-            title="Light Mode (White Background)"
+            title="Light Mode"
             aria-label="Light Mode"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="theme-mode-icon">
@@ -124,25 +129,25 @@ const Navbar = ({ user, setUser }) => {
               <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
               <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
             </svg>
-            <span className="theme-btn-label">Light</span>
+            <span className="theme-btn-label">{t('nav.light', 'Light')}</span>
           </button>
 
           <button
             type="button"
             className={`theme-mode-btn ${theme === 'dark' ? 'is-active' : ''}`}
             onClick={() => setTheme('dark')}
-            title="Dark Mode (Black Background)"
+            title="Dark Mode"
             aria-label="Dark Mode"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="theme-mode-icon">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
-            <span className="theme-btn-label">Dark</span>
+            <span className="theme-btn-label">{t('nav.dark', 'Dark')}</span>
           </button>
         </div>
 
         <Link to="/contact" className="nav-btn-primary" onClick={closeMenu}>
-          START PROJECT &rarr;
+          {t('nav.startProject', 'START PROJECT →')}
         </Link>
 
         {/* User / Admin Controls */}
@@ -154,18 +159,18 @@ const Navbar = ({ user, setUser }) => {
               rel="noopener noreferrer"
               className="nav-admin-badge"
             >
-              Panel Hub ↗
+              {t('nav.adminHub', 'Panel Hub ↗')}
             </a>
           )}
 
           {user ? (
             <button
               onClick={() => {
-                if (window.confirm('هل تريد تسجيل الخروج؟')) setUser(null);
+                if (window.confirm(t('nav.confirmLogout', 'هل تريد تسجيل الخروج؟'))) setUser(null);
               }}
               className="nav-btn-user"
-              title="Log Out"
-              aria-label="Log Out"
+              title={t('nav.logout', 'Log Out')}
+              aria-label={t('nav.logout', 'Log Out')}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

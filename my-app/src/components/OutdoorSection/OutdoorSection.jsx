@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './OutdoorSection.css';
 import { api, mediaUrl } from '../../api';
+import { useLanguage } from '../../context/LanguageContext';
+import { PAGE_TRANSLATIONS } from '../../context/translationsData';
 
 // Fallback showcase items if database is empty or loading
 const FALLBACK_OUTDOOR = [
@@ -61,44 +63,57 @@ export default function OutdoorSection() {
     };
   }, []);
 
+  const { language } = useLanguage();
+  const T = PAGE_TRANSLATIONS[language]?.outdoor || PAGE_TRANSLATIONS.en.outdoor;
   const displayList = items.length > 0 ? items : FALLBACK_OUTDOOR;
 
   return (
     <div className="outdoor-page-container">
       {/* 1. Hero Section */}
       <section className="outdoor-hero-header">
-        <span className="outdoor-badge-gold">OMS OUTDOOR & OOH SOLUTIONS</span>
+        <span className="outdoor-badge-gold">
+          {language === 'ar' ? 'حلول إعلانات الطرق واللوحات العملاقة OOH' : language === 'fr' ? "Solutions d'Affichage Extérieur & DOOH" : 'OMS OUTDOOR & OOH SOLUTIONS'}
+        </span>
         <h1 className="outdoor-main-title">
-          High-Impact <span className="outdoor-text-italic">Outdoor Presence.</span>
+          {language === 'ar' ? 'حضور استثنائي في' : language === 'fr' ? 'Présence Impactante' : 'High-Impact'}{' '}
+          <span className="outdoor-text-italic">
+            {language === 'ar' ? 'أهم محاور الطرق.' : language === 'fr' ? 'en Affichage Urbain.' : 'Outdoor Presence.'}
+          </span>
         </h1>
         <p className="outdoor-subtext">
-          Dominating Egypt&apos;s most strategic arterial corridors, highways, and premium metropolitan hubs with unmissable scale, commanding frequency, and precision location engineering.
+          {language === 'ar'
+            ? 'الريادة والسيطرة البصرية على أهم المحاور الاستراتيجية، الكباري، والميادين الحيوية في القاهرة والجيزة والمحافظات بمقاييس عملاقة ومواقع هندسية دقيقة.'
+            : language === 'fr'
+            ? "Dominant les corridors stratégiques, autoroutes et carrefours majeurs en Égypte avec des formats spectaculaires et un ciblage géographique millimétré."
+            : "Dominating Egypt's most strategic arterial corridors, highways, and premium metropolitan hubs with unmissable scale, commanding frequency, and precision location engineering."}
         </p>
       </section>
 
       {/* 2. Media Formats Strip */}
       <section className="outdoor-formats-strip">
-        <div className="format-pill">Mega Unipoles</div>
-        <div className="format-pill">Digital DOOH Screens</div>
-        <div className="format-pill">Highway Bridge Banners</div>
-        <div className="format-pill">Rooftops & Megas</div>
-        <div className="format-pill">Transit & Aerodrome Displays</div>
+        <div className="format-pill">{language === 'ar' ? 'لوحات يونيبول عملاقة' : language === 'fr' ? 'Unipoles Géants' : 'Mega Unipoles'}</div>
+        <div className="format-pill">{language === 'ar' ? 'شاشات رقمية تفاعلية DOOH' : language === 'fr' ? 'Écrans Digitaux DOOH' : 'Digital DOOH Screens'}</div>
+        <div className="format-pill">{language === 'ar' ? 'لافتات الكباري والمحاور' : language === 'fr' ? 'Bannières de Ponts' : 'Highway Bridge Banners'}</div>
+        <div className="format-pill">{language === 'ar' ? 'أسطح المباني والميادين' : language === 'fr' ? 'Toitures & Mégas' : 'Rooftops & Megas'}</div>
+        <div className="format-pill">{language === 'ar' ? 'لوحات المطارات ووسائط النقل' : language === 'fr' ? 'Affichage Transports & Aéroports' : 'Transit & Aerodrome Displays'}</div>
       </section>
 
       {/* 3. Showcase Grid */}
       <section className="outdoor-grid-wrapper">
         <div className="outdoor-grid-heading-row">
           <div>
-            <span className="outdoor-section-eyebrow">FEATURED PORTFOLIO</span>
-            <h2 className="outdoor-section-title">Strategic Outdoor Campaigns</h2>
+            <span className="outdoor-section-eyebrow">
+              {language === 'ar' ? 'أبرز الأعمال والمواقع' : language === 'fr' ? 'Portfolio Sélectionné' : 'FEATURED PORTFOLIO'}
+            </span>
+            <h2 className="outdoor-section-title">
+              {language === 'ar' ? 'حملات إعلانات الطرق الاستراتيجية' : language === 'fr' ? "Campagnes d'Affichage Stratégiques" : 'Strategic Outdoor Campaigns'}
+            </h2>
           </div>
-          <p className="outdoor-grid-note">
-            Real campaign deployments executed across key commercial hubs.
-          </p>
+          <p className="outdoor-grid-note">{T.gridNote}</p>
         </div>
 
         {loading ? (
-          <div className="outdoor-status-msg">Loading outdoor showcase campaigns…</div>
+          <div className="outdoor-status-msg">{T.loadingMsg}</div>
         ) : (
           <div className="outdoor-cards-grid">
             {displayList.map((item, index) => {
@@ -121,7 +136,7 @@ export default function OutdoorSection() {
                       loading="lazy"
                     />
                     <div className="outdoor-img-overlay">
-                      <span>Click to enlarge view ⤢</span>
+                      <span>{T.enlargeHint}</span>
                     </div>
                     <span className="outdoor-brand-badge">{item.companyName}</span>
                   </div>
@@ -143,24 +158,24 @@ export default function OutdoorSection() {
       {/* 4. Strategic Locations & Coverage Highlights */}
       <section className="outdoor-coverage-section">
         <div className="coverage-card">
-          <span className="coverage-badge">PRIME LOCATIONS</span>
-          <h3>Arterial Coverage Across Greater Cairo & Beyond</h3>
+          <span className="coverage-badge">{T.coverageBadge}</span>
+          <h3>{T.coverageTitle}</h3>
           <div className="coverage-points-grid">
             <div className="coverage-item">
-              <strong>Ring Road & Marioutiya Axis</strong>
-              <p>Highest-density commuter circulation connecting New Cairo, Maadi, and Giza.</p>
+              <strong>{T.loc1Title}</strong>
+              <p>{T.loc1Desc}</p>
             </div>
             <div className="coverage-item">
-              <strong>26th of July & Mehwar Corridor</strong>
-              <p>The primary high-income transit artery feeding Sheikh Zayed and 6th of October.</p>
+              <strong>{T.loc2Title}</strong>
+              <p>{T.loc2Desc}</p>
             </div>
             <div className="coverage-item">
-              <strong>North & South 90th Street</strong>
-              <p>Heart of commercial business districts, corporate headquarters, and high-end retail.</p>
+              <strong>{T.loc3Title}</strong>
+              <p>{T.loc3Desc}</p>
             </div>
             <div className="coverage-item">
-              <strong>North Coast Sahel Highway</strong>
-              <p>Summer flagship domination capturing Egypt&apos;s peak luxury seasonal movement.</p>
+              <strong>{T.loc4Title}</strong>
+              <p>{T.loc4Desc}</p>
             </div>
           </div>
         </div>
@@ -170,14 +185,12 @@ export default function OutdoorSection() {
       <section className="outdoor-cta-section">
         <div className="outdoor-cta-card">
           <div className="cta-left">
-            <h2>Ready to dominate Egypt&apos;s skyline?</h2>
-            <p>
-              Lock in your brand&apos;s high-impact outdoor locations with OMS. Strategic planning, location securing, and turnkey production.
-            </p>
+            <h2>{T.ctaTitle}</h2>
+            <p>{T.ctaDesc}</p>
           </div>
           <div className="cta-right">
             <Link to="/contact" className="outdoor-primary-action-btn">
-              Initiate Outdoor Brief →
+              {T.ctaBtn}
             </Link>
           </div>
         </div>

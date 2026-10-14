@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import NeuralCanvas from '../common/NeuralCanvas';
+import { useLanguage } from '../../context/LanguageContext';
+import { PAGE_TRANSLATIONS } from '../../context/translationsData';
 import {
   CORE_PILLARS,
   CAMPAIGN_OBJECTIVES,
@@ -10,8 +12,10 @@ import './HomeSection.css';
 
 export default function HomeSection() {
   const [activeStep, setActiveStep] = useState(1);
+  const { t, language } = useLanguage();
+  const TH = PAGE_TRANSLATIONS[language]?.home || PAGE_TRANSLATIONS.en.home;
 
-  const activeTimelineObj = TIMELINE_STEPS.find((t) => t.step === activeStep) || TIMELINE_STEPS[0];
+  const activeTimelineObj = TIMELINE_STEPS.find((ts) => ts.step === activeStep) || TIMELINE_STEPS[0];
 
   const handleScrollToCampaign = (e) => {
     e.preventDefault();
@@ -39,24 +43,27 @@ export default function HomeSection() {
         >
           <div className="hero-clean-content overlay">
             <h1 className="hero-main-title-clean">
-              Your Vision, Amplified<br />
-              Across Every <span className="highlight-gold-clean">Channel & Screen.</span>
+              {t('home.heroTitle1', 'Your Vision, Amplified')}<br />
+              <span className="highlight-gold-clean">{t('home.heroTitle2', 'Across Every Channel & Screen.')}</span>
             </h1>
 
             <p className="hero-paragraph-clean">
-              From award-winning TV commercials and iconic outdoor billboards to high-performance digital campaigns — we bring your brand to life across Egypt and the MENA region with creativity, strategy, and measurable impact.
+              {t(
+                'home.heroDesc',
+                'From award-winning TV commercials and iconic outdoor billboards to high-performance digital campaigns — we bring your brand to life across Egypt and the MENA region with creativity, strategy, and measurable impact.'
+              )}
             </p>
 
             <div className="hero-buttons-clean">
               <Link to="/contact" className="btn-gold-action">
-                Start Your Campaign &rarr;
+                {t('home.startCampaign', 'Start Your Campaign →')}
               </Link>
               <a
                 href="#campaign-builder-section"
                 onClick={handleScrollToCampaign}
                 className="btn-outline-action"
               >
-                Explore Our Services ↓
+                {t('home.exploreServices', 'Explore Our Services ↓')}
               </a>
             </div>
 
@@ -76,11 +83,9 @@ export default function HomeSection() {
       {/* Campaign Lifecycle Section */}
       <section className="strategy-timeline" aria-label="How We Work">
         <div className="section-intro">
-          <span className="tag-purple-small">Our Process</span>
-          <h2>One Partner. Your Entire Campaign Journey.</h2>
-          <p className="section-intro-desc">
-            From initial strategy and creative production to media placement and performance reporting — we handle every step.
-          </p>
+          <span className="tag-purple-small">{TH.processTag}</span>
+          <h2>{TH.processTitle}</h2>
+          <p className="section-intro-desc">{TH.processDesc}</p>
         </div>
 
         <div className="timeline-steps-bar" role="tablist" aria-label="Campaign phases">
@@ -126,11 +131,9 @@ export default function HomeSection() {
       {/* Campaign Goals Section */}
       <section className="objectives-section" aria-label="What We Help You Achieve">
         <div className="section-intro">
-          <span className="tag-purple-small">What We Help You Achieve</span>
-          <h2>What's Your Business Goal?</h2>
-          <p className="section-intro-desc">
-            Whether you're launching a product, building brand awareness, or driving sales — we have the expertise and resources to deliver results.
-          </p>
+          <span className="tag-purple-small">{TH.goalsTag}</span>
+          <h2>{TH.goalsTitle}</h2>
+          <p className="section-intro-desc">{TH.goalsDesc}</p>
         </div>
 
         <div className="objectives-grid">
@@ -143,15 +146,13 @@ export default function HomeSection() {
       {/* Core Capabilities Section */}
       <section className="home-services-section" aria-label="Our Capabilities">
         <div className="section-intro">
-          <span className="tag-purple-small">Full-Service Capabilities</span>
-          <h2>Everything Your Brand Needs, Under One Roof</h2>
-          <p className="section-intro-desc">
-            A complete suite of advertising and marketing services, seamlessly integrated for maximum impact and efficiency.
-          </p>
+          <span className="tag-purple-small">{TH.capsTag}</span>
+          <h2>{TH.capsTitle}</h2>
+          <p className="section-intro-desc">{TH.capsDesc}</p>
         </div>
 
         <div className="home-services-layout-grid">
-          <FrameworkGroup />
+          <FrameworkGroup TH={TH} />
         </div>
       </section>
 
@@ -178,7 +179,7 @@ function ObjectiveCard({ obj }) {
   );
 }
 
-function FrameworkGroup() {
+function FrameworkGroup({ TH }) {
   const serviceBullets = [
     'Media Buying — TV & Radio Broadcast',
     'Production & Cinematic TV Commercials',
@@ -193,8 +194,8 @@ function FrameworkGroup() {
   return (
     <article className="home-service-group-card">
       <div className="group-card-header">
-        <span className="framework-num-pill">CAPABILITY // FULL-SERVICE SUITE</span>
-        <h3>Integrated Advertising Capabilities</h3>
+        <span className="framework-num-pill">{TH.suiteBadge}</span>
+        <h3>{TH.suiteTitle}</h3>
         <ul className="group-bullets-preview">
           {serviceBullets.map((bullet) => (
             <li key={bullet}>
@@ -205,7 +206,7 @@ function FrameworkGroup() {
         </ul>
         <div className="framework-bottom-cta">
           <Link to="/work" className="framework-link-btn">
-            Explore Our Work &amp; Portfolio &rarr;
+            {TH.exploreWork}
           </Link>
         </div>
       </div>
@@ -213,34 +214,26 @@ function FrameworkGroup() {
       <div className="group-detailed-subcards-stack">
         <div className="detailed-subcard">
           <div className="subcard-glow-line" aria-hidden="true" />
-          <h4>Brand Identity &amp; Visual Direction</h4>
-          <p>
-            Your brand is more than a logo — it's the story your audience tells about you. We develop powerful brand identities, visual systems, and strategic positioning that make your brand instantly recognizable and deeply trusted.
-          </p>
+          <h4>{TH.subcard1Title}</h4>
+          <p>{TH.subcard1Desc}</p>
         </div>
 
         <div className="detailed-subcard">
           <div className="subcard-glow-line" aria-hidden="true" />
-          <h4>Outdoor &amp; Indoor Advertising (OOH)</h4>
-          <p>
-            Prime billboard placements, digital LED screens, and high-visibility transit media across Cairo, Alexandria, and key regional markets — putting your brand in front of the audiences that matter most.
-          </p>
+          <h4>{TH.subcard2Title}</h4>
+          <p>{TH.subcard2Desc}</p>
         </div>
 
         <div className="detailed-subcard">
           <div className="subcard-glow-line" aria-hidden="true" />
-          <h4>Events, PR &amp; Brand Activations</h4>
-          <p>
-            Memorable launch events, trade show experiences, and on-ground brand activations designed to create real connections with your customers and generate lasting positive brand associations.
-          </p>
+          <h4>{TH.subcard3Title}</h4>
+          <p>{TH.subcard3Desc}</p>
         </div>
 
         <div className="detailed-subcard">
           <div className="subcard-glow-line" aria-hidden="true" />
-          <h4>TV &amp; Radio Broadcast Production</h4>
-          <p>
-            Professional TV commercials and radio spots produced to broadcast standards, crafted to tell your brand story compellingly and distributed across Egypt and MENA's leading broadcast networks.
-          </p>
+          <h4>{TH.subcard4Title}</h4>
+          <p>{TH.subcard4Desc}</p>
         </div>
       </div>
     </article>

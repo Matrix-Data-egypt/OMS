@@ -1,33 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 import './Footer.css';
-
-const FOOTER_SECTIONS = [
-  {
-    id: "sec-company",
-    title: "Company",
-    links: [
-      { id: "lnk-about", name: "About & Manifesto", soon: false, to: "/about" },
-      { id: "lnk-work", name: "Work & Capabilities", soon: false, to: "/work" },
-      { id: "lnk-outdoor", name: "Outdoor Network", soon: false, to: "/outdoor" },
-      { id: "lnk-poss", name: "POSS Displays", soon: false, to: "/poss" },
-      { id: "lnk-tv", name: "TV Production", soon: false, to: "/production-tv" }
-    ],
-  },
-  {
-    id: "sec-resources",
-    title: "Intelligence & Platform",
-    links: [
-      { id: "lnk-agents", name: "Agent Orchestrator", soon: false, to: "/#agent-fleet-section" },
-      { id: "lnk-community", name: "Community Sandbox", soon: true },
-      { id: "lnk-help", name: "Client Knowledgebase", soon: true },
-      { id: "lnk-guides", name: "Campaign Blueprints", soon: true }
-    ],
-  },
-];
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const { t } = useLanguage();
+
+  const footerSections = [
+    {
+      id: "sec-company",
+      title: t('footer.company', 'Company'),
+      links: [
+        { id: "lnk-about", name: t('footer.aboutLink', 'About & Manifesto'), soon: false, to: "/about" },
+        { id: "lnk-work", name: t('footer.workLink', 'Work & Capabilities'), soon: false, to: "/work" },
+        { id: "lnk-outdoor", name: t('footer.outdoorLink', 'Outdoor Network'), soon: false, to: "/outdoor" },
+        { id: "lnk-poss", name: t('footer.possLink', 'POSS Displays'), soon: false, to: "/poss" },
+        { id: "lnk-tv", name: t('footer.tvLink', 'TV Production'), soon: false, to: "/production-tv" }
+      ],
+    },
+  ];
 
   return (
     <footer className="custom-footer">
@@ -35,32 +27,32 @@ export default function Footer() {
       <section className="footer-top-section" aria-label="Agency Call to Action">
         <div className="footer-top-text">
           <h2 className="footer-main-title">
-            HAVE A CHALLENGE<br />
-            <span className="footer-title-highlight">WORTH SCALING?</span>
+            {t('footer.ctaTitle1', 'HAVE A CHALLENGE')}<br />
+            <span className="footer-title-highlight">{t('footer.ctaTitle2', 'WORTH SCALING?')}</span>
           </h2>
         </div>
 
         <div className="footer-button-container">
           <Link to="/contact" className="footer-primary-btn">
-            INITIATE CAMPAIGN BRIEF &rarr;
+            {t('footer.briefBtn', 'INITIATE CAMPAIGN BRIEF →')}
           </Link>
           <Link to="/production-tv" className="footer-secondary-btn">
-            VIEW CREDENTIALS
+            {t('footer.credentialsBtn', 'VIEW CREDENTIALS')}
           </Link>
         </div>
       </section>
 
       {/* Main Structural Columns */}
       <section className="footer-grid-section" aria-label="Corporate Directory">
-        {FOOTER_SECTIONS.map((section) => (
+        {footerSections.map((section) => (
           <FooterColumn key={section.id} section={section} />
         ))}
 
         <div className="footer-column">
-          <h4 className="footer-column-title">HEADQUARTERS & DESK</h4>
+          <h4 className="footer-column-title">{t('footer.hq', 'HEADQUARTERS & DESK')}</h4>
           <p className="footer-address-text">
-            Cairo &amp; Giza Media Corridors<br />
-            Regional Presence: Egypt &amp; MENA
+            {t('footer.corridors', 'Cairo & Giza Media Corridors')}<br />
+            {t('footer.regional', 'Regional Presence: Egypt & MENA')}
           </p>
           <p className="footer-address-text">
             <a href="mailto:info@omsegy.agency" className="footer-link-highlight">
@@ -71,7 +63,7 @@ export default function Footer() {
       </section>
 
       {/* Bottom Metadata & Legal Links */}
-      <section className="footer-bottom-bar" aria-label="Legal &amp; Social">
+      <section className="footer-bottom-bar" aria-label="Legal & Social">
         <div className="footer-bottom-left">
           <Link to="/" className="footer-logo-link" aria-label="Go to homepage">
             <div className="footer-logo-pill">
@@ -83,7 +75,7 @@ export default function Footer() {
             </div>
           </Link>
           <p className="footer-copyright">
-            &copy; {currentYear} OMS Advertising &amp; Autonomous Marketing Systems. All rights reserved.
+            &copy; {currentYear} {t('footer.rights', 'OMS Advertising & Media Solutions. All rights reserved.')}
           </p>
         </div>
 
@@ -101,7 +93,7 @@ export default function Footer() {
 function FooterColumn({ section }) {
   return (
     <div className="footer-column">
-      <h4 className="footer-column-title">{section.title.toUpperCase()}</h4>
+      <h4 className="footer-column-title">{section.title}</h4>
       <ul className="footer-list">
         {section.links.map(({ id, soon, name, to }) => (
           <li key={id} className="footer-list-item">

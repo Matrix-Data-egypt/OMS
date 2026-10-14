@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './PossSection.css';
 import { api, mediaUrl } from '../../api';
+import { useLanguage } from '../../context/LanguageContext';
+import { PAGE_TRANSLATIONS } from '../../context/translationsData';
 
 const FALLBACK_POSS = [
   {
@@ -60,6 +62,8 @@ export default function PossSection() {
     };
   }, []);
 
+  const { language } = useLanguage();
+  const T = PAGE_TRANSLATIONS[language]?.poss || PAGE_TRANSLATIONS.en.poss;
   const displayList = items.length > 0 ? items : FALLBACK_POSS;
 
   return (
@@ -67,36 +71,47 @@ export default function PossSection() {
       {/* 1. Hero Section */}
       <section className="poss-hero-header">
         <h1 className="poss-main-title">
-          Engineered In-Store Impact & <span className="poss-text-italic">POS Branding.</span>
+          {language === 'ar' ? 'تصميم وتصنيع منصات العرض و' : language === 'fr' ? 'Impact Visuel & ' : 'Engineered In-Store Impact & '}{' '}
+          <span className="poss-text-italic">
+            {language === 'ar' ? 'نقاط البيع POSS.' : language === 'fr' ? 'PLV en Magasin.' : 'POS Branding.'}
+          </span>
         </h1>
         <p className="poss-subtext">
-          Converting consumer footfall into decisive purchase action. We design, manufacture, and deploy custom Point of Sale display units, retail kiosks, and brand activations across Egypt and the MENA region.
+          {language === 'ar'
+            ? 'تحويل حركة المترددين في المتاجر إلى قرارات شراء حاسمة. نقوم بتصميم وتصنيع ونشر وحدات عرض نقاط البيع الفاخرة، والأكشاك الترويجية، ومنصات التنشيط عبر مصر والشرق الأوسط.'
+            : language === 'fr'
+            ? 'Transformer le flux de visiteurs en actes d\'achat décisifs. Nous concevons, fabriquons et déployons des présentoirs PLV sur mesure et des kiosques haut de gamme en Égypte et dans la région MENA.'
+            : 'Converting consumer footfall into decisive purchase action. We design, manufacture, and deploy custom Point of Sale display units, retail kiosks, and brand activations across Egypt and the MENA region.'}
         </p>
       </section>
 
       {/* 2. Solutions Format Strip */}
       <section className="poss-formats-strip">
-        <div className="poss-pill">Floor Standing Display Units (FSDU)</div>
-        <div className="poss-pill">Counter Top Displays (CDU)</div>
-        <div className="poss-pill">Gondola Ends & Headers</div>
-        <div className="poss-pill">Exhibition & Event Booths</div>
-        <div className="poss-pill">Pop-Up Retail Kiosks</div>
+        <div className="poss-pill">{language === 'ar' ? 'وحدات عرض أرضية (FSDU)' : language === 'fr' ? 'Présentoirs de Sol (FSDU)' : 'Floor Standing Display Units (FSDU)'}</div>
+        <div className="poss-pill">{language === 'ar' ? 'منصات كاونتر مكتبية (CDU)' : language === 'fr' ? 'Présentoirs de Comptoir (CDU)' : 'Counter Top Displays (CDU)'}</div>
+        <div className="poss-pill">{language === 'ar' ? 'رؤوس وأطراف أرفف جوندولا' : language === 'fr' ? 'Têtes de Gondole' : 'Gondola Ends & Headers'}</div>
+        <div className="poss-pill">{language === 'ar' ? 'أجنحة المعارض والفعاليات' : language === 'fr' ? 'Stands d\'Exposition' : 'Exhibition & Event Booths'}</div>
+        <div className="poss-pill">{language === 'ar' ? 'أكشاك تجارية تفاعلية' : language === 'fr' ? 'Kiosques Éphémères' : 'Pop-Up Retail Kiosks'}</div>
       </section>
 
       {/* 3. Showcase Grid */}
       <section className="poss-grid-wrapper">
         <div className="poss-grid-heading-row">
           <div>
-            <span className="poss-section-eyebrow">RETAIL PORTFOLIO</span>
-            <h2 className="poss-section-title">Point of Sale Implementations</h2>
+            <span className="poss-section-eyebrow">
+              {language === 'ar' ? 'معرض نقاط البيع والتجزئة' : language === 'fr' ? 'Portfolio Retail' : 'RETAIL PORTFOLIO'}
+            </span>
+            <h2 className="poss-section-title">
+              {language === 'ar' ? 'تطبيقات منصات ونقاط البيع' : language === 'fr' ? 'Réalisations PLV & Merchandising' : 'Point of Sale Implementations'}
+            </h2>
           </div>
           <p className="poss-grid-note">
-            Real commercial deployments engineered for high brand retention at the point of decision.
+            {T.gridNote}
           </p>
         </div>
 
         {loading ? (
-          <div className="poss-status-msg">Loading POSS showcase campaigns…</div>
+          <div className="poss-status-msg">{T.loadingMsg}</div>
         ) : (
           <div className="poss-cards-grid">
             {displayList.map((item, index) => {
@@ -119,7 +134,7 @@ export default function PossSection() {
                       loading="lazy"
                     />
                     <div className="poss-img-overlay">
-                      <span>Click to enlarge view ⤢</span>
+                      <span>{T.enlargeHint}</span>
                     </div>
                     <span className="poss-brand-badge">{item.companyName}</span>
                   </div>
@@ -141,24 +156,24 @@ export default function PossSection() {
       {/* 4. Manufacturing & Execution Pillars */}
       <section className="poss-pillars-section">
         <div className="pillars-card">
-          <span className="pillars-badge">MANUFACTURING DISCIPLINE</span>
-          <h3>From Conceptual 3D Renders to Store-Floor Execution</h3>
+          <span className="pillars-badge">{T.pillarsBadge}</span>
+          <h3>{T.pillarsTitle}</h3>
           <div className="pillars-grid">
             <div className="pillar-item">
-              <strong>1. Industrial 3D Engineering</strong>
-              <p>Ergonomic structures calculated for maximum product density, lighting angles, and shopper interaction.</p>
+              <strong>{T.pillar1Title}</strong>
+              <p>{T.pillar1Desc}</p>
             </div>
             <div className="pillar-item">
-              <strong>2. Premium Material Craft</strong>
-              <p>High-grade acrylic, thermoformed plastics, powder-coated metals, and sustainably sourced woods.</p>
+              <strong>{T.pillar2Title}</strong>
+              <p>{T.pillar2Desc}</p>
             </div>
             <div className="pillar-item">
-              <strong>3. High-Definition Printing</strong>
-              <p>UV direct printing with scratch-resistant finishes that survive intense retail customer contact.</p>
+              <strong>{T.pillar3Title}</strong>
+              <p>{T.pillar3Desc}</p>
             </div>
             <div className="pillar-item">
-              <strong>4. Rapid Nationwide Deployment</strong>
-              <p>Turnkey assembly squads delivering and installing directly across malls, hypermarkets, and boutiques.</p>
+              <strong>{T.pillar4Title}</strong>
+              <p>{T.pillar4Desc}</p>
             </div>
           </div>
         </div>
@@ -168,14 +183,12 @@ export default function PossSection() {
       <section className="poss-cta-section">
         <div className="poss-cta-card">
           <div className="cta-left">
-            <h2>Ready to elevate your retail footprint?</h2>
-            <p>
-              Partner with OMS for customized Point of Sale solutions that make your products irresistible at shelf level.
-            </p>
+            <h2>{T.ctaTitle}</h2>
+            <p>{T.ctaDesc}</p>
           </div>
           <div className="cta-right">
             <Link to="/contact" className="poss-primary-action-btn">
-              Initiate POSS Brief →
+              {T.ctaBtn}
             </Link>
           </div>
         </div>

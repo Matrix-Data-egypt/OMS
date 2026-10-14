@@ -31,6 +31,19 @@ body {
   overflow-x: hidden;
 }
 
+/* Multilingual Typography - Arabic & RTL */
+html[dir='rtl'],
+body[dir='rtl'] {
+  font-family: 'Cairo', 'Tajawal', var(--font-body);
+}
+
+html[dir='rtl'] .clients-heading,
+html[dir='rtl'] .hero-main-title-clean,
+html[dir='rtl'] .footer-main-title {
+  font-family: 'Cairo', var(--font-heading);
+  letter-spacing: 0;
+}
+
 ::selection {
   background-color: var(--color-primary-red);
   color: #ffffff;

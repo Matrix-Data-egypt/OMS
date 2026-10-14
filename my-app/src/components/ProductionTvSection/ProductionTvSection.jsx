@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './ProductionTvSection.css';
 import { api, mediaUrl } from '../../api';
+import { useLanguage } from '../../context/LanguageContext';
+import { PAGE_TRANSLATIONS } from '../../context/translationsData';
 
 const VIDEO_CATEGORIES = [
   'Furniture',
@@ -161,15 +163,25 @@ export default function ProductionTvSection() {
     );
   };
 
+  const { language } = useLanguage();
+  const T = PAGE_TRANSLATIONS[language]?.production || PAGE_TRANSLATIONS.en.production;
+
   return (
     <div className="prod-tv-container">
       {/* 1. Header */}
       <section className="prod-tv-header">
         <h1 className="prod-main-title">
-          OMS Production <span className="prod-text-italic">TV Station.</span>
+          {language === 'ar' ? 'استوديو الإنتاج' : language === 'fr' ? 'Studio de Production' : 'OMS Production'}{' '}
+          <span className="prod-text-italic">
+            {language === 'ar' ? 'التلفزيوني والسينمائي.' : language === 'fr' ? 'TV & Cinéma.' : 'TV Station.'}
+          </span>
         </h1>
         <p className="prod-subtext">
-          Where commercial fire meets premium cinematic discipline. Explore high-intent video storytelling assets engineered for national and global brand impact.
+          {language === 'ar'
+            ? 'حيث تلتقي القوة الإعلانية التجارية بالاحترافية السينمائية العالمية. استكشف أقوى الأعمال والإعلانات التلفزيونية المصممة لصناعة التأثير الجماهيري.'
+            : language === 'fr'
+            ? 'Quand la puissance commerciale rencontre la rigueur cinématographique. Découvrez nos productions audiovisuelles d’envergure.'
+            : 'Where commercial fire meets premium cinematic discipline. Explore high-intent video storytelling assets engineered for national and global brand impact.'}
         </p>
       </section>
 
@@ -177,16 +189,20 @@ export default function ProductionTvSection() {
       <section className="prod-latest-showcase-section">
         <div className="prod-section-header-row">
           <div>
-            <span className="prod-section-tag">LATEST PREMIERES</span>
-            <h2 className="prod-section-title">أحدث 5 أعمال تم إنتاجها</h2>
+            <span className="prod-section-tag">
+              {T.latestTag}
+            </span>
+            <h2 className="prod-section-title">
+              {T.latestTitle}
+            </h2>
           </div>
-          <span className="prod-count-pill">{latestVideos.length} Videos</span>
+          <span className="prod-count-pill">{latestVideos.length} {T.videosLabel}</span>
         </div>
 
-        {loading && <p className="prod-status-note">Loading broadcast reels…</p>}
+        {loading && <p className="prod-status-note">{T.loadingMsg}</p>}
         {!loading && error && <p className="prod-error-note">{error}</p>}
         {!loading && !error && latestVideos.length === 0 && (
-          <p className="prod-status-note">No broadcast videos uploaded yet.</p>
+          <p className="prod-status-note">{T.emptyMsg}</p>
         )}
 
         {latestVideos.length > 0 && (
@@ -199,8 +215,12 @@ export default function ProductionTvSection() {
       {/* 3. Categories Archive (فيديوهات كل فئة جنب بعض بمقاس مناسب) */}
       <section className="prod-categories-section">
         <div className="prod-archive-header">
-          <span className="prod-section-tag">CATEGORIZED REELS</span>
-          <h2 className="prod-section-title">فئات الإنتاج والأعمال التلفزيونية</h2>
+          <span className="prod-section-tag">
+            {T.categoryTag}
+          </span>
+          <h2 className="prod-section-title">
+            {T.categoryTitle}
+          </h2>
         </div>
 
         {videosByCategory.map(({ category, items }) => (
@@ -218,8 +238,8 @@ export default function ProductionTvSection() {
         {uncategorized.length > 0 && (
           <div className="prod-category-block">
             <div className="prod-category-heading">
-              <h3 className="prod-category-name">Other Commercials</h3>
-              <span className="prod-category-badge">{uncategorized.length} Videos</span>
+              <h3 className="prod-category-name">{T.otherCategory}</h3>
+              <span className="prod-category-badge">{uncategorized.length} {T.videosLabel}</span>
             </div>
             <div className="prod-category-grid">
               {uncategorized.map((item) => renderVideoCard(item, false))}
@@ -265,7 +285,7 @@ export default function ProductionTvSection() {
                 />
               ) : (
                 <div className="prod-thumb-blank" style={{ height: '100%' }}>
-                  <span>Video source unavailable</span>
+                  <span>{T.videoUnavailable}</span>
                 </div>
               )}
             </div>
@@ -295,7 +315,7 @@ export default function ProductionTvSection() {
                   rel="noopener noreferrer"
                   className="prod-modal-yt-btn"
                 >
-                  Watch on YouTube ↗
+                  {T.watchYouTube}
                 </a>
               )}
             </div>

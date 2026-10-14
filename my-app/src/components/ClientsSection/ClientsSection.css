@@ -29,6 +29,18 @@
   --clients-ease: 0.25s ease;
 }
 
+[data-theme='dark'] {
+  --clients-bg-page: #0a0810;
+  --clients-bg-card: #15131e;
+  --clients-bg-frame: #1c1828;
+  --clients-border: rgba(255, 255, 255, 0.08);
+  --clients-border-frame: rgba(255, 255, 255, 0.05);
+  --clients-text-dark: #ffffff;
+  --clients-text-muted: #a1a1aa;
+  --clients-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --clients-shadow-hover: 0 16px 36px rgba(204, 26, 26, 0.2);
+}
+
 /* 2. Main Page Container */
 .clients-page {
   min-height: 75vh;
@@ -36,6 +48,7 @@
   background-color: var(--clients-bg-page);
   position: relative;
   overflow: hidden;
+  transition: background-color 0.3s ease;
 
   /* Ambient Subtle Background Aura */
   &::before {
@@ -62,20 +75,6 @@
   max-width: 760px;
   margin: 0 auto;
 
-  & .clients-badge {
-    display: inline-block;
-    font-size: 0.74rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--clients-red);
-    background: var(--clients-red-alpha);
-    border: 1px solid var(--clients-red-border);
-    padding: 6px 14px;
-    border-radius: 999px;
-    margin-bottom: 18px;
-  }
-
   & .clients-heading {
     font-size: clamp(2.4rem, 5vw, 3.6rem);
     font-weight: 800;
@@ -99,42 +98,106 @@
   }
 }
 
-/* 4. Directory Grid Layout */
-.clients-grid-wrap {
+/* 4. Full-Width Horizontal Motion Wrapper (تحرك بعرض الشاشة بالكامل) */
+.clients-marquee-wrapper {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px 28px 0;
+  width: 100%;
+  overflow: hidden;
+  padding: 20px 0 40px;
 
-  & .clients-status {
-    text-align: center;
-    color: var(--clients-text-status);
-    padding: 40px;
-    font-size: 1rem;
+  /* Edge subtle fade masks for ultra-smooth appearance */
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+}
 
-    &.clients-error {
-      color: var(--clients-red);
-    }
+.clients-status {
+  text-align: center;
+  color: var(--clients-text-status);
+  padding: 40px;
+  font-size: 1rem;
+
+  &.clients-error {
+    color: var(--clients-red);
   }
 }
 
-.clients-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 24px;
+.clients-marquee-lanes {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
 
-  @media (max-width: 600px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
+.clients-marquee-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  will-change: transform;
+}
+
+/* Pause smoothly on hover so user can easily inspect or click any client */
+.clients-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* 4 Smooth, relaxed rows moving across the full width */
+.track-row-1 {
+  animation: scrollLeftAcrossWidth 68s linear infinite;
+}
+
+.track-row-2 {
+  animation: scrollRightAcrossWidth 76s linear infinite;
+}
+
+.track-row-3 {
+  animation: scrollLeftAcrossWidth 72s linear infinite;
+}
+
+.track-row-4 {
+  animation: scrollRightAcrossWidth 80s linear infinite;
+}
+
+@keyframes scrollLeftAcrossWidth {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
   }
 }
 
-/* 5. Client Card Component (Anchor-Safe Nesting) */
+@keyframes scrollRightAcrossWidth {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* In RTL mode, respect natural reading direction */
+html[dir='rtl'] .track-row-1 {
+  animation: scrollRightAcrossWidth 68s linear infinite;
+}
+
+html[dir='rtl'] .track-row-2 {
+  animation: scrollLeftAcrossWidth 76s linear infinite;
+}
+
+html[dir='rtl'] .track-row-3 {
+  animation: scrollRightAcrossWidth 72s linear infinite;
+}
+
+html[dir='rtl'] .track-row-4 {
+  animation: scrollLeftAcrossWidth 80s linear infinite;
+}
+
+/* 5. Client Card Component - Exact Original Design Preserved */
 .client-link {
   text-decoration: none;
   color: inherit;
   display: block;
+  flex-shrink: 0;
 }
 
 .client-logo-card {
@@ -142,18 +205,22 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 28px 20px;
+  padding: 28px 24px;
   background: var(--clients-bg-card);
   border: 1px solid var(--clients-border);
   border-radius: 16px;
   box-shadow: var(--clients-shadow);
   transition: transform var(--clients-transition), box-shadow var(--clients-transition), border-color var(--clients-ease);
+  width: 220px;
+  flex-shrink: 0;
 
   @media (max-width: 600px) {
-    padding: 20px 12px;
+    width: 175px;
+    padding: 20px 14px;
+    gap: 12px;
   }
 
-  /* Interactive States (Triggers perfectly natively or via link parent wrap) */
+  /* Interactive States */
   &:hover,
   .client-link:hover & {
     transform: translateY(-6px);
@@ -194,6 +261,14 @@
     }
   }
 
+  /* Text fallback */
+  & .client-text-fallback {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--clients-red);
+    text-align: center;
+  }
+
   /* Inner Content Header */
   & .client-name {
     font-size: 0.95rem;
@@ -202,14 +277,14 @@
     margin: 0;
     color: var(--clients-text-dark);
     transition: color 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 }
 
-/* =====================================================
-   6. Entrance Animations (Page Load - Logo Cards)
-   ===================================================== */
-
-/* Hero Header Entrance */
+/* 6. Entrance Animations (Page Load) */
 .clients-hero {
   opacity: 0;
   transform: translateY(-24px);
@@ -220,39 +295,4 @@
 .clients-hero.hero-visible {
   opacity: 1;
   transform: translateY(0);
-}
-
-/* Each Logo Card — starts hidden */
-.client-logo-card {
-  opacity: 0;
-  transform: translateY(36px) scale(0.93);
-  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow var(--clients-transition),
-              border-color var(--clients-ease);
-}
-
-/* When .card-visible is added — card animates in */
-.client-logo-card.card-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-/* Hover preserved after animation */
-.client-logo-card.card-visible:hover,
-.client-link:hover .client-logo-card.card-visible {
-  transform: translateY(-6px) scale(1) !important;
-  border-color: var(--clients-border-hover);
-  box-shadow: var(--clients-shadow-hover);
-}
-
-.client-logo-card.card-visible:hover .client-logo-frame,
-.client-link:hover .client-logo-card.card-visible .client-logo-frame {
-  background: var(--clients-bg-card);
-  transform: scale(1.03);
-}
-
-.client-logo-card.card-visible:hover .client-name,
-.client-link:hover .client-logo-card.card-visible .client-name {
-  color: var(--clients-red);
 }

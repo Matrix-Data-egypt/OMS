@@ -16,6 +16,7 @@ import Footer from './components/footer/Footer';
 import CustomCursor from './components/CustomCursor/CustomCursor';
 
 import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 
 function AppContent() {
   const location = useLocation();
@@ -53,9 +54,11 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <LanguageProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }
