@@ -29,9 +29,9 @@ export const TRANSLATIONS = {
     'nav.selectLang': 'اختر اللغة المفضلة',
 
     // Clients Page
-    'clients.heading1': 'Our',
-    'clients.heading2': 'Clients.',
-    'clients.sub': 'Brands that chose OMS to move markets — strategy, creative, and production under one roof.',
+    'clients.heading1': 'شركاء',
+    'clients.heading2': 'النجاح والعملاء.',
+    'clients.sub': 'علامات تجارية رائدة اختارت OMS لتحريك الأسواق وتحقيق الريادة — استراتيجية وإبداع وإنتاج متكامل تحت سقف واحد.',
     'clients.loading': 'جاري تحميل الشركاء...',
     'clients.empty': 'لا يوجد عملاء مدرجون حالياً.',
     'clients.visitWebsite': 'زيارة الموقع الرسمي',
@@ -86,9 +86,7 @@ export const TRANSLATIONS = {
     'footer.outdoorLink': 'شبكة إعلانات الطرق',
     'footer.possLink': 'نقاط البيع والتوزيع POSS',
     'footer.tvLink': 'الإنتاج التلفزيوني والسينمائي',
-    'footer.hq': 'المقر الرئيسي والمكاتب',
-    'footer.corridors': 'محاور القاهرة والجيزة الإعلامية',
-    'footer.regional': 'التواجد الإقليمي: مصر والشرق الأوسط وشمال أفريقيا',
+    'footer.email': 'البريد الإلكتروني',
     'footer.rights': 'جميع الحقوق محفوظة لشركة One Media Solution (OMS).',
   },
 
@@ -169,9 +167,7 @@ export const TRANSLATIONS = {
     'footer.outdoorLink': 'Outdoor Network',
     'footer.possLink': 'POSS Displays',
     'footer.tvLink': 'TV Production',
-    'footer.hq': 'HEADQUARTERS & DESK',
-    'footer.corridors': 'Cairo & Giza Media Corridors',
-    'footer.regional': 'Regional Presence: Egypt & MENA',
+    'footer.email': 'EMAIL',
     'footer.rights': 'All rights reserved. One Media Solution (OMS).',
   },
 
@@ -252,9 +248,7 @@ export const TRANSLATIONS = {
     'footer.outdoorLink': 'Réseau d\'Affichage',
     'footer.possLink': 'Affichage & PLV POSS',
     'footer.tvLink': 'Production Télévisée',
-    'footer.hq': 'SIÈGE SOCIAL & BUREAUX',
-    'footer.corridors': 'Couloirs Médias Le Caire & Gizeh',
-    'footer.regional': 'Présence Régionale: Égypte & MENA',
+    'footer.email': 'EMAIL',
     'footer.rights': 'Tous droits réservés. One Media Solution (OMS).',
   },
 };

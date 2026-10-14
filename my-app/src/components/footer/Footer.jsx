@@ -48,17 +48,26 @@ export default function Footer() {
           <FooterColumn key={section.id} section={section} />
         ))}
 
-        <div className="footer-column">
-          <h4 className="footer-column-title">{t('footer.hq', 'HEADQUARTERS & DESK')}</h4>
-          <p className="footer-address-text">
-            {t('footer.corridors', 'Cairo & Giza Media Corridors')}<br />
-            {t('footer.regional', 'Regional Presence: Egypt & MENA')}
-          </p>
-          <p className="footer-address-text">
-            <a href="mailto:info@omsegy.agency" className="footer-link-highlight">
-              info@omsegy.agency
-            </a>
-          </p>
+        <div className="footer-column footer-email-column">
+          <h4 className="footer-column-title">{t('footer.email', 'EMAIL')}</h4>
+          <a href="mailto:info@omsegy.agency" className="footer-email-link">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="footer-email-icon"
+              aria-hidden="true"
+            >
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            <span>info@omsegy.agency</span>
+          </a>
         </div>
       </section>
 

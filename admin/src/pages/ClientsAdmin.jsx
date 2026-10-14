@@ -71,11 +71,11 @@ export default function ClientsAdmin() {
             <h1>Clients</h1>
             {isReadOnly && <span className="badge badge-manager">وضع المشاهدة فقط</span>}
           </div>
-          <p>Add client name + logo — they appear on the website Clients page.</p>
+          <p>Client logos — displayed cleanly on the website Clients page.</p>
         </div>
         {!isReadOnly && (
           <button type="button" className="btn btn-primary" onClick={() => setShowForm(true)}>
-            + Add client
+            + Add client logo
           </button>
         )}
       </div>
@@ -84,17 +84,7 @@ export default function ClientsAdmin() {
 
       {showForm && (
         <form className="card form-panel" onSubmit={handleSubmit}>
-          <h2 style={{ fontFamily: 'var(--display)', marginBottom: 16 }}>New client</h2>
-
-          <div className="field">
-            <label>Client name *</label>
-            <input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="e.g. Palm Hills"
-              required
-            />
-          </div>
+          <h2 style={{ fontFamily: 'var(--display)', marginBottom: 16 }}>New client logo</h2>
 
           <div className="grid-2">
             <div className="field">
@@ -115,13 +105,23 @@ export default function ClientsAdmin() {
             </div>
           </div>
 
-          <div className="field">
-            <label>Website (optional)</label>
-            <input
-              value={form.website}
-              onChange={(e) => setForm({ ...form, website: e.target.value })}
-              placeholder="https://client.com"
-            />
+          <div className="grid-2">
+            <div className="field">
+              <label>Client name (optional / اختياري)</label>
+              <input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="e.g. Brand Name"
+              />
+            </div>
+            <div className="field">
+              <label>Website (optional)</label>
+              <input
+                value={form.website}
+                onChange={(e) => setForm({ ...form, website: e.target.value })}
+                placeholder="https://client.com"
+              />
+            </div>
           </div>
 
           <div className="modal-actions">
@@ -129,34 +129,54 @@ export default function ClientsAdmin() {
               Cancel
             </button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Saving…' : 'Save client'}
+              {saving ? 'Saving…' : 'Save client logo'}
             </button>
           </div>
         </form>
       )}
 
-      <div className="list-stack">
+      <div>
         {clients.length === 0 ? (
-          <div className="card empty">No clients yet.</div>
+          <div className="card empty">No client logos yet.</div>
         ) : (
-          clients.map((c) => (
-            <div key={c.id} className="item-card">
-              <img className="thumb" src={mediaUrl(c.logo)} alt={c.name} style={{ objectFit: 'contain', background: '#fff' }} />
-              <div>
-                <h3>{c.name}</h3>
-                <div className="meta">{c.website || 'No website'}</div>
+          <div className="clients-admin-grid">
+            {clients.map((c) => (
+              <div key={c.id} className="client-admin-card" title={c.website || 'Client logo'}>
+                <div className="client-admin-thumb-wrapper">
+                  <img
+                    src={mediaUrl(c.logo)}
+                    alt="Client logo"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="client-admin-card-actions">
+                  {c.website ? (
+                    <a
+                      href={c.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-ghost btn-sm"
+                      style={{ padding: '2px 6px', fontSize: '11px' }}
+                      title={c.website}
+                    >
+                      🔗
+                    </a>
+                  ) : <span />}
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm"
+                      style={{ padding: '2px 8px', fontSize: '11px' }}
+                      onClick={() => remove(c.id)}
+                      title="Delete logo"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className="row-actions">
-                {isReadOnly ? (
-                  <span style={{ fontSize: 12, color: 'var(--muted)' }}>مشاهدة فقط</span>
-                ) : (
-                  <button type="button" className="btn btn-danger btn-sm" onClick={() => remove(c.id)}>
-                    Delete
-                  </button>
-                )}
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>

@@ -16,6 +16,42 @@ const VIDEO_CATEGORIES = [
   'Banking and Finance',
 ];
 
+const CATEGORY_NAMES = {
+  ar: {
+    'Furniture': 'الأثاث والمفروشات',
+    'Electronics': 'الإلكترونيات والأجهزة',
+    'Food and Beverages': 'الأغذية والمشروبات',
+    'Real Estate': 'التطوير العقاري',
+    'Cosmetics': 'مستحضرات التجميل',
+    'Pharmaceutical': 'الأدوية والرعاية الصحية',
+    'Clothes': 'الملابس والأزياء',
+    'Paints': 'الدهانات والديكور',
+    'Banking and Finance': 'البنوك والخدمات المالية',
+  },
+  fr: {
+    'Furniture': 'Mobilier & Décoration',
+    'Electronics': 'Électronique & Équipements',
+    'Food and Beverages': 'Alimentation & Boissons',
+    'Real Estate': 'Immobilier',
+    'Cosmetics': 'Cosmétiques & Beauté',
+    'Pharmaceutical': 'Pharmacie & Santé',
+    'Clothes': 'Mode & Habillement',
+    'Paints': 'Peintures & Revêtements',
+    'Banking and Finance': 'Banque & Finance',
+  },
+  en: {
+    'Furniture': 'Furniture',
+    'Electronics': 'Electronics',
+    'Food and Beverages': 'Food & Beverages',
+    'Real Estate': 'Real Estate',
+    'Cosmetics': 'Cosmetics',
+    'Pharmaceutical': 'Pharmaceutical',
+    'Clothes': 'Clothes',
+    'Paints': 'Paints',
+    'Banking and Finance': 'Banking & Finance',
+  }
+};
+
 // Helper to extract YouTube video ID
 function getYouTubeId(url) {
   if (!url) return null;
@@ -226,8 +262,8 @@ export default function ProductionTvSection() {
         {videosByCategory.map(({ category, items }) => (
           <div key={category} className="prod-category-block">
             <div className="prod-category-heading">
-              <h3 className="prod-category-name">{category}</h3>
-              <span className="prod-category-badge">{items.length} Videos</span>
+              <h3 className="prod-category-name">{CATEGORY_NAMES[language]?.[category] || category}</h3>
+              <span className="prod-category-badge">{items.length} {T.videosLabel || 'Videos'}</span>
             </div>
             <div className="prod-category-grid">
               {items.map((item) => renderVideoCard(item, false))}

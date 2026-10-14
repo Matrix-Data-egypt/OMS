@@ -98,17 +98,18 @@
   }
 }
 
-/* 4. Full-Width Horizontal Motion Wrapper (تحرك بعرض الشاشة بالكامل) */
+/* 4. Full-Width Horizontal Motion Wrapper */
 .clients-marquee-wrapper {
   position: relative;
   z-index: 1;
   width: 100%;
   overflow: hidden;
   padding: 20px 0 40px;
+  direction: ltr !important; /* Force standard LTR coordinates so animation never leaves empty spaces */
 
   /* Edge subtle fade masks for ultra-smooth appearance */
-  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
 }
 
 .clients-status {
@@ -125,12 +126,12 @@
 .clients-marquee-lanes {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 .clients-marquee-track {
   display: flex;
-  gap: 20px;
+  gap: 12px;
   width: max-content;
   will-change: transform;
 }
@@ -175,24 +176,7 @@
   }
 }
 
-/* In RTL mode, respect natural reading direction */
-html[dir='rtl'] .track-row-1 {
-  animation: scrollRightAcrossWidth 68s linear infinite;
-}
-
-html[dir='rtl'] .track-row-2 {
-  animation: scrollLeftAcrossWidth 76s linear infinite;
-}
-
-html[dir='rtl'] .track-row-3 {
-  animation: scrollRightAcrossWidth 72s linear infinite;
-}
-
-html[dir='rtl'] .track-row-4 {
-  animation: scrollLeftAcrossWidth 80s linear infinite;
-}
-
-/* 5. Client Card Component - Exact Original Design Preserved */
+/* 5. Client Card Component - Pure Square Logo Tile (No double frames) */
 .client-link {
   text-decoration: none;
   color: inherit;
@@ -202,85 +186,57 @@ html[dir='rtl'] .track-row-4 {
 
 .client-logo-card {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 28px 24px;
-  background: var(--clients-bg-card);
-  border: 1px solid var(--clients-border);
-  border-radius: 16px;
-  box-shadow: var(--clients-shadow);
-  transition: transform var(--clients-transition), box-shadow var(--clients-transition), border-color var(--clients-ease);
-  width: 220px;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  aspect-ratio: 1 / 1;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
   flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease,
+              border-color 0.25s ease;
 
   @media (max-width: 600px) {
-    width: 175px;
-    padding: 20px 14px;
-    gap: 12px;
+    width: 95px;
+    height: 95px;
+    padding: 8px;
+    border-radius: 10px;
   }
 
   /* Interactive States */
   &:hover,
   .client-link:hover & {
-    transform: translateY(-6px);
-    border-color: var(--clients-border-hover);
-    box-shadow: var(--clients-shadow-hover);
-
-    & .client-logo-frame {
-      background: var(--clients-bg-card);
-      transform: scale(1.03);
-    }
-
-    & .client-name {
-      color: var(--clients-red);
-    }
+    transform: translateY(-4px) scale(1.05);
+    border-color: var(--clients-red);
+    box-shadow: 0 10px 24px rgba(204, 26, 26, 0.28);
   }
 
-  /* Structural Image Containers */
-  & .client-logo-frame {
-    width: 160px;
-    height: 96px;
-    display: grid;
-    place-items: center;
-    background: var(--clients-bg-frame);
-    border: 1px solid var(--clients-border-frame);
-    border-radius: 12px;
-    padding: 14px;
-    transition: background-color var(--clients-ease), transform var(--clients-ease);
-
-    @media (max-width: 600px) {
-      width: 100%;
-      height: 80px;
-    }
-
-    & img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
+  & img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin: auto;
+    transition: transform 0.25s ease;
   }
 
   /* Text fallback */
   & .client-text-fallback {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 800;
     color: var(--clients-red);
     text-align: center;
-  }
-
-  /* Inner Content Header */
-  & .client-name {
-    font-size: 0.95rem;
-    font-weight: 700;
-    text-align: center;
-    margin: 0;
-    color: var(--clients-text-dark);
-    transition: color 0.2s ease;
-    white-space: nowrap;
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
   }
 }
 

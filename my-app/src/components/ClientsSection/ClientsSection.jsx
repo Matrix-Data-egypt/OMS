@@ -8,7 +8,6 @@ export default function ClientsSection() {
   const { t } = useLanguage();
   const [clients, setClients] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -48,6 +47,17 @@ export default function ClientsSection() {
     }
   }, [isLoading]);
 
+  // Helper to build a seamless infinite loop track with 2 identical wide halves
+  const buildInfiniteRow = (items) => {
+    if (!items || items.length === 0) return [];
+    let base = [...items];
+    while (base.length < 20) {
+      base = [...base, ...items];
+    }
+    // Exactly 2 identical halves so transform 0% to -50% is a 100% seamless infinite loop
+    return [...base, ...base];
+  };
+
   // Split into 4 rows for 4 full-width horizontal lanes
   const chunkSize = Math.max(1, Math.ceil(clients.length / 4));
   const row1 = clients.slice(0, chunkSize);
@@ -55,15 +65,14 @@ export default function ClientsSection() {
   const row3 = clients.slice(chunkSize * 2, chunkSize * 3);
   const row4 = clients.slice(chunkSize * 3);
 
-  // Duplicate each row so it loops seamlessly and infinitely across the screen width
-  const track1 = row1.length > 0 ? [...row1, ...row1, ...row1] : [];
-  const track2 = row2.length > 0 ? [...row2, ...row2, ...row2] : [];
-  const track3 = row3.length > 0 ? [...row3, ...row3, ...row3] : [];
-  const track4 = row4.length > 0 ? [...row4, ...row4, ...row4] : [];
+  const track1 = buildInfiniteRow(row1);
+  const track2 = buildInfiniteRow(row2);
+  const track3 = buildInfiniteRow(row3);
+  const track4 = buildInfiniteRow(row4);
 
   return (
     <main className="clients-page" aria-busy={isLoading}>
-      {/* Hero Header Context - Exact Previous Style with Translation */}
+      {/* Hero Header Context */}
       <header className={`clients-hero ${visible ? 'hero-visible' : ''}`}>
         <h1 className="clients-heading">
           {t('clients.heading1', 'Our')}{' '}
@@ -80,7 +89,6 @@ export default function ClientsSection() {
       {/* Full-Width Horizontal Motion Wrapper with 4 Slow Moving Rows */}
       <section className="clients-marquee-wrapper" aria-label="Partner Directory">
         {isLoading && <p className="clients-status">{t('clients.loading', 'Loading clients…')}</p>}
-        {error && <p className="clients-status clients-error">{error}</p>}
 
         {!isLoading && clients.length > 0 && (
           <div className="clients-marquee-lanes four-lanes">
@@ -91,7 +99,6 @@ export default function ClientsSection() {
                   <ClientCard
                     key={`r1-${client.id || index}-${index}`}
                     client={client}
-                    index={index}
                     visible={visible}
                   />
                 ))}
@@ -105,7 +112,6 @@ export default function ClientsSection() {
                   <ClientCard
                     key={`r2-${client.id || index}-${index}`}
                     client={client}
-                    index={index}
                     visible={visible}
                   />
                 ))}
@@ -119,7 +125,6 @@ export default function ClientsSection() {
                   <ClientCard
                     key={`r3-${client.id || index}-${index}`}
                     client={client}
-                    index={index}
                     visible={visible}
                   />
                 ))}
@@ -133,7 +138,6 @@ export default function ClientsSection() {
                   <ClientCard
                     key={`r4-${client.id || index}-${index}`}
                     client={client}
-                    index={index}
                     visible={visible}
                   />
                 ))}
@@ -146,27 +150,24 @@ export default function ClientsSection() {
   );
 }
 
-// Sub-Component - Exact Previous Card Design & Structure
-function ClientCard({ client, index, visible }) {
+// Sub-Component - Clean Pure Square Logo Tile
+function ClientCard({ client, visible }) {
   const { name, logo, logoSvg, website } = client;
 
   const cardContent = (
-    <article className={`client-logo-card ${visible ? 'card-visible' : ''}`}>
-      <div className="client-logo-frame">
-        {logo ? (
-          <img
-            src={logo.startsWith('http') || logo.startsWith('data:') ? logo : mediaUrl(logo)}
-            alt={`${name} corporate logo`}
-            loading="lazy"
-          />
-        ) : logoSvg ? (
-          <img src={logoSvg} alt={`${name} corporate logo`} loading="lazy" />
-        ) : (
-          <span className="client-text-fallback">{name}</span>
-        )}
-      </div>
-      <h2 className="client-name">{name}</h2>
-    </article>
+    <div className={`client-logo-card ${visible ? 'card-visible' : ''}`} title={name || 'Client logo'}>
+      {logo ? (
+        <img
+          src={logo.startsWith('http') || logo.startsWith('data:') ? logo : mediaUrl(logo)}
+          alt={`${name || 'Client'} logo`}
+          loading="lazy"
+        />
+      ) : logoSvg ? (
+        <img src={logoSvg} alt={`${name || 'Client'} logo`} loading="lazy" />
+      ) : (
+        <span className="client-text-fallback">{name || 'OMS'}</span>
+      )}
+    </div>
   );
 
   if (website) {
@@ -176,7 +177,7 @@ function ClientCard({ client, index, visible }) {
         target="_blank"
         rel="noopener noreferrer"
         className="client-link"
-        aria-label={`Visit ${name} official website`}
+        aria-label={`Visit ${name || 'client'} website`}
       >
         {cardContent}
       </a>

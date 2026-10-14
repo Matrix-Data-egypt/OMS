@@ -40,9 +40,7 @@ router.get('/', (_req, res) => {
 router.post('/', requireContentAccess, requireWriteAccess, upload.single('logo'), (req, res) => {
   try {
     const { name, website } = req.body || {};
-    if (!name?.trim()) {
-      return res.status(400).json({ message: 'Client name is required' });
-    }
+    const clientName = (name || '').trim() || 'Client';
 
     const logoUrl = req.file
       ? `/uploads/clients/${req.file.filename}`
@@ -55,7 +53,7 @@ router.post('/', requireContentAccess, requireWriteAccess, upload.single('logo')
     const { clients } = readDb();
     const item = {
       id: uuidv4(),
-      name: name.trim(),
+      name: clientName,
       logo: logoUrl,
       website: (website || '').trim(),
       order: (clients || []).length,

@@ -114,12 +114,14 @@
 }
 
 .footer-grid-section {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 40px;
   margin-bottom: 70px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 50px;
+  flex-wrap: wrap;
 }
 
 .footer-column {
@@ -127,13 +129,53 @@
   flex-direction: column;
 }
 
+.footer-email-column {
+  align-items: flex-start;
+}
+
 .footer-column-title {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.75rem;
   font-weight: 800;
   color: #f59e0b;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.footer-email-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #f59e0b;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.25s ease;
+}
+
+.footer-email-link:hover {
+  background: rgba(204, 26, 26, 0.15);
+  border-color: #cc1a1a;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(204, 26, 26, 0.3);
+}
+
+.footer-email-icon {
+  color: #f59e0b;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.footer-email-link:hover .footer-email-icon {
+  color: #ffffff;
+  transform: scale(1.1);
 }
 
 .footer-list {
