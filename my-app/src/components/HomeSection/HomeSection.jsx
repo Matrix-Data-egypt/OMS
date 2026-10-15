@@ -297,9 +297,6 @@ export default function HomeSection() {
                 aria-controls="timeline-panel"
                 id={`timeline-tab-${stepNum}`}
               >
-                <span className="node-num" aria-hidden="true">
-                  PHASE // 0{stepNum}
-                </span>
                 <span className="node-text">{item.title}</span>
                 <div className="node-active-bar" />
               </button>
@@ -315,9 +312,6 @@ export default function HomeSection() {
           aria-labelledby={`timeline-tab-${activeStep}`}
           aria-live="polite"
         >
-          <span className="timeline-content-badge">
-            {activeTimelineObj.phase}
-          </span>
           <h3>{activeTimelineObj.title}</h3>
           <p>{activeTimelineObj.desc}</p>
         </div>
