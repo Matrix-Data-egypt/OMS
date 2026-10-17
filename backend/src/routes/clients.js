@@ -37,6 +37,44 @@ router.get('/', (_req, res) => {
   res.json(list);
 });
 
+// Bulk upload - Allowed for Admin and Data Entry (up to 50 logos at once)
+router.post('/bulk', requireContentAccess, requireWriteAccess, upload.array('logos', 50), (req, res) => {
+  try {
+    const files = req.files || [];
+    if (!files.length) {
+      return res.status(400).json({ message: 'No logo files uploaded' });
+    }
+
+    const { clients } = readDb();
+    let currentOrder = (clients || []).length;
+
+    const newClients = files.map((file, idx) => {
+      const cleanName = path
+        .basename(file.originalname, path.extname(file.originalname))
+        .replace(/[-_]/g, ' ')
+        .trim();
+
+      return {
+        id: uuidv4(),
+        name: cleanName || 'Client',
+        logo: `/uploads/clients/${file.filename}`,
+        website: '',
+        order: currentOrder + idx,
+        createdAt: new Date().toISOString(),
+      };
+    });
+
+    updateCollection('clients', (list) => [...list, ...newClients]);
+    res.status(201).json({
+      message: `Successfully added ${newClients.length} client logos`,
+      count: newClients.length,
+      items: newClients,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message || 'Failed to bulk upload client logos' });
+  }
+});
+
 router.post('/', requireContentAccess, requireWriteAccess, upload.single('logo'), (req, res) => {
   try {
     const { name, website } = req.body || {};

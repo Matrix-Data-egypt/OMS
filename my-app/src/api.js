@@ -25,6 +25,7 @@ export function mediaUrl(path) {
 
   // Block malicious protocols
   const trimmed = path.trim().toLowerCase();
+  // eslint-disable-next-line no-script-url
   if (trimmed.startsWith('javascript:') || trimmed.startsWith('vbscript:')) {
     return '';
   }

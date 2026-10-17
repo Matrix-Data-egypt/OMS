@@ -136,16 +136,20 @@ export default function PossSection() {
                     <div className="poss-img-overlay">
                       <span>{T.enlargeHint}</span>
                     </div>
-                    <span className="poss-brand-badge">{item.companyName}</span>
-                  </div>
-
-                  <div className="poss-card-body">
-                    <h3 className="poss-card-company">{item.companyName}</h3>
-                    <p className="poss-card-desc">{item.description}</p>
-                    {item.type && (
-                      <span className="poss-card-type">🏷️ {item.type}</span>
+                    {item.companyName && (
+                      <span className="poss-brand-badge">{item.companyName}</span>
                     )}
                   </div>
+
+                  {(item.companyName || item.description || item.type) && (
+                    <div className="poss-card-body">
+                      {item.companyName && <h3 className="poss-card-company">{item.companyName}</h3>}
+                      {item.description && <p className="poss-card-desc">{item.description}</p>}
+                      {item.type && (
+                        <span className="poss-card-type">🏷️ {item.type}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -153,31 +157,6 @@ export default function PossSection() {
         )}
       </section>
 
-      {/* 4. Manufacturing & Execution Pillars */}
-      <section className="poss-pillars-section">
-        <div className="pillars-card">
-          <span className="pillars-badge">{T.pillarsBadge}</span>
-          <h3>{T.pillarsTitle}</h3>
-          <div className="pillars-grid">
-            <div className="pillar-item">
-              <strong>{T.pillar1Title}</strong>
-              <p>{T.pillar1Desc}</p>
-            </div>
-            <div className="pillar-item">
-              <strong>{T.pillar2Title}</strong>
-              <p>{T.pillar2Desc}</p>
-            </div>
-            <div className="pillar-item">
-              <strong>{T.pillar3Title}</strong>
-              <p>{T.pillar3Desc}</p>
-            </div>
-            <div className="pillar-item">
-              <strong>{T.pillar4Title}</strong>
-              <p>{T.pillar4Desc}</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* 5. Bottom Call to Action */}
       <section className="poss-cta-section">

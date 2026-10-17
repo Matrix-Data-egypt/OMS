@@ -49,10 +49,6 @@ router.get('/:id', (req, res) => {
 router.post('/', requireContentAccess, requireWriteAccess, upload.single('image'), (req, res) => {
   try {
     const { companyName, description } = req.body || {};
-    if (!companyName?.trim()) {
-      return res.status(400).json({ message: 'Company name is required' });
-    }
-
     const imageUrl = req.file
       ? `/uploads/outdoor/${req.file.filename}`
       : (req.body.imageUrl || '').trim();
@@ -64,7 +60,7 @@ router.post('/', requireContentAccess, requireWriteAccess, upload.single('image'
     const { outdoor } = readDb();
     const item = {
       id: uuidv4(),
-      companyName: companyName.trim(),
+      companyName: (companyName || '').trim(),
       description: (description || '').trim(),
       image: imageUrl,
       order: (outdoor || []).length,
@@ -86,7 +82,8 @@ router.put('/:id', requireContentAccess, requireWriteAccess, upload.single('imag
       if (c.id !== req.params.id) return c;
       updated = {
         ...c,
-        companyName: req.body.companyName?.trim() || c.companyName,
+        companyName:
+          req.body.companyName !== undefined ? req.body.companyName.trim() : c.companyName,
         description:
           req.body.description !== undefined ? req.body.description.trim() : c.description,
         image: req.file

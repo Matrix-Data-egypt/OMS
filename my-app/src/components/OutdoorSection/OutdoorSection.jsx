@@ -138,16 +138,20 @@ export default function OutdoorSection() {
                     <div className="outdoor-img-overlay">
                       <span>{T.enlargeHint}</span>
                     </div>
-                    <span className="outdoor-brand-badge">{item.companyName}</span>
-                  </div>
-
-                  <div className="outdoor-card-body">
-                    <h3 className="outdoor-card-company">{item.companyName}</h3>
-                    <p className="outdoor-card-desc">{item.description}</p>
-                    {item.location && (
-                      <span className="outdoor-card-location">📍 {item.location}</span>
+                    {item.companyName && (
+                      <span className="outdoor-brand-badge">{item.companyName}</span>
                     )}
                   </div>
+
+                  {(item.companyName || item.description || item.location) && (
+                    <div className="outdoor-card-body">
+                      {item.companyName && <h3 className="outdoor-card-company">{item.companyName}</h3>}
+                      {item.description && <p className="outdoor-card-desc">{item.description}</p>}
+                      {item.location && (
+                        <span className="outdoor-card-location">📍 {item.location}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -155,31 +159,6 @@ export default function OutdoorSection() {
         )}
       </section>
 
-      {/* 4. Strategic Locations & Coverage Highlights */}
-      <section className="outdoor-coverage-section">
-        <div className="coverage-card">
-          <span className="coverage-badge">{T.coverageBadge}</span>
-          <h3>{T.coverageTitle}</h3>
-          <div className="coverage-points-grid">
-            <div className="coverage-item">
-              <strong>{T.loc1Title}</strong>
-              <p>{T.loc1Desc}</p>
-            </div>
-            <div className="coverage-item">
-              <strong>{T.loc2Title}</strong>
-              <p>{T.loc2Desc}</p>
-            </div>
-            <div className="coverage-item">
-              <strong>{T.loc3Title}</strong>
-              <p>{T.loc3Desc}</p>
-            </div>
-            <div className="coverage-item">
-              <strong>{T.loc4Title}</strong>
-              <p>{T.loc4Desc}</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* 5. Bottom Call to Action */}
       <section className="outdoor-cta-section">

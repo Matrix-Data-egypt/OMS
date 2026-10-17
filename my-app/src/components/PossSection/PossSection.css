@@ -165,8 +165,8 @@
 
 .poss-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 32px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 28px;
 }
 
 .poss-card {
@@ -466,9 +466,10 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .poss-cards-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
   .pillars-card {
     padding: 30px 20px;

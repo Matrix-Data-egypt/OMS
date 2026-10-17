@@ -124,23 +124,12 @@ export default function PossAdmin() {
           </h2>
 
           <div className="field">
-            <label>Company Name (اسم الشركة) *</label>
-            <input
-              value={form.companyName}
-              onChange={(e) => setForm({ ...form, companyName: e.target.value })}
-              placeholder="e.g. Aroma Cosmetics"
-              required
-            />
-          </div>
-
-          <div className="field">
-            <label>Short Description (شرح بسيط) *</label>
+            <label>Short Description (شرح بسيط - اختياري)</label>
             <textarea
               rows={3}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="e.g. Customized Point of Sale displays, retail booths and store branding units..."
-              required
             />
           </div>
 
@@ -206,7 +195,6 @@ export default function PossAdmin() {
               <thead>
                 <tr>
                   <th style={{ width: 100 }}>Image</th>
-                  <th>Company Name</th>
                   <th>Short Description</th>
                   <th style={{ width: 150 }}>Created</th>
                   <th style={{ width: 140 }}>Actions</th>
@@ -219,7 +207,7 @@ export default function PossAdmin() {
                       {item.image ? (
                         <img
                           src={mediaUrl(item.image)}
-                          alt={item.companyName}
+                          alt={item.companyName || 'POSS item'}
                           style={{
                             width: 80,
                             height: 52,
@@ -233,11 +221,8 @@ export default function PossAdmin() {
                       )}
                     </td>
                     <td>
-                      <strong style={{ fontSize: 14 }}>{item.companyName}</strong>
-                    </td>
-                    <td>
-                      <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)', maxWidth: 360, lineHeight: 1.4 }}>
-                        {item.description}
+                      <p style={{ margin: 0, fontSize: 13, color: 'var(--text)', maxWidth: 460, lineHeight: 1.4 }}>
+                        {item.description || <span style={{ color: 'var(--muted)', fontStyle: 'italic' }}>بدون شرح</span>}
                       </p>
                     </td>
                     <td style={{ fontSize: 12, color: 'var(--muted)' }}>

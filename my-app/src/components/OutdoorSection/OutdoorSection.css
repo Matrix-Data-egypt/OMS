@@ -165,8 +165,8 @@
 
 .outdoor-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 32px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 28px;
 }
 
 .outdoor-card {
@@ -466,9 +466,10 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .outdoor-cards-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
   .coverage-card {
     padding: 30px 20px;

@@ -58,17 +58,13 @@ export default function ClientsSection() {
     return [...base, ...base];
   };
 
-  // Split into 4 rows for 4 full-width horizontal lanes
-  const chunkSize = Math.max(1, Math.ceil(clients.length / 4));
+  // Split into 2 rows for 2 full-width horizontal lanes
+  const chunkSize = Math.max(1, Math.ceil(clients.length / 2));
   const row1 = clients.slice(0, chunkSize);
-  const row2 = clients.slice(chunkSize, chunkSize * 2);
-  const row3 = clients.slice(chunkSize * 2, chunkSize * 3);
-  const row4 = clients.slice(chunkSize * 3);
+  const row2 = clients.slice(chunkSize);
 
   const track1 = buildInfiniteRow(row1);
   const track2 = buildInfiniteRow(row2);
-  const track3 = buildInfiniteRow(row3);
-  const track4 = buildInfiniteRow(row4);
 
   return (
     <main className="clients-page" aria-busy={isLoading}>
@@ -86,12 +82,12 @@ export default function ClientsSection() {
         </p>
       </header>
 
-      {/* Full-Width Horizontal Motion Wrapper with 4 Slow Moving Rows */}
+      {/* Full-Width Horizontal Motion Wrapper with 2 Slow Moving Rows */}
       <section className="clients-marquee-wrapper" aria-label="Partner Directory">
         {isLoading && <p className="clients-status">{t('clients.loading', 'Loading clients…')}</p>}
 
         {!isLoading && clients.length > 0 && (
-          <div className="clients-marquee-lanes four-lanes">
+          <div className="clients-marquee-lanes two-lanes">
             {/* Row 1 - Gentle Left Scroll */}
             {track1.length > 0 && (
               <div className="clients-marquee-track track-row-1">
@@ -111,32 +107,6 @@ export default function ClientsSection() {
                 {track2.map((client, index) => (
                   <ClientCard
                     key={`r2-${client.id || index}-${index}`}
-                    client={client}
-                    visible={visible}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Row 3 - Gentle Left Scroll */}
-            {track3.length > 0 && (
-              <div className="clients-marquee-track track-row-3">
-                {track3.map((client, index) => (
-                  <ClientCard
-                    key={`r3-${client.id || index}-${index}`}
-                    client={client}
-                    visible={visible}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Row 4 - Gentle Right Scroll */}
-            {track4.length > 0 && (
-              <div className="clients-marquee-track track-row-4">
-                {track4.map((client, index) => (
-                  <ClientCard
-                    key={`r4-${client.id || index}-${index}`}
                     client={client}
                     visible={visible}
                   />
