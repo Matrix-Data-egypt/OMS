@@ -163,11 +163,11 @@ h1, h2, h3, h4, h5, h6, p, span, a, label {
    ========================================================================== */
 @media (max-width: 480px) {
   .custom-navbar {
-    padding: 8px 12px;
+    padding: 8px 10px;
   }
 
   .nav-logo-img {
-    height: 30px;
+    height: 27px;
   }
 
   .brand-tag-mini {
@@ -179,18 +179,20 @@ h1, h2, h3, h4, h5, h6, p, span, a, label {
   }
 
   .nav-actions-section {
-    gap: 8px;
+    gap: 6px;
   }
 
   .nav-btn-primary {
-    padding: 7px 12px;
-    font-size: 0.7rem;
-    letter-spacing: 0.02em;
+    padding: 6px 9px;
+    font-size: 0.67rem;
+    letter-spacing: 0.01em;
+    border-radius: 6px;
+    white-space: nowrap;
   }
 
   .nav-btn-user {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
   }
 
   /* Typography on Mobile */

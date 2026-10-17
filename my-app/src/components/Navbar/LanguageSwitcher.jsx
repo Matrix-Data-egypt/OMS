@@ -33,7 +33,7 @@ export default function LanguageSwitcher() {
         aria-haspopup="listbox"
         title="Change Language / تغيير اللغة / Changer de langue"
       >
-        {/* Animated 3D Spinning Earth Globe Icon */}
+        {/* Animated 3D Spinning Earth Globe Icon Only */}
         <div className="earth-globe-wrapper" aria-hidden="true">
           <div className="earth-globe-sphere">
             <svg
@@ -56,25 +56,6 @@ export default function LanguageSwitcher() {
             <span className="earth-globe-glow"></span>
           </div>
         </div>
-
-        {/* Current Flag & Code */}
-        <span className="current-flag">{currentLangMeta.flag}</span>
-        <span className="current-lang-code">{currentLangMeta.label}</span>
-
-        {/* Chevron */}
-        <svg
-          className={`lang-chevron ${isOpen ? 'rotate-open' : ''}`}
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          width="14"
-          height="14"
-        >
-          <path
-            fillRule="evenodd"
-            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-            clipRule="evenodd"
-          />
-        </svg>
       </button>
 
       {/* Floating Glassmorphic Dropdown */}

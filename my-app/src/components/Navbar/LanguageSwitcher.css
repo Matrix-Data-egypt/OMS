@@ -8,39 +8,40 @@
   z-index: 100;
 }
 
-/* Trigger Button */
+/* Trigger Button - Clean Circular 3D Earth Globe */
 .lang-trigger-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
   color: #f3f4f6;
-  font-size: 0.85rem;
-  font-weight: 600;
   cursor: pointer;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 /* Light Mode Overrides */
 [data-theme='light'] .lang-trigger-btn {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.12);
   color: #1a1a1a;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .lang-trigger-btn:hover,
 .lang-trigger-btn.is-active {
-  background: rgba(204, 26, 26, 0.12);
-  border-color: rgba(204, 26, 26, 0.4);
-  box-shadow: 0 4px 16px rgba(204, 26, 26, 0.2);
-  transform: translateY(-1px);
+  background: rgba(204, 26, 26, 0.16);
+  border-color: rgba(204, 26, 26, 0.5);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+  transform: translateY(-1px) scale(1.05);
 }
 
 /* Animated 3D Spinning Earth Globe Icon */
@@ -271,3 +272,26 @@
   color: #cc1a1a;
   margin-inline-start: 4px;
 }
+
+@media (max-width: 768px) {
+  .lang-switcher-container {
+    margin-inline-start: 8px;
+  }
+  .lang-trigger-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .earth-globe-wrapper {
+    width: 20px;
+    height: 20px;
+  }
+  .earth-globe-sphere {
+    width: 18px;
+    height: 18px;
+  }
+  .lang-dropdown-menu {
+    inset-inline-start: -10px;
+    min-width: 170px;
+  }
+}
+
