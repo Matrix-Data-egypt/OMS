@@ -3,19 +3,31 @@ import { useLanguage } from '../../context/LanguageContext';
 import './LanguageSwitcher.css';
 
 export default function LanguageSwitcher() {
-  const { language, changeLanguage, languages, currentLangMeta } = useLanguage();
+  const { language, changeLanguage, languages } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
+  // Find the currently active language object
+  const currentLang = languages.find((l) => l.code === language) || languages[0];
+
+  // Close when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleSelect = (code) => {
@@ -24,64 +36,52 @@ export default function LanguageSwitcher() {
   };
 
   return (
-    <div className="lang-switcher-container" ref={dropdownRef}>
+    <div className="lang-dropdown-wrapper" ref={dropdownRef}>
+      {/* Trigger Button: Shows Current Language + Down Arrow (سهم تحت) */}
       <button
         type="button"
-        className={`lang-trigger-btn ${isOpen ? 'is-active' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
+        className={`lang-select-trigger ${isOpen ? 'is-active' : ''}`}
+        onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
-        title="Change Language / تغيير اللغة / Changer de langue"
+        title="اختر اللغة / Select Language"
       >
-        {/* Animated 3D Spinning Earth Globe Icon Only */}
-        <div className="earth-globe-wrapper" aria-hidden="true">
-          <div className="earth-globe-sphere">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="earth-globe-svg"
-            >
-              {/* Outer globe circle */}
-              <circle cx="12" cy="12" r="10" className="globe-circle" />
-              {/* Meridian and Latitude lines simulating 3D rotation */}
-              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" className="globe-meridian" />
-              <path d="M2 12h20" className="globe-equator" />
-              <path d="M4.5 7h15" className="globe-parallel-north" />
-              <path d="M4.5 17h15" className="globe-parallel-south" />
-            </svg>
-            <span className="earth-globe-glow"></span>
-          </div>
-        </div>
+        <span className="lang-trigger-text">
+          {currentLang.label}
+        </span>
+        {/* Down Arrow / سهم تحت */}
+        <svg
+          className={`lang-down-arrow ${isOpen ? 'is-rotated' : ''}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
       </button>
 
-      {/* Floating Glassmorphic Dropdown */}
+      {/* Floating Dropdown Menu */}
       {isOpen && (
-        <ul className="lang-dropdown-menu" role="listbox">
-          <li className="lang-dropdown-header">
-            <span>🌐 Select Language</span>
-          </li>
+        <ul className="lang-options-dropdown" role="listbox">
           {languages.map((item) => {
             const isSelected = item.code === language;
             return (
-              <li key={item.code}>
+              <li key={item.code} role="none">
                 <button
                   type="button"
-                  className={`lang-option-btn ${isSelected ? 'is-selected' : ''}`}
+                  className={`lang-option-item ${isSelected ? 'is-selected' : ''}`}
                   onClick={() => handleSelect(item.code)}
                   role="option"
                   aria-selected={isSelected}
                 >
-                  <span className="lang-option-flag">{item.flag}</span>
-                  <span className="lang-option-name">{item.name}</span>
-                  <span className="lang-option-badge">{item.label}</span>
+                  <span className="lang-opt-name">{item.name}</span>
+                  <span className="lang-opt-badge">{item.label}</span>
                   {isSelected && (
-                    <span className="lang-check-icon" aria-hidden="true">
-                      ✓
-                    </span>
+                    <span className="lang-opt-check" aria-hidden="true">✓</span>
                   )}
                 </button>
               </li>

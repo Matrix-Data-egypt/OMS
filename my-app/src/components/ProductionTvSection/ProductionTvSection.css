@@ -20,9 +20,9 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #f59e0b;
-  background-color: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #ff2d2d;
+  background-color: rgba(255, 45, 45, 0.12);
+  border: 1px solid rgba(255, 45, 45, 0.25);
   padding: 0.4rem 0.9rem;
   border-radius: 999px;
   display: inline-block;

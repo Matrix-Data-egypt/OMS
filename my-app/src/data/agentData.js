@@ -188,31 +188,31 @@ export const TIMELINE_STEPS = [
   {
     step: 1,
     title: 'Discovery & Market Research',
-    phase: 'PHASE 01 // DISCOVERY',
+    phase: 'Discovery & Intelligence Phase',
     desc: 'We begin by deeply understanding your business, target audience, competitive landscape, and market opportunities to build a solid strategic foundation.'
   },
   {
     step: 2,
     title: 'Strategy & Campaign Architecture',
-    phase: 'PHASE 02 // STRATEGY',
+    phase: 'Strategy & Architecture Phase',
     desc: 'Our team crafts a tailored campaign strategy that defines your messaging, media mix, budget allocation, and timeline to achieve your specific business goals.'
   },
   {
     step: 3,
     title: 'Creative Development & Production',
-    phase: 'PHASE 03 // PRODUCTION',
+    phase: 'Creative & Production Phase',
     desc: 'Our creative team produces premium campaign assets including TV commercials, outdoor visuals, digital content, and all materials needed across your chosen channels.'
   },
   {
     step: 4,
     title: 'Media Placement & Campaign Launch',
-    phase: 'PHASE 04 // LAUNCH',
+    phase: 'Omni-Channel Launch Phase',
     desc: 'We execute your campaign across all planned channels simultaneously — TV networks, outdoor locations, and digital platforms — with precise timing and coordination.'
   },
   {
     step: 5,
     title: 'Performance Review & Optimization',
-    phase: 'PHASE 05 // GROWTH',
+    phase: 'Performance & Optimization Phase',
     desc: 'We continuously monitor campaign performance, share transparent reports with your team, and make strategic adjustments to maximize your results and investment return.'
   }
 ];

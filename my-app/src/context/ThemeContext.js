@@ -12,7 +12,8 @@ export function ThemeProvider({ children }) {
     } catch (e) {
       // Ignore localStorage errors
     }
-    return 'dark'; // Dark mode by default
+    return 'light'; // Light mode by default — professional marketing agency style
+
   });
 
   useEffect(() => {

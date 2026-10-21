@@ -36,9 +36,7 @@ export default function AboutSection() {
 
   return (
     <main className="about-page-container">
-      {/* Decorative ambient background blur & grid overlays */}
-      <div className="about-ambient-glow" aria-hidden="true" />
-      <div className="about-mesh-grid" aria-hidden="true" />
+      {/* Clean Agency Header */}
 
       {/* Hero Banner Section */}
       <header>

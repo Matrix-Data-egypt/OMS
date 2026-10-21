@@ -1,28 +1,28 @@
-/* AboutSection.css - High-End Luxury Design System for OMS Advertising */
+/* AboutSection.css - Clean Warm Marketing Agency Design System */
 
 :root {
-  --bg-main: #0B0813;
-  --bg-card: rgba(22, 17, 34, 0.75);
-  --bg-card-hover: rgba(30, 24, 46, 0.95);
+  --bg-main: #0e0d13;
+  --bg-card: rgba(23, 20, 29, 0.78);
+  --bg-card-hover: rgba(32, 28, 40, 0.92);
   --bg-light-box: rgba(255, 255, 255, 0.03);
-  --bg-dark-accent: #110d1c;
+  --bg-dark-accent: #14121b;
   
-  --text-primary: #F8F7FA;
-  --text-secondary: #C4C0CE;
-  --text-muted: #8E899D;
+  --text-primary: #f7f6f4;
+  --text-secondary: #a39e99;
+  --text-muted: #736e69;
   
-  --color-red: #D92323;
-  --color-red-glow: rgba(217, 35, 35, 0.35);
-  --color-gold: #F59E0B;
-  --color-gold-glow: rgba(245, 158, 11, 0.35);
-  --color-gold-light: #FCD34D;
+  --color-red: #c22026;
+  --color-red-glow: rgba(194, 32, 38, 0.2);
+  --color-gold: #c9a050;
+  --color-gold-glow: rgba(201, 160, 80, 0.2);
+  --color-gold-light: #dfb76c;
   
   --border-glass: rgba(255, 255, 255, 0.08);
-  --border-glass-hover: rgba(245, 158, 11, 0.3);
+  --border-glass-hover: rgba(194, 32, 38, 0.35);
   
-  --radius-xl: 1.75rem;
-  --radius-lg: 1.25rem;
-  --radius-md: 0.85rem;
+  --radius-xl: 1.5rem;
+  --radius-lg: 1.15rem;
+  --radius-md: 0.75rem;
   --radius-sm: 0.5rem;
   
   --transition-smooth: cubic-bezier(0.16, 1, 0.3, 1);
@@ -32,42 +32,11 @@
 .about-page-container {
   background-color: var(--bg-main);
   color: var(--text-primary);
-  font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Outfit', system-ui, -apple-system, sans-serif;
   padding-bottom: 7rem;
   position: relative;
   overflow: hidden;
   min-height: 100vh;
-}
-
-/* 2. Ambient Atmosphere Effects */
-.about-ambient-glow {
-  position: absolute;
-  top: -10%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 900px;
-  height: 600px;
-  background: radial-gradient(
-    circle, 
-    rgba(217, 35, 35, 0.12) 0%, 
-    rgba(245, 158, 11, 0.08) 35%, 
-    transparent 70%
-  );
-  pointer-events: none;
-  filter: blur(100px);
-  z-index: 0;
-  animation: floatAboutAura 12s ease-in-out infinite alternate;
-}
-
-.about-mesh-grid {
-  position: absolute;
-  inset: 0;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
-  z-index: 0;
 }
 
 @keyframes floatAboutAura {
@@ -852,6 +821,8 @@
 
 .about-action-button svg {
   transition: transform 0.3s ease;
+  color: white;
+  margin: 0.1rem;
 }
 
 .about-action-button:hover svg {
