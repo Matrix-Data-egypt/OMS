@@ -108,89 +108,120 @@
 }
 
 /* ==========================================================================
-   3. Service Cards — Infinite Horizontal Carousel
+   3. Service Cards — Interactive Controlled Horizontal Slider
    ========================================================================== */
 
-/* Viewport: clips overflow and adds edge fade masks */
-.svc-carousel-viewport {
-  overflow: hidden;
+/* Slider Outer Wrapper with Side Arrows */
+.svc-slider-wrapper {
   position: relative;
-  /* Fade edges for a premium magazine look */
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    #000 6%,
-    #000 94%,
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    #000 6%,
-    #000 94%,
-    transparent 100%
-  );
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
-/* Pause on hover across the whole carousel */
-.svc-carousel-viewport:hover .svc-carousel-track {
-  animation-play-state: paused;
+/* Arrow Navigation Buttons */
+.svc-slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  color: #0F172A;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
 }
 
-/* The scrolling track */
+[data-theme="dark"] .svc-slider-arrow {
+  background: #171923;
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+.svc-slider-arrow:hover {
+  background: #C41E3A;
+  color: #FFFFFF;
+  border-color: #C41E3A;
+  transform: translateY(-50%) scale(1.12);
+  box-shadow: 0 14px 34px rgba(196, 30, 58, 0.45);
+}
+
+.svc-slider-arrow:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+.svc-slider-arrow--prev {
+  inset-inline-start: -24px;
+}
+
+.svc-slider-arrow--next {
+  inset-inline-end: -24px;
+}
+
+@media (max-width: 900px) {
+  .svc-slider-arrow--prev { inset-inline-start: -12px; }
+  .svc-slider-arrow--next { inset-inline-end: -12px; }
+  .svc-slider-arrow { width: 42px; height: 42px; }
+}
+
+/* Viewport: clips overflow and supports smooth manual scroll */
+.svc-carousel-viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+  width: 100%;
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  padding: 1.2rem 0.2rem 1.8rem;
+}
+
+.svc-carousel-viewport::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* The stationary scrolling track */
 .svc-carousel-track {
   display: flex;
-  gap: 1.5rem;
+  gap: 1.6rem;
   width: max-content;
-  padding: 1rem 0 1.5rem;
-  will-change: transform;
-}
-
-/* Scroll LEFT  (section 01 — Traditional) */
-.svc-carousel-track--left {
-  animation: svcScrollLeft 40s linear infinite;
-}
-
-/* Scroll RIGHT (section 02 — Digital) */
-.svc-carousel-track--right {
-  animation: svcScrollRight 40s linear infinite;
-}
-
-@keyframes svcScrollLeft {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-@keyframes svcScrollRight {
-  0%   { transform: translateX(-50%); }
-  100% { transform: translateX(0); }
+  padding: 0 0.5rem;
+  transition: none;
 }
 
 /* Each card wrapper — fixed width so they sit side by side */
 .svc-carousel-item {
-  flex: 0 0 340px;
-  width: 340px;
+  flex: 0 0 350px;
+  width: 350px;
 }
 
 @media (max-width: 680px) {
   .svc-carousel-item {
-    flex: 0 0 280px;
-    width: 280px;
+    flex: 0 0 290px;
+    width: 290px;
   }
 }
 
-/* ── Individual Service Card (Major Agency Standard) ── */
+/* ── Individual Service Card — Luxury Agency Shadow ── */
 .svc-card {
   background: #FFFFFF;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
   padding: 0;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
-  /* No entrance animation — cards scroll in the carousel continuously */
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
   transition:
     border-color 0.28s ease,
     box-shadow 0.28s ease,
@@ -200,13 +231,13 @@
 
 [data-theme="dark"] .svc-card {
   background: #111115;
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .svc-card:hover {
   border-color: #C41E3A;
-  box-shadow: 0 12px 36px rgba(196, 30, 58, 0.2), 0 0 1px #C41E3A;
+  box-shadow: 0 20px 48px rgba(196, 30, 58, 0.22), 0 6px 18px rgba(0, 0, 0, 0.1);
   transform: translateY(-6px) !important;
 }
 

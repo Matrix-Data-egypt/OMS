@@ -11,6 +11,7 @@ const videosRoutes = require('./routes/videos');
 const clientsRoutes = require('./routes/clients');
 const outdoorRoutes = require('./routes/outdoor');
 const possRoutes = require('./routes/poss');
+const customersRoutes = require('./routes/customers');
 
 const app = express();
 
@@ -32,6 +33,17 @@ app.use(
   express.static(path.join(__dirname, '../uploads'))
 );
 
+// Root status
+app.get('/', (_req, res) => {
+  res.json({
+    ok: true,
+    message: 'OMS Backend API Server is running successfully.',
+    websiteUrl: 'http://localhost:3000',
+    adminDashboardUrl: 'http://localhost:5173',
+    healthCheck: '/api/health'
+  });
+});
+
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({
@@ -48,6 +60,7 @@ app.use('/api/videos', videosRoutes); // سيتولى هذا الراوت دمج
 app.use('/api/clients', clientsRoutes);
 app.use('/api/outdoor', outdoorRoutes);
 app.use('/api/poss', possRoutes);
+app.use('/api/customers', customersRoutes);
 
 // 404
 app.use((req, res) => {

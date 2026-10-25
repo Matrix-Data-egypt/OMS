@@ -25,6 +25,7 @@ const emptyForm = {
 export default function Videos() {
   const [videos, setVideos] = useState([]);
   const [form, setForm] = useState(emptyForm);
+  const [editingVideo, setEditingVideo] = useState(null);
   const [mode, setMode] = useState('youtube');
   const [videoFile, setVideoFile] = useState(null);
   const [thumbFile, setThumbFile] = useState(null);
@@ -47,10 +48,28 @@ export default function Videos() {
 
   const reset = () => {
     setForm(emptyForm);
+    setEditingVideo(null);
     setVideoFile(null);
     setThumbFile(null);
     setMode('youtube');
     setShowForm(false);
+  };
+
+  const handleEdit = (video) => {
+    setEditingVideo(video);
+    setForm({
+      brand: video.brand || '',
+      title: video.title || '',
+      desc: video.desc || '',
+      category: video.category || '',
+      youtubeUrl: video.youtubeUrl || '',
+      featured: video.featured === true || video.featured === 'true',
+    });
+    setMode(video.type === 'file' ? 'file' : 'youtube');
+    setVideoFile(null);
+    setThumbFile(null);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSubmit = async (e) => {
@@ -71,14 +90,30 @@ export default function Videos() {
       fd.append('category', form.category);
       fd.append('featured', String(form.featured));
       fd.append('type', mode);
+
       if (mode === 'youtube') {
-        fd.append('youtubeUrl', form.youtubeUrl);
+        if (!form.youtubeUrl && !editingVideo) {
+          setError('YouTube URL is required');
+          setSaving(false);
+          return;
+        }
+        if (form.youtubeUrl) fd.append('youtubeUrl', form.youtubeUrl);
       } else if (videoFile) {
         fd.append('video', videoFile);
+      } else if (!editingVideo) {
+        setError('Video file is required');
+        setSaving(false);
+        return;
       }
+
       if (thumbFile) fd.append('thumbnail', thumbFile);
 
-      await api('/api/videos', { method: 'POST', body: fd });
+      if (editingVideo) {
+        await api(`/api/videos/${editingVideo.id}`, { method: 'PUT', body: fd });
+      } else {
+        await api('/api/videos', { method: 'POST', body: fd });
+      }
+
       reset();
       await load();
     } catch (err) {
@@ -93,6 +128,7 @@ export default function Videos() {
     try {
       await api(`/api/videos/${id}`, { method: 'DELETE' });
       setVideos((list) => list.filter((v) => v.id !== id));
+      if (editingVideo?.id === id) reset();
     } catch (err) {
       setError(err.message);
     }
@@ -105,8 +141,19 @@ export default function Videos() {
           <h1>Production TV</h1>
           <p>Add YouTube links or upload video files — they appear on the website Production TV page.</p>
         </div>
-        <button type="button" className="btn btn-primary" onClick={() => setShowForm(true)}>
-          + Add video
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => {
+            if (showForm && !editingVideo) {
+              reset();
+            } else {
+              reset();
+              setShowForm(true);
+            }
+          }}
+        >
+          {showForm && !editingVideo ? 'إلغاء' : '+ Add video'}
         </button>
       </div>
 
@@ -114,7 +161,14 @@ export default function Videos() {
 
       {showForm && (
         <form className="card form-panel" onSubmit={handleSubmit}>
-          <h2 style={{ fontFamily: 'var(--display)', marginBottom: 16 }}>New video</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h2 style={{ fontFamily: 'var(--display)', margin: 0 }}>
+              {editingVideo ? 'تعديل الفيديو (Edit video)' : 'New video'}
+            </h2>
+            {editingVideo && (
+              <span className="badge badge-in_review">وضع التعديل</span>
+            )}
+          </div>
 
           <div className="chips" style={{ marginBottom: 16 }}>
             <button type="button" className={`chip ${mode === 'youtube' ? 'active' : ''}`} onClick={() => setMode('youtube')}>
@@ -177,23 +231,25 @@ export default function Videos() {
                 value={form.youtubeUrl}
                 onChange={(e) => setForm({ ...form, youtubeUrl: e.target.value })}
                 placeholder="https://www.youtube.com/watch?v=..."
-                required
+                required={!editingVideo}
               />
             </div>
           ) : (
             <div className="field">
-              <label>Video file *</label>
+              <label>
+                Video file {editingVideo ? '(اختياري - اتركه فارغاً للاحتفاظ بالملف الحالي)' : '*'}
+              </label>
               <input
                 type="file"
                 accept="video/*"
                 onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
-                required
+                required={!editingVideo && !form.fileUrl}
               />
             </div>
           )}
 
           <div className="field">
-            <label>Thumbnail (optional)</label>
+            <label>Thumbnail (optional / اختياري)</label>
             <input type="file" accept="image/*" onChange={(e) => setThumbFile(e.target.files?.[0] || null)} />
           </div>
 
@@ -208,10 +264,10 @@ export default function Videos() {
 
           <div className="modal-actions">
             <button type="button" className="btn btn-ghost" onClick={reset}>
-              Cancel
+              إلغاء (Cancel)
             </button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Saving…' : 'Publish video'}
+              {saving ? 'Saving…' : (editingVideo ? 'حفظ التعديلات (Save changes)' : 'Publish video')}
             </button>
           </div>
         </form>
@@ -246,8 +302,19 @@ export default function Videos() {
                 <p style={{ marginTop: 8, color: 'var(--muted)', fontSize: '0.9rem' }}>{v.desc}</p>
               </div>
               <div className="row-actions">
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => remove(v.id)}>
-                  Delete
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => handleEdit(v)}
+                >
+                  ✏️ تعديل (Edit)
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={() => remove(v.id)}
+                >
+                  حذف (Delete)
                 </button>
               </div>
             </div>

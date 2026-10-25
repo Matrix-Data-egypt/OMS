@@ -29,7 +29,7 @@ function normalizeCategory(raw) {
     .replace(/&amp;/gi, '&')
     .replace(/\s+/g, ' ')
     .trim()
-    .replace(/^Food\s*&\s*Beverages\$/i, 'Food and Beverages');
+    .replace(/^Food\s*&\s*Beverages$/i, 'Food and Beverages');
 }
 
 function resolveCategory(raw) {

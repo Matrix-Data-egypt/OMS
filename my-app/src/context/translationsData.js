@@ -174,10 +174,24 @@ export const PAGE_TRANSLATIONS = {
       submitBtn: 'إرسال ملخص المشروع الآن ←',
       sendingBtn: 'جاري الإرسال...',
       successMsg: 'تم استلام ملخص مشروعك بنجاح! سيتواصل معك أحد مديري الحملات خلال 24 ساعة.',
+      deskTag: 'مكتب التواصل المباشر',
+      deskHeading: 'حملات الطوارئ والتخطيط الإعلامي الفوري',
+      deskDesc: 'للحملات الكبرى العاجلة في مصر والشرق الأوسط، تواصل مع فريق التخطيط التنفيذي مباشرة.',
     },
 
     // Outdoor Page
     outdoor: {
+      heroBadge: 'حلول إعلانات الطرق واللوحات العملاقة OOH',
+      heroTitle: 'حضور استثنائي في',
+      heroTitleItalic: 'أهم محاور الطرق.',
+      heroSub: 'الريادة والسيطرة البصرية على أهم المحاور الاستراتيجية، الكباري، والميادين الحيوية في القاهرة والجيزة والمحافظات بمقاييس عملاقة ومواقع هندسية دقيقة.',
+      formatUnipoles: 'لوحات يونيبول عملاقة',
+      formatDooh: 'شاشات رقمية تفاعلية DOOH',
+      formatBridges: 'لافتات الكباري والمحاور',
+      formatRooftops: 'أسطح المباني والميادين',
+      formatTransit: 'لوحات المطارات ووسائط النقل',
+      eyebrow: 'أبرز الأعمال والمواقع',
+      sectionTitle: 'حملات إعلانات الطرق الاستراتيجية',
       gridNote: 'تطبيقات حملات حقيقية تم تنفيذها في أهم المناطق التجارية.',
       loadingMsg: 'جاري تحميل عروض الطرق...',
       coverageBadge: 'المواقع الاستراتيجية',
@@ -198,6 +212,16 @@ export const PAGE_TRANSLATIONS = {
 
     // POSS Page
     poss: {
+      heroTitle: 'تصميم وتصنيع منصات العرض و',
+      heroTitleItalic: 'نقاط البيع POSS.',
+      heroSub: 'تحويل حركة المترددين في المتاجر إلى قرارات شراء حاسمة. نقوم بتصميم وتصنيع ونشر وحدات عرض نقاط البيع الفاخرة، والأكشاك الترويجية، ومنصات التنشيط عبر مصر والشرق الأوسط.',
+      formatFsdu: 'وحدات عرض أرضية (FSDU)',
+      formatCdu: 'منصات كاونتر مكتبية (CDU)',
+      formatGondola: 'رؤوس وأطراف أرفف جوندولا',
+      formatBooths: 'أجنحة المعارض والفعاليات',
+      formatKiosks: 'أكشاك تجارية تفاعلية',
+      eyebrow: 'معرض نقاط البيع والتجزئة',
+      sectionTitle: 'تطبيقات منصات ونقاط البيع',
       loadingMsg: 'جاري تحميل عروض نقاط البيع...',
       gridNote: 'تطبيقات تجارية حقيقية لأعلى ترسيخ للعلامة عند نقطة القرار.',
       pillarsBadge: 'انضباط التصنيع',
@@ -428,10 +452,24 @@ export const PAGE_TRANSLATIONS = {
       submitBtn: 'SUBMIT CAMPAIGN BRIEF →',
       sendingBtn: 'TRANSMITTING BRIEF...',
       successMsg: 'Brief received successfully. A dedicated account director will review and contact you within 24 hours.',
+      deskTag: 'Direct Media Desk',
+      deskHeading: 'Emergency Campaign & Media Buying Desk',
+      deskDesc: 'Critical heavy-hitter campaigns across Global, Egypt, & MENA. For fast implementation requirements, reach out directly.',
     },
 
     // Outdoor Page
     outdoor: {
+      heroBadge: 'OMS OUTDOOR & OOH SOLUTIONS',
+      heroTitle: 'High-Impact',
+      heroTitleItalic: 'Outdoor Presence.',
+      heroSub: "Dominating Egypt's most strategic arterial corridors, highways, and premium metropolitan hubs with unmissable scale, commanding frequency, and precision location engineering.",
+      formatUnipoles: 'Mega Unipoles',
+      formatDooh: 'Digital DOOH Screens',
+      formatBridges: 'Highway Bridge Banners',
+      formatRooftops: 'Rooftops & Megas',
+      formatTransit: 'Transit & Aerodrome Displays',
+      eyebrow: 'FEATURED PORTFOLIO',
+      sectionTitle: 'Strategic Outdoor Campaigns',
       gridNote: 'Real campaign deployments executed across key commercial hubs.',
       loadingMsg: 'Loading outdoor showcase campaigns…',
       coverageBadge: 'PRIME LOCATIONS',
@@ -452,6 +490,16 @@ export const PAGE_TRANSLATIONS = {
 
     // POSS Page
     poss: {
+      heroTitle: 'Engineered In-Store Impact & ',
+      heroTitleItalic: 'POS Branding.',
+      heroSub: 'Converting consumer footfall into decisive purchase action. We design, manufacture, and deploy custom Point of Sale display units, retail kiosks, and brand activations across Egypt and the MENA region.',
+      formatFsdu: 'Floor Standing Display Units (FSDU)',
+      formatCdu: 'Counter Top Displays (CDU)',
+      formatGondola: 'Gondola Ends & Headers',
+      formatBooths: 'Exhibition & Event Booths',
+      formatKiosks: 'Pop-Up Retail Kiosks',
+      eyebrow: 'RETAIL PORTFOLIO',
+      sectionTitle: 'Point of Sale Implementations',
       loadingMsg: 'Loading POSS showcase campaigns…',
       gridNote: 'Real commercial deployments engineered for high brand retention at the point of decision.',
       pillarsBadge: 'MANUFACTURING DISCIPLINE',
@@ -682,10 +730,24 @@ export const PAGE_TRANSLATIONS = {
       submitBtn: 'ENVOYER LE BRIEF DE CAMPAGNE →',
       sendingBtn: 'TRANSMISSION EN COURS...',
       successMsg: 'Brief bien reçu! Un directeur de clientèle dédié vous recontactera sous 24h.',
+      deskTag: 'Bureau Médias Direct',
+      deskHeading: 'Campagnes Urgentes & Achat d\'Espace',
+      deskDesc: 'Pour les campagnes stratégiques majeures en Égypte et au Moyen-Orient. Contactez directement notre équipe de planification exécutive.',
     },
 
     // Outdoor Page
     outdoor: {
+      heroBadge: "Solutions d'Affichage Extérieur & DOOH",
+      heroTitle: 'Présence Impactante',
+      heroTitleItalic: 'en Affichage Urbain.',
+      heroSub: "Dominant les corridors stratégiques, autoroutes et carrefours majeurs en Égypte avec des formats spectaculaires et un ciblage géographique millimétré.",
+      formatUnipoles: 'Unipoles Géants',
+      formatDooh: 'Écrans Digitaux DOOH',
+      formatBridges: 'Bannières de Ponts',
+      formatRooftops: 'Toitures & Mégas',
+      formatTransit: 'Affichage Transports & Aéroports',
+      eyebrow: 'Portfolio Sélectionné',
+      sectionTitle: "Campagnes d'Affichage Stratégiques",
       gridNote: 'Déploiements réels de campagnes dans les principaux hubs commerciaux.',
       loadingMsg: 'Chargement des campagnes affichage extérieur…',
       coverageBadge: 'EMPLACEMENTS PREMIUM',
@@ -706,6 +768,16 @@ export const PAGE_TRANSLATIONS = {
 
     // POSS Page
     poss: {
+      heroTitle: 'Impact Visuel & ',
+      heroTitleItalic: 'PLV en Magasin.',
+      heroSub: "Transformer le flux de visiteurs en actes d'achat décisifs. Nous concevons, fabriquons et déployons des présentoirs PLV sur mesure et des kiosques haut de gamme en Égypte et dans la région MENA.",
+      formatFsdu: 'Présentoirs de Sol (FSDU)',
+      formatCdu: 'Présentoirs de Comptoir (CDU)',
+      formatGondola: 'Têtes de Gondole',
+      formatBooths: "Stands d'Exposition",
+      formatKiosks: 'Kiosques Éphémères',
+      eyebrow: 'Portfolio Retail',
+      sectionTitle: 'Réalisations PLV & Merchandising',
       loadingMsg: 'Chargement des réalisations PLV…',
       gridNote: 'Déploiements commerciaux réels conçus pour un impact maximal au point de décision.',
       pillarsBadge: 'DISCIPLINE DE FABRICATION',
@@ -717,7 +789,6 @@ export const PAGE_TRANSLATIONS = {
       pillar3Title: '3. Impression Haute Définition',
       pillar3Desc: 'Impression UV directe avec finitions anti-rayures résistant à un contact client intense.',
       pillar4Title: '4. Déploiement National Rapide',
-
       pillar4Desc: 'Équipes d\'installation clé en main intervenant directement dans les centres commerciaux et grandes surfaces.',
       ctaTitle: 'Prêt à optimiser votre présence retail?',
       ctaDesc: 'Collaborez avec OMS pour des solutions PLV sur mesure qui rendent vos produits irrésistibles en rayon.',

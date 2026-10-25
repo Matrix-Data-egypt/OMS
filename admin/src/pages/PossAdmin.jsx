@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, mediaUrl } from '../api';
 import { useAuth } from '../AuthContext';
 
-const emptyForm = { companyName: '', description: '', imageUrl: '' };
+const emptyForm = { companyName: '', description: '', type: '', imageUrl: '' };
 
 export default function PossAdmin() {
   const { isReadOnly } = useAuth();
@@ -41,6 +41,7 @@ export default function PossAdmin() {
     setForm({
       companyName: item.companyName || '',
       description: item.description || '',
+      type: item.type || '',
       imageUrl: item.image || '',
     });
     setImageFile(null);
@@ -64,6 +65,7 @@ export default function PossAdmin() {
       const fd = new FormData();
       fd.append('companyName', form.companyName);
       fd.append('description', form.description);
+      fd.append('type', form.type);
       if (form.imageUrl) fd.append('imageUrl', form.imageUrl);
       if (imageFile) fd.append('image', imageFile);
 
@@ -122,6 +124,25 @@ export default function PossAdmin() {
           <h2 style={{ fontFamily: 'var(--display)', marginBottom: 16 }}>
             {editingId ? 'Edit POSS Item' : 'New POSS Item'}
           </h2>
+
+          <div className="grid-2">
+            <div className="field">
+              <label>Company / Brand Name (اسم الشركة أو العميل)</label>
+              <input
+                value={form.companyName}
+                onChange={(e) => setForm({ ...form, companyName: e.target.value })}
+                placeholder="e.g. Aroma Cosmetics"
+              />
+            </div>
+            <div className="field">
+              <label>POSS Type / Format (نوع وحدة العرض / التنشيط)</label>
+              <input
+                value={form.type}
+                onChange={(e) => setForm({ ...form, type: e.target.value })}
+                placeholder="e.g. Floor Standing Display Unit (FSDU), Pop-Up Kiosk"
+              />
+            </div>
+          </div>
 
           <div className="field">
             <label>Short Description (شرح بسيط - اختياري)</label>
@@ -195,8 +216,9 @@ export default function PossAdmin() {
               <thead>
                 <tr>
                   <th style={{ width: 100 }}>Image</th>
+                  <th style={{ width: 160 }}>Company / Type</th>
                   <th>Short Description</th>
-                  <th style={{ width: 150 }}>Created</th>
+                  <th style={{ width: 130 }}>Created</th>
                   <th style={{ width: 140 }}>Actions</th>
                 </tr>
               </thead>
@@ -218,6 +240,16 @@ export default function PossAdmin() {
                         />
                       ) : (
                         <span style={{ color: 'var(--muted)', fontSize: 12 }}>No image</span>
+                      )}
+                    </td>
+                    <td>
+                      <strong style={{ display: 'block', fontSize: 13, color: 'var(--text)' }}>
+                        {item.companyName || '—'}
+                      </strong>
+                      {item.type && (
+                        <span style={{ fontSize: 12, color: 'var(--accent, #e11d48)' }}>
+                          🏷️ {item.type}
+                        </span>
                       )}
                     </td>
                     <td>

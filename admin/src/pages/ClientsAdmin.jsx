@@ -8,6 +8,7 @@ export default function ClientsAdmin() {
   const { isReadOnly } = useAuth();
   const [clients, setClients] = useState([]);
   const [form, setForm] = useState(emptyForm);
+  const [editingClient, setEditingClient] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
@@ -33,8 +34,22 @@ export default function ClientsAdmin() {
 
   const reset = () => {
     setForm(emptyForm);
+    setEditingClient(null);
     setLogoFile(null);
     setShowForm(false);
+  };
+
+  const handleEdit = (client) => {
+    setEditingClient(client);
+    setForm({
+      name: client.name || '',
+      website: client.website || '',
+      logoUrl: client.logo?.startsWith('http') ? client.logo : '',
+    });
+    setLogoFile(null);
+    setShowForm(true);
+    setShowBulkUpload(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetBulk = () => {
@@ -85,14 +100,20 @@ export default function ClientsAdmin() {
     try {
       const fd = new FormData();
       fd.append('name', form.name);
-      if (form.website) fd.append('website', form.website);
-      if (form.logoUrl) fd.append('logoUrl', form.logoUrl);
+      if (form.website !== undefined) fd.append('website', form.website);
+      if (form.logoUrl !== undefined) fd.append('logoUrl', form.logoUrl);
       if (logoFile) fd.append('logo', logoFile);
 
-      await api('/api/clients', { method: 'POST', body: fd });
+      if (editingClient) {
+        await api(`/api/clients/${editingClient.id}`, { method: 'PUT', body: fd });
+        setSuccessMsg('✓ تم تعديل بيانات العميل بنجاح');
+      } else {
+        await api('/api/clients', { method: 'POST', body: fd });
+        setSuccessMsg('✓ تم حفظ اللوجو بنجاح');
+      }
+
       reset();
       await load();
-      setSuccessMsg('✓ تم حفظ اللوجو بنجاح');
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
       setError(err.message);
@@ -106,6 +127,7 @@ export default function ClientsAdmin() {
     try {
       await api(`/api/clients/${id}`, { method: 'DELETE' });
       setClients((list) => list.filter((c) => c.id !== id));
+      if (editingClient?.id === id) reset();
     } catch (err) {
       setError(err.message);
     }
@@ -318,19 +340,49 @@ export default function ClientsAdmin() {
 
       {showForm && (
         <form className="card form-panel" onSubmit={handleSubmit}>
-          <h2 style={{ fontFamily: 'var(--display)', marginBottom: 16 }}>New client logo</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h2 style={{ fontFamily: 'var(--display)', margin: 0 }}>
+              {editingClient ? 'تعديل بيانات العميل / اللوجو (Edit Client)' : 'New client logo'}
+            </h2>
+            {editingClient && (
+              <span className="badge badge-in_review">وضع التعديل</span>
+            )}
+          </div>
 
           <div className="grid-2">
             <div className="field">
-              <label>Logo image *</label>
+              <label>
+                {editingClient
+                  ? 'تغيير صورة اللوجو (اختياري - اتركه فارغاً للاحتفاظ باللوجو الحالي)'
+                  : 'Logo image *'}
+              </label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+                required={!editingClient && !form.logoUrl}
               />
+              {editingClient?.logo && (
+                <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 12, color: 'var(--muted)' }}>اللوجو الحالي:</span>
+                  <img
+                    src={mediaUrl(editingClient.logo)}
+                    alt="Current Logo"
+                    style={{
+                      maxHeight: 38,
+                      maxWidth: 80,
+                      objectFit: 'contain',
+                      background: '#fff',
+                      padding: '3px 6px',
+                      borderRadius: 6,
+                      border: '1px solid var(--border)',
+                    }}
+                  />
+                </div>
+              )}
             </div>
             <div className="field">
-              <label>Or logo URL</label>
+              <label>Or logo URL (رابط اللوجو إن وُجد)</label>
               <input
                 value={form.logoUrl}
                 onChange={(e) => setForm({ ...form, logoUrl: e.target.value })}
@@ -341,7 +393,7 @@ export default function ClientsAdmin() {
 
           <div className="grid-2">
             <div className="field">
-              <label>Client name (optional / اختياري)</label>
+              <label>Client name (اسم العميل / البراند)</label>
               <input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -349,7 +401,7 @@ export default function ClientsAdmin() {
               />
             </div>
             <div className="field">
-              <label>Website (optional)</label>
+              <label>Website (موقع العميل الإلكتروني)</label>
               <input
                 value={form.website}
                 onChange={(e) => setForm({ ...form, website: e.target.value })}
@@ -360,10 +412,10 @@ export default function ClientsAdmin() {
 
           <div className="modal-actions">
             <button type="button" className="btn btn-ghost" onClick={reset}>
-              Cancel
+              إلغاء (Cancel)
             </button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Saving…' : 'Save client logo'}
+              {saving ? 'Saving…' : (editingClient ? 'حفظ التعديلات (Save changes)' : 'Save client logo')}
             </button>
           </div>
         </form>
@@ -375,14 +427,29 @@ export default function ClientsAdmin() {
         ) : (
           <div className="clients-admin-grid">
             {clients.map((c) => (
-              <div key={c.id} className="client-admin-card" title={c.website || 'Client logo'}>
+              <div key={c.id} className="client-admin-card" title={c.website || c.name || 'Client logo'}>
                 <div className="client-admin-thumb-wrapper">
                   <img
                     src={mediaUrl(c.logo)}
-                    alt="Client logo"
+                    alt={c.name || 'Client logo'}
                     loading="lazy"
                   />
                 </div>
+                {c.name && (
+                  <div style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    textAlign: 'center',
+                    padding: '4px 6px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    borderTop: '1px solid var(--border)',
+                    background: 'rgba(255,255,255,0.02)'
+                  }}>
+                    {c.name}
+                  </div>
+                )}
                 <div className="client-admin-card-actions">
                   {c.website ? (
                     <a
@@ -397,15 +464,26 @@ export default function ClientsAdmin() {
                     </a>
                   ) : <span />}
                   {!isReadOnly && (
-                    <button
-                      type="button"
-                      className="btn btn-danger btn-sm"
-                      style={{ padding: '2px 8px', fontSize: '11px' }}
-                      onClick={() => remove(c.id)}
-                      title="Delete logo"
-                    >
-                      Delete
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        style={{ padding: '2px 8px', fontSize: '11px' }}
+                        onClick={() => handleEdit(c)}
+                        title="تعديل بيانات العميل"
+                      >
+                        ✏️ تعديل
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        style={{ padding: '2px 8px', fontSize: '11px' }}
+                        onClick={() => remove(c.id)}
+                        title="Delete logo"
+                      >
+                        حذف
+                      </button>
+                    </>
                   )}
                 </div>
               </div>

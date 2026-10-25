@@ -63,6 +63,16 @@ export default function OutdoorSection() {
     };
   }, []);
 
+  // Close lightbox modal on ESC key
+  useEffect(() => {
+    if (!selectedImage) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setSelectedImage(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedImage]);
+
   const { language } = useLanguage();
   const T = PAGE_TRANSLATIONS[language]?.outdoor || PAGE_TRANSLATIONS.en.outdoor;
   const displayList = items.length > 0 ? items : FALLBACK_OUTDOOR;
@@ -72,30 +82,17 @@ export default function OutdoorSection() {
       {/* 1. Hero Section */}
       <section className="outdoor-hero-header">
         <span className="outdoor-badge-gold">
-          {language === 'ar' ? 'حلول إعلانات الطرق واللوحات العملاقة OOH' : language === 'fr' ? "Solutions d'Affichage Extérieur & DOOH" : 'OMS OUTDOOR & OOH SOLUTIONS'}
+          {T.heroBadge}
         </span>
         <h1 className="outdoor-main-title">
-          {language === 'ar' ? 'حضور استثنائي في' : language === 'fr' ? 'Présence Impactante' : 'High-Impact'}{' '}
+          {T.heroTitle}{' '}
           <span className="outdoor-text-italic">
-            {language === 'ar' ? 'أهم محاور الطرق.' : language === 'fr' ? 'en Affichage Urbain.' : 'Outdoor Presence.'}
+            {T.heroTitleItalic}
           </span>
         </h1>
         <p className="outdoor-subtext">
-          {language === 'ar'
-            ? 'الريادة والسيطرة البصرية على أهم المحاور الاستراتيجية، الكباري، والميادين الحيوية في القاهرة والجيزة والمحافظات بمقاييس عملاقة ومواقع هندسية دقيقة.'
-            : language === 'fr'
-            ? "Dominant les corridors stratégiques, autoroutes et carrefours majeurs en Égypte avec des formats spectaculaires et un ciblage géographique millimétré."
-            : "Dominating Egypt's most strategic arterial corridors, highways, and premium metropolitan hubs with unmissable scale, commanding frequency, and precision location engineering."}
+          {T.heroSub}
         </p>
-      </section>
-
-      {/* 2. Media Formats Strip */}
-      <section className="outdoor-formats-strip">
-        <div className="format-pill">{language === 'ar' ? 'لوحات يونيبول عملاقة' : language === 'fr' ? 'Unipoles Géants' : 'Mega Unipoles'}</div>
-        <div className="format-pill">{language === 'ar' ? 'شاشات رقمية تفاعلية DOOH' : language === 'fr' ? 'Écrans Digitaux DOOH' : 'Digital DOOH Screens'}</div>
-        <div className="format-pill">{language === 'ar' ? 'لافتات الكباري والمحاور' : language === 'fr' ? 'Bannières de Ponts' : 'Highway Bridge Banners'}</div>
-        <div className="format-pill">{language === 'ar' ? 'أسطح المباني والميادين' : language === 'fr' ? 'Toitures & Mégas' : 'Rooftops & Megas'}</div>
-        <div className="format-pill">{language === 'ar' ? 'لوحات المطارات ووسائط النقل' : language === 'fr' ? 'Affichage Transports & Aéroports' : 'Transit & Aerodrome Displays'}</div>
       </section>
 
       {/* 3. Showcase Grid */}
@@ -103,10 +100,10 @@ export default function OutdoorSection() {
         <div className="outdoor-grid-heading-row">
           <div>
             <span className="outdoor-section-eyebrow">
-              {language === 'ar' ? 'أبرز الأعمال والمواقع' : language === 'fr' ? 'Portfolio Sélectionné' : 'FEATURED PORTFOLIO'}
+              {T.eyebrow}
             </span>
             <h2 className="outdoor-section-title">
-              {language === 'ar' ? 'حملات إعلانات الطرق الاستراتيجية' : language === 'fr' ? "Campagnes d'Affichage Stratégiques" : 'Strategic Outdoor Campaigns'}
+              {T.sectionTitle}
             </h2>
           </div>
           <p className="outdoor-grid-note">{T.gridNote}</p>
@@ -126,8 +123,15 @@ export default function OutdoorSection() {
                   <div
                     className="outdoor-card-img-box"
                     onClick={() => setSelectedImage({ src: imgSrc, title: item.companyName, desc: item.description })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedImage({ src: imgSrc, title: item.companyName, desc: item.description });
+                      }
+                    }}
                     role="button"
                     tabIndex={0}
+                    aria-label={item.companyName ? `View ${item.companyName} showcase` : 'View showcase image'}
                   >
                     <img
                       src={imgSrc}

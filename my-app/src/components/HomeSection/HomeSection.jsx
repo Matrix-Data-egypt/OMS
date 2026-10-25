@@ -5,7 +5,6 @@ import { PAGE_TRANSLATIONS } from '../../context/translationsData';
 import { api, mediaUrl } from '../../api';
 import { DEFAULT_CLIENTS } from '../../data/clientsData';
 import {
-  CORE_PILLARS,
   CAMPAIGN_OBJECTIVES,
   TIMELINE_STEPS
 } from '../../data/agentData';

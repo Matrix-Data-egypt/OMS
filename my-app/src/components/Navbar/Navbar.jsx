@@ -312,7 +312,11 @@ const Navbar = ({ user, setUser }) => {
 
               {user ? (
                 <div className="drawer-user-logged">
-                  <span className="navbar-username">{user.name || user}</span>
+                  <span className="navbar-username">
+                    {typeof user === 'string'
+                      ? user
+                      : (user.fullName || user.name || user.email || 'User')}
+                  </span>
                   <button
                     onClick={() => {
                       if (window.confirm(t('nav.confirmLogout', 'هل تريد تسجيل الخروج؟'))) {

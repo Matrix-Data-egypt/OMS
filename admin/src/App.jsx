@@ -8,6 +8,7 @@ import OutdoorAdmin from './pages/OutdoorAdmin';
 import PossAdmin from './pages/PossAdmin';
 import ClientsAdmin from './pages/ClientsAdmin';
 import UsersAdmin from './pages/UsersAdmin';
+import CustomersAdmin from './pages/CustomersAdmin';
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
@@ -71,6 +72,7 @@ export default function App() {
           <Route path="poss" element={<ContentRoute element={<PossAdmin />} />} />
           <Route path="clients" element={<ContentRoute element={<ClientsAdmin />} />} />
           <Route path="users" element={<AdminRoute element={<UsersAdmin />} />} />
+          <Route path="customers" element={<AdminRoute element={<CustomersAdmin />} />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

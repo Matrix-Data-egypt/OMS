@@ -1,8 +1,63 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 import { AGENT_FLEET } from '../../data/agentData';
 
+const ORCHESTRATOR_STRINGS = {
+  ar: {
+    tag: 'خدماتنا الاستراتيجية',
+    title: 'كيف نحقق لعلامتك التجارية أقصى عائد وتأثير؟',
+    desc: 'فرق عمل متخصصة تعمل بتناغم وتكامل في أبحاث السوق، والإنتاج الإبداعي، وإعلانات الطرق، والتسويق الرقمي.',
+    liveActive: 'فريق العمل في وضع التشغيل الكامل',
+    statusLabel: 'حالة الخدمة',
+    statusValue: 'متاح للتعاقد فوراً',
+    whatDeliver: 'أبرز مخرجات الخدمة:',
+    startWith: 'ابدأ حملتك مع هذا القطاع ←',
+    seeHow: '⚡ محاكاة دورة العمل',
+    processing: 'جاري محاكاة سير العمل...',
+    workflowLabel: 'سير العمل التنفيذي:',
+    briefLabel: 'ملخص متطلبات العميل:',
+    deliverableLabel: 'المخرجات النهائية للمشروع:',
+    stepPrefix: 'المرحلة'
+  },
+  en: {
+    tag: 'Our Services',
+    title: 'How We Deliver Results for Your Brand',
+    desc: 'Specialized squads working across market research, creative production, media placement, and campaign performance — all focused on achieving your business goals.',
+    liveActive: 'LIVE STRATEGIC EXECUTION ACTIVE',
+    statusLabel: 'SERVICE STATUS',
+    statusValue: 'AVAILABLE NOW',
+    whatDeliver: 'What We Deliver:',
+    startWith: 'Get Started with',
+    seeHow: '⚡ See How It Works',
+    processing: 'Processing...',
+    workflowLabel: 'TEAM WORKFLOW:',
+    briefLabel: 'CLIENT BRIEF RECEIVED:',
+    deliverableLabel: 'DELIVERABLE:',
+    stepPrefix: 'STEP'
+  },
+  fr: {
+    tag: 'Nos Services',
+    title: 'Comment Nous Obtenons des Résultats pour Votre Marque',
+    desc: 'Des équipes spécialisées intervenant en synergie sur l’étude de marché, la création cinématographique, l’affichage et la performance média.',
+    liveActive: 'EXÉCUTION STRATÉGIQUE ACTIVE',
+    statusLabel: 'STATUT DE SERVICE',
+    statusValue: 'DISPONIBLE IMMÉDIATEMENT',
+    whatDeliver: 'Nos Livrables :',
+    startWith: 'Démarrer avec',
+    seeHow: '⚡ Voir la Méthode en Action',
+    processing: 'Simulation en cours...',
+    workflowLabel: 'FLUX DE TRAVAIL DE L’ÉQUIPE :',
+    briefLabel: 'BRIEF CLIENT REÇU :',
+    deliverableLabel: 'LIVRABLE FINAL :',
+    stepPrefix: 'ÉTAPE'
+  }
+};
+
 export default function AgentOrchestrator() {
+  const { language } = useLanguage();
+  const t = ORCHESTRATOR_STRINGS[language] || ORCHESTRATOR_STRINGS.en;
+
   const [selectedAgentId, setSelectedAgentId] = useState(AGENT_FLEET[0].id);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simStep, setSimStep] = useState(0);
@@ -29,10 +84,10 @@ export default function AgentOrchestrator() {
   return (
     <section className="agent-orchestrator-section" aria-label="Our Core Services">
       <div className="section-intro">
-        <span className="tag-purple-small">Our Services</span>
-        <h2>How We Deliver Results for Your Brand</h2>
+        <span className="tag-purple-small">{t.tag}</span>
+        <h2>{t.title}</h2>
         <p className="section-intro-desc">
-          Specialized teams working across market research, creative production, media placement, and campaign performance — all focused on achieving your business goals.
+          {t.desc}
         </p>
       </div>
 
@@ -72,14 +127,14 @@ export default function AgentOrchestrator() {
           <div className="agent-meta-badge-group">
             <span className="agent-code-tag">{activeAgent.code}</span>
             <span className="agent-live-pill">
-              <span className="live-dot" /> LIVE ENGINE ACTIVE
+              <span className="live-dot" /> {t.liveActive}
             </span>
             <span className="agent-version-tag">{activeAgent.version}</span>
           </div>
 
           <div className="agent-match-score">
-            <span className="match-label">SERVICE STATUS</span>
-            <span className="match-value">AVAILABLE NOW</span>
+            <span className="match-label">{t.statusLabel}</span>
+            <span className="match-value">{t.statusValue}</span>
           </div>
         </div>
 
@@ -102,7 +157,7 @@ export default function AgentOrchestrator() {
 
             {/* What We Deliver */}
             <div className="agent-capabilities-list">
-              <span className="caps-title">What We Deliver:</span>
+              <span className="caps-title">{t.whatDeliver}</span>
               <ul>
                 {activeAgent.capabilities.map((cap, i) => (
                   <li key={i}>
@@ -116,7 +171,7 @@ export default function AgentOrchestrator() {
             {/* Action Buttons */}
             <div className="agent-card-actions">
               <Link to="/contact" className="btn-agent-deploy">
-                Get Started with {activeAgent.code} &rarr;
+                {language === 'ar' ? `${t.startWith} (${activeAgent.code})` : `${t.startWith} ${activeAgent.code} →`}
               </Link>
               <button
                 type="button"
@@ -124,7 +179,7 @@ export default function AgentOrchestrator() {
                 onClick={handleRunSimulation}
                 disabled={isSimulating}
               >
-                {isSimulating ? 'Processing...' : '⚡ See How It Works'}
+                {isSimulating ? t.processing : t.seeHow}
               </button>
             </div>
           </div>
@@ -144,14 +199,14 @@ export default function AgentOrchestrator() {
 
               <div className="console-body">
                 <div className="console-prompt-block">
-                  <span className="console-prompt-label">CLIENT BRIEF RECEIVED:</span>
+                  <span className="console-prompt-label">{t.briefLabel}</span>
                   <p className="console-prompt-text">"{activeAgent.liveSimulation.inputPrompt}"</p>
                 </div>
 
                 <div className="console-divider" />
 
                 <div className="console-logs-stream">
-                  <span className="console-stream-label">TEAM WORKFLOW:</span>
+                  <span className="console-stream-label">{t.workflowLabel}</span>
                   
                   {activeAgent.liveSimulation.neuralExecution.map((log, index) => {
                     const isVisible = simStep === 0 || simStep > index;
@@ -160,7 +215,7 @@ export default function AgentOrchestrator() {
                         key={index}
                         className={`console-log-row ${isVisible ? 'is-visible' : 'is-pending'}`}
                       >
-                        <span className="log-timestamp">[STEP {index + 1}]</span>
+                        <span className="log-timestamp">[{t.stepPrefix} {index + 1}]</span>
                         <span className="log-text">{log}</span>
                       </div>
                     );
@@ -171,7 +226,7 @@ export default function AgentOrchestrator() {
                 <div className="console-outcome-badge">
                   <div className="outcome-icon" aria-hidden="true">✓</div>
                   <div className="outcome-info">
-                    <span className="outcome-label">DELIVERABLE:</span>
+                    <span className="outcome-label">{t.deliverableLabel}</span>
                     <span className="outcome-metric">{activeAgent.liveSimulation.outputHighlight}</span>
                   </div>
                 </div>

@@ -4,11 +4,11 @@
    ========================================================================== */
 
 .custom-footer {
-  background-color: #171717;
-  color: #F5F5F5;
+  background-color: var(--color-bg-primary, #FFFFFF);
+  color: var(--color-text-main, #0F172A);
   padding: 64px 80px 32px;
   font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
-  border-top: 1px solid #2A2A2A;
+  border-top: 1px solid var(--color-border, #E2E8F0);
   position: relative;
   z-index: 2;
 }

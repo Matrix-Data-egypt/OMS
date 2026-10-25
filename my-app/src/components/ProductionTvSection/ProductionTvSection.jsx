@@ -114,9 +114,11 @@ export default function ProductionTvSection() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Top 5 Latest Videos (أحدث 5 فيديوهات)
+  // Top 5 Latest Videos (أحدث 5 فيديوهات مرتبة بالتاريخ تنازلياً)
   const latestVideos = useMemo(() => {
-    return videos.slice(0, 5);
+    return [...videos]
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+      .slice(0, 5);
   }, [videos]);
 
   // Group videos by category
@@ -124,7 +126,7 @@ export default function ProductionTvSection() {
     const normalize = (value) =>
       String(value || '')
         .replace(/&amp;/gi, '&')
-        .replace(/^Food\s*&\s*Beverages\$/i, 'Food and Beverages')
+        .replace(/^Food\s*&\s*Beverages$/i, 'Food and Beverages')
         .trim();
 
     return VIDEO_CATEGORIES.map((category) => ({
@@ -137,7 +139,7 @@ export default function ProductionTvSection() {
     const normalize = (value) =>
       String(value || '')
         .replace(/&amp;/gi, '&')
-        .replace(/^Food\s*&\s*Beverages\$/i, 'Food and Beverages')
+        .replace(/^Food\s*&\s*Beverages$/i, 'Food and Beverages')
         .trim();
 
     return videos.filter(
@@ -157,6 +159,12 @@ export default function ProductionTvSection() {
         key={item.id}
         className={`prod-video-card ${isFeatured ? 'is-featured-card' : ''}`}
         onClick={() => handleCardClick(item)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleCardClick(item);
+          }
+        }}
         role="button"
         tabIndex={0}
       >

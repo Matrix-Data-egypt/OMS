@@ -52,6 +52,7 @@ const defaultDb = {
   outdoor: [],
   poss: [],
   users: defaultUsers,
+  customers: [],
 };
 
 function ensureDb() {
@@ -87,6 +88,7 @@ function readDb() {
     outdoor: [],
     poss: [],
     users: defaultUsers,
+    customers: [],
     ...parsed,
   };
 }

@@ -80,11 +80,16 @@ export default function Layout() {
             </>
           )}
 
-          {/* 3. User Management - Admin only */}
+          {/* 3. Admin-only pages */}
           {isAdmin && (
-            <NavLink to="/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} style={{ marginTop: '12px', borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
-              <span>👥 الصلاحيات والمستخدمين</span>
-            </NavLink>
+            <>
+              <NavLink to="/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} style={{ marginTop: '12px', borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
+                <span>👥 الصلاحيات والمستخدمين</span>
+              </NavLink>
+              <NavLink to="/customers" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <span>🙋 العملاء المسجلون</span>
+              </NavLink>
+            </>
           )}
         </nav>
 

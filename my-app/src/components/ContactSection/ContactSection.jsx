@@ -299,12 +299,10 @@ export default function ContactSection() {
           {/* Secondary Information Sidebar */}
           <aside className="sidebar-column" aria-label="Direct Channels Support">
             <div className="emergency-desk-card">
-              <span className="card-tag">{language === 'ar' ? 'مكتب التواصل المباشر' : 'Direct Media Desk'}</span>
-              <h3>{language === 'ar' ? 'حملات الطوارئ والتخطيط الإعلامي الفوري' : 'Emergency Campaign & Media Buying Desk'}</h3>
+              <span className="card-tag">{tContact.deskTag}</span>
+              <h3>{tContact.deskHeading}</h3>
               <p>
-                {language === 'ar'
-                  ? 'للحملات الكبرى العاجلة في مصر والشرق الأوسط، تواصل مع فريق التخطيط التنفيذي مباشرة.'
-                  : 'Critical heavy-hitter campaigns across Global, Egypt, & MENA. For fast implementation requirements, reach out directly.'}
+                {tContact.deskDesc}
               </p>
 
               <div className="contact-detail-row">

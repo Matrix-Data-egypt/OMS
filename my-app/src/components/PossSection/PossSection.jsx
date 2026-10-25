@@ -62,6 +62,16 @@ export default function PossSection() {
     };
   }, []);
 
+  // Close lightbox modal on ESC key
+  useEffect(() => {
+    if (!selectedImage) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setSelectedImage(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedImage]);
+
   const { language } = useLanguage();
   const T = PAGE_TRANSLATIONS[language]?.poss || PAGE_TRANSLATIONS.en.poss;
   const displayList = items.length > 0 ? items : FALLBACK_POSS;
@@ -71,27 +81,14 @@ export default function PossSection() {
       {/* 1. Hero Section */}
       <section className="poss-hero-header">
         <h1 className="poss-main-title">
-          {language === 'ar' ? 'تصميم وتصنيع منصات العرض و' : language === 'fr' ? 'Impact Visuel & ' : 'Engineered In-Store Impact & '}{' '}
+          {T.heroTitle}{' '}
           <span className="poss-text-italic">
-            {language === 'ar' ? 'نقاط البيع POSS.' : language === 'fr' ? 'PLV en Magasin.' : 'POS Branding.'}
+            {T.heroTitleItalic}
           </span>
         </h1>
         <p className="poss-subtext">
-          {language === 'ar'
-            ? 'تحويل حركة المترددين في المتاجر إلى قرارات شراء حاسمة. نقوم بتصميم وتصنيع ونشر وحدات عرض نقاط البيع الفاخرة، والأكشاك الترويجية، ومنصات التنشيط عبر مصر والشرق الأوسط.'
-            : language === 'fr'
-            ? 'Transformer le flux de visiteurs en actes d\'achat décisifs. Nous concevons, fabriquons et déployons des présentoirs PLV sur mesure et des kiosques haut de gamme en Égypte et dans la région MENA.'
-            : 'Converting consumer footfall into decisive purchase action. We design, manufacture, and deploy custom Point of Sale display units, retail kiosks, and brand activations across Egypt and the MENA region.'}
+          {T.heroSub}
         </p>
-      </section>
-
-      {/* 2. Solutions Format Strip */}
-      <section className="poss-formats-strip">
-        <div className="poss-pill">{language === 'ar' ? 'وحدات عرض أرضية (FSDU)' : language === 'fr' ? 'Présentoirs de Sol (FSDU)' : 'Floor Standing Display Units (FSDU)'}</div>
-        <div className="poss-pill">{language === 'ar' ? 'منصات كاونتر مكتبية (CDU)' : language === 'fr' ? 'Présentoirs de Comptoir (CDU)' : 'Counter Top Displays (CDU)'}</div>
-        <div className="poss-pill">{language === 'ar' ? 'رؤوس وأطراف أرفف جوندولا' : language === 'fr' ? 'Têtes de Gondole' : 'Gondola Ends & Headers'}</div>
-        <div className="poss-pill">{language === 'ar' ? 'أجنحة المعارض والفعاليات' : language === 'fr' ? 'Stands d\'Exposition' : 'Exhibition & Event Booths'}</div>
-        <div className="poss-pill">{language === 'ar' ? 'أكشاك تجارية تفاعلية' : language === 'fr' ? 'Kiosques Éphémères' : 'Pop-Up Retail Kiosks'}</div>
       </section>
 
       {/* 3. Showcase Grid */}
@@ -99,10 +96,10 @@ export default function PossSection() {
         <div className="poss-grid-heading-row">
           <div>
             <span className="poss-section-eyebrow">
-              {language === 'ar' ? 'معرض نقاط البيع والتجزئة' : language === 'fr' ? 'Portfolio Retail' : 'RETAIL PORTFOLIO'}
+              {T.eyebrow}
             </span>
             <h2 className="poss-section-title">
-              {language === 'ar' ? 'تطبيقات منصات ونقاط البيع' : language === 'fr' ? 'Réalisations PLV & Merchandising' : 'Point of Sale Implementations'}
+              {T.sectionTitle}
             </h2>
           </div>
           <p className="poss-grid-note">
@@ -124,8 +121,15 @@ export default function PossSection() {
                   <div
                     className="poss-card-img-box"
                     onClick={() => setSelectedImage({ src: imgSrc, title: item.companyName, desc: item.description })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedImage({ src: imgSrc, title: item.companyName, desc: item.description });
+                      }
+                    }}
                     role="button"
                     tabIndex={0}
+                    aria-label={item.companyName ? `View ${item.companyName} retail showcase` : 'View retail showcase image'}
                   >
                     <img
                       src={imgSrc}

@@ -48,7 +48,7 @@ router.get('/:id', (req, res) => {
 // Create - Allowed for Admin and Data Entry
 router.post('/', requireContentAccess, requireWriteAccess, upload.single('image'), (req, res) => {
   try {
-    const { companyName, description } = req.body || {};
+    const { companyName, description, location } = req.body || {};
     const imageUrl = req.file
       ? `/uploads/outdoor/${req.file.filename}`
       : (req.body.imageUrl || '').trim();
@@ -62,6 +62,7 @@ router.post('/', requireContentAccess, requireWriteAccess, upload.single('image'
       id: uuidv4(),
       companyName: (companyName || '').trim(),
       description: (description || '').trim(),
+      location: (location || '').trim(),
       image: imageUrl,
       order: (outdoor || []).length,
       createdAt: new Date().toISOString(),
@@ -86,6 +87,8 @@ router.put('/:id', requireContentAccess, requireWriteAccess, upload.single('imag
           req.body.companyName !== undefined ? req.body.companyName.trim() : c.companyName,
         description:
           req.body.description !== undefined ? req.body.description.trim() : c.description,
+        location:
+          req.body.location !== undefined ? req.body.location.trim() : (c.location || ''),
         image: req.file
           ? `/uploads/outdoor/${req.file.filename}`
           : req.body.imageUrl !== undefined

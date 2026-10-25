@@ -216,3 +216,24 @@ export const TIMELINE_STEPS = [
     desc: 'We continuously monitor campaign performance, share transparent reports with your team, and make strategic adjustments to maximize your results and investment return.'
   }
 ];
+
+export const SECURITY_STANDARDS = [
+  {
+    id: 'sec-1',
+    badge: 'Confidentiality',
+    title: 'Strict Commercial Isolation',
+    desc: 'All campaign strategies, market research intelligence, and creative deliverables remain isolated and protected by strict NDAs.'
+  },
+  {
+    id: 'sec-2',
+    badge: 'Media Integrity',
+    title: 'Transparent Media Verification',
+    desc: 'Every broadcast second and outdoor billboard installation is documented and verified with full transmission logs and execution audits.'
+  },
+  {
+    id: 'sec-3',
+    badge: 'Data Protection',
+    title: 'Encrypted Digital Handling',
+    desc: 'High-intent audience analytics and lead pipelines are secured via modern TLS encryption and industry best practices.'
+  }
+];

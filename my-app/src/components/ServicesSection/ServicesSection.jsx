@@ -85,20 +85,53 @@ function ServiceCard({ service, language }) {
   );
 }
 
-/* Infinite horizontal carousel — duplicates items for seamless loop */
-function ServiceCarousel({ services, language, direction = 'left' }) {
-  // Duplicate the list to make a seamless loop
-  const doubled = [...services, ...services];
+/* Controlled manual slider with navigation arrows and smooth slide */
+function ServiceCarousel({ services, language }) {
+  const scrollRef = React.useRef(null);
+  const isRtl = language === 'ar';
+
+  const handleScroll = (dir) => {
+    if (!scrollRef.current) return;
+    const scrollAmount = 370; // 1 card width + gap
+    const delta = dir === 'next'
+      ? (isRtl ? -scrollAmount : scrollAmount)
+      : (isRtl ? scrollAmount : -scrollAmount);
+    scrollRef.current.scrollBy({ left: delta, behavior: 'smooth' });
+  };
 
   return (
-    <div className="svc-carousel-viewport">
-      <div className={`svc-carousel-track svc-carousel-track--${direction}`}>
-        {doubled.map((s, i) => (
-          <div className="svc-carousel-item" key={`${s.id}-${i}`}>
-            <ServiceCard service={s} language={language} />
-          </div>
-        ))}
+    <div className="svc-slider-wrapper">
+      <button
+        type="button"
+        className="svc-slider-arrow svc-slider-arrow--prev"
+        onClick={() => handleScroll('prev')}
+        aria-label="Previous services"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points={isRtl ? "9 18 15 12 9 6" : "15 18 9 12 15 6"} />
+        </svg>
+      </button>
+
+      <div className="svc-carousel-viewport" ref={scrollRef}>
+        <div className="svc-carousel-track">
+          {services.map((s, i) => (
+            <div className="svc-carousel-item" key={`${s.id}-${i}`}>
+              <ServiceCard service={s} language={language} />
+            </div>
+          ))}
+        </div>
       </div>
+
+      <button
+        type="button"
+        className="svc-slider-arrow svc-slider-arrow--next"
+        onClick={() => handleScroll('next')}
+        aria-label="Next services"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points={isRtl ? "15 18 9 12 15 6" : "9 18 15 12 9 6"} />
+        </svg>
+      </button>
     </div>
   );
 }

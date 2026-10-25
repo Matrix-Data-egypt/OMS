@@ -404,21 +404,22 @@
       font-weight: 600;
     }
 
-    & .card-heading {
+    & .card-heading, & h3 {
       font-size: 1.35rem;
       font-weight: 800;
       margin: 1rem 0 0 0;
     }
 
-    & .card-paragraph {
+    & .card-paragraph, & p {
       font-size: 0.85rem;
       opacity: 0.85;
       line-height: 1.5;
       margin: 0 0 1.5rem 0;
     }
 
-    & .contact-row {
+    & .contact-row, & .contact-detail-row {
       display: flex;
+      align-items: flex-start;
       gap: 1rem;
       margin-bottom: 1.25rem;
 
@@ -426,14 +427,20 @@
         margin-bottom: 0;
       }
 
-      & label {
-        display: block;
-        font-size: 0.7rem;
-        opacity: 0.6;
-        text-transform: uppercase;
+      & .contact-icon {
+        font-size: 1.25rem;
+        line-height: 1.2;
       }
 
-      & a {
+      & label, & .contact-label {
+        display: block;
+        font-size: 0.75rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        margin-bottom: 0.2rem;
+      }
+
+      & a, & .contact-link {
         color: var(--contact-text-light);
         font-weight: 700;
         text-decoration: none;
@@ -443,6 +450,13 @@
         &:hover {
           opacity: 0.85;
         }
+      }
+
+      & .contact-subdetail {
+        margin: 0.2rem 0 0 0;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        opacity: 0.9;
       }
     }
   }
