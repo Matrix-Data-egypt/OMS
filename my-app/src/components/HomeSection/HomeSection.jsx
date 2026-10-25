@@ -282,22 +282,22 @@ const LOCALIZED_TIMELINE = {
 
 const LOCALIZED_PILLARS = {
   ar: [
-    { id: 'p1', title: 'الرؤية والاستراتيجية', desc: 'أبحاث معمقة وفهم دقيق لسلوك المستهلك والأسواق' },
-    { id: 'p2', title: 'التميز الإبداعي', desc: 'إنتاج إعلاني سينمائي ومحتوى بصري فاخر يخلد العلامة' },
-    { id: 'p3', title: 'الانتشار الشامل', desc: 'تلفزيون، شاشات طرق أيقونية، وحملات رقمية مؤثرة' },
-    { id: 'p4', title: 'نتائج وأثر ملموس', desc: 'نمو حقيقي للمبيعات وترسيخ مكانة رائدة لعلامتك' },
+    { id: 'p1', title: 'الرؤية الاستراتيجية', desc: 'دراسات سوق وأبحاث تحليلية متعمقة' },
+    { id: 'p2', title: 'التميز الإبداعي', desc: 'إنتاج إعلاني سينمائي ومحتوى مؤثر' },
+    { id: 'p3', title: 'الانتشار الشامل', desc: 'إعلانات التلفزيون وشاشات الطرق الكبرى' },
+    { id: 'p4', title: 'قيادة السوق والنمو', desc: 'تحقيق أثر تجاري ملموس ومستدام' },
   ],
   en: [
-    { id: 'p1', title: 'Strategic Vision', desc: 'In-depth market research and audience intelligence' },
-    { id: 'p2', title: 'Creative Excellence', desc: 'Cinematic visual production and compelling brand storytelling' },
-    { id: 'p3', title: 'Omni-Channel Media', desc: 'Prime TV broadcasts, mega billboards, and high-impact digital' },
-    { id: 'p4', title: 'Decisive Growth', desc: 'Measurable market impact and sustained brand authority' },
+    { id: 'p1', title: 'Strategic Vision', desc: 'Deep market intelligence & audience research' },
+    { id: 'p2', title: 'Creative Excellence', desc: 'Cinematic production & compelling storytelling' },
+    { id: 'p3', title: 'Omni-Channel Media', desc: 'Prime TV broadcasts & iconic outdoor billboards' },
+    { id: 'p4', title: 'Market Leadership', desc: 'Measurable commercial impact & brand authority' },
   ],
   fr: [
-    { id: 'p1', title: 'Vision Stratégique', desc: 'Études de marché approfondies et analyse des cibles' },
-    { id: 'p2', title: 'Excellence Créative', desc: 'Production cinématographique et storytelling de marque' },
-    { id: 'p3', title: 'Diffusion 360°', desc: 'Télévision, affichage urbain majeur et performance digitale' },
-    { id: 'p4', title: 'Croissance Décisive', desc: 'Impact commercial mesurable et leadership de marque' },
+    { id: 'p1', title: 'Vision Stratégique', desc: 'Études de marché et analyse des cibles' },
+    { id: 'p2', title: 'Excellence Créative', desc: 'Production cinématographique et storytelling' },
+    { id: 'p3', title: 'Diffusion 360°', desc: 'Télévision, affichage urbain et digital' },
+    { id: 'p4', title: 'Croissance Décisive', desc: 'Impact commercial mesurable et pérenne' },
   ]
 };
 
@@ -580,6 +580,14 @@ export default function HomeSection() {
         >
           <div className="hero-clean-content overlay">
 
+                      {/* Bold agency eyebrow */}
+            <div className="hero-agency-eyebrow" aria-hidden="true">
+              <span className="hero-eyebrow-line" />
+              <span className="hero-eyebrow-text">
+                {language === 'ar' ? 'وكالة التسويق الرائدة' : language === 'fr' ? 'Agence de Marketing de Référence' : 'Egypt\'s Leading Marketing Agency'}
+              </span>
+            </div>
+
             {/* Animated services ticker */}
             <div className="hero-services-ticker" aria-hidden="true">
               <div className="hero-ticker-track">
@@ -596,6 +604,8 @@ export default function HomeSection() {
               {t('home.heroTitle1', 'Your Vision, Amplified')}<br />
               <span className="highlight-gold-clean">{t('home.heroTitle2', 'Across Every Channel & Screen.')}</span>
             </h1>
+
+            <span className="hero-title-divider" aria-hidden="true" />
 
             <p className="hero-paragraph-clean">
               {t(
