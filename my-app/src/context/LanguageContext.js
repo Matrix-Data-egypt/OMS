@@ -19,7 +19,7 @@ export const TRANSLATIONS = {
     'nav.productionTv': 'الإنتاج التلفزيوني',
     'nav.portfolio': 'Portfolio (سابقة الأعمال)',
     'nav.portfolioShort': 'Portfolio',
-    'nav.productionTvDesc': 'إعلانات تجارية وسينمائية',
+    'nav.productionTvDesc': 'إعلانات تجارية وإنتاج تلفزيوني',
     'nav.possDesc': 'نقاط البيع ومنصات العرض',
     'nav.outdoorDesc': 'شاشات ولافتات الطرق الأيقونية',
     'nav.clients': 'عملاؤنا',
@@ -52,7 +52,7 @@ export const TRANSLATIONS = {
     'about.badge': 'من نحن • وكالة إعلانية متكاملة',
     'about.title1': 'نحن نصنع علامات تجارية',
     'about.title2': 'تقود الأسواق وتلهم الجماهير.',
-    'about.desc': 'في OMS (One Media Solution)، نجمع بين الاستراتيجية الثاقبة، الإبداع السينمائي، وهندسة الوسائط المبتكرة لبناء علامات تجارية تصنع فارقاً حقيقياً وتستحوذ على اهتمام المستهلكين في مصر والشرق الأوسط.',
+    'about.desc': 'في OMS (One Media Solution)، نجمع بين الاستراتيجية الثاقبة، الإبداع البصري، وهندسة الوسائط المبتكرة لبناء علامات تجارية تصنع فارقاً حقيقياً وتستحوذ على اهتمام المستهلكين في مصر والشرق الأوسط.',
     'about.whyUs': 'لماذا يختارنا الشركاء؟',
 
     // Services Section
@@ -71,9 +71,9 @@ export const TRANSLATIONS = {
     'poss.sub': 'نحول زيارات المتاجر إلى قرارات شراء حاسمة من خلال تصاميم هندسية فاخرة ومنصات عرض متطورة في أكبر المتاجر والمولات.',
 
     // Production TV Section
-    'prod.badge': 'الإنتاج التلفزيوني والسينمائي',
-    'prod.title': 'إعلانات تجارية بمعايير سينمائية عالمية',
-    'prod.sub': 'قصص بصرية آسرة وإخراج سينمائي استثنائي ينقل رسالة علامتك التجارية بأعلى جودة على كبرى القنوات التلفزيونية والمنصات الرقمية.',
+    'prod.badge': 'الإنتاج التلفزيوني والإعلاني',
+    'prod.title': 'إعلانات تجارية بإنتاج احترافي',
+    'prod.sub': 'قصص بصرية آسرة وإنتاج احترافي ينقل رسالة علامتك التجارية بأعلى جودة على كبرى القنوات التلفزيونية والمنصات الرقمية.',
 
     // Contact Section
     'contact.badge': 'تواصل معنا',
@@ -90,7 +90,7 @@ export const TRANSLATIONS = {
     'footer.workLink': 'أعمالنا وقدراتنا',
     'footer.outdoorLink': 'شبكة إعلانات الطرق',
     'footer.possLink': 'نقاط البيع والتوزيع POSS',
-    'footer.tvLink': 'الإنتاج التلفزيوني والسينمائي',
+    'footer.tvLink': 'الإنتاج التلفزيوني',
     'footer.email': 'البريد الإلكتروني',
     'footer.rights': 'جميع الحقوق محفوظة لشركة One Media Solution (OMS).',
   },
@@ -105,7 +105,7 @@ export const TRANSLATIONS = {
     'nav.productionTv': 'Production TV',
     'nav.portfolio': 'Portfolio',
     'nav.portfolioShort': 'Portfolio',
-    'nav.productionTvDesc': 'Cinematic Commercials & Films',
+    'nav.productionTvDesc': 'Commercials & TV Production',
     'nav.possDesc': 'Retail & Point of Sale Displays',
     'nav.outdoorDesc': 'Iconic Outdoor Billboard Network',
     'nav.clients': 'Clients',
@@ -138,7 +138,7 @@ export const TRANSLATIONS = {
     'about.badge': 'Who We Are • Full-Service Agency',
     'about.title1': 'We Build Iconic Brands That',
     'about.title2': 'Move Markets & Inspire Audiences.',
-    'about.desc': 'At OMS (One Media Solution), we fuse high-level strategic intelligence, cinematic storytelling, and engineered media distribution to create campaigns that command consumer recall across Egypt and the MENA region.',
+    'about.desc': 'At OMS (One Media Solution), we fuse high-level strategic intelligence, compelling visual storytelling, and engineered media distribution to create campaigns that command consumer recall across Egypt and the MENA region.',
     'about.whyUs': 'Why Strategic Leaders Choose OMS',
 
     // Services Section
@@ -157,9 +157,9 @@ export const TRANSLATIONS = {
     'poss.sub': 'Precision-manufactured luxury retail displays, kiosks, and experiential retail pods engineered for maximum brand retention.',
 
     // Production TV Section
-    'prod.badge': 'Cinematic TV Commercial Production',
-    'prod.title': 'Commercial Fire Meets Cinematic Discipline',
-    'prod.sub': 'Compelling brand narratives and high-intent commercial films broadcasted across major television networks and global digital platforms.',
+    'prod.badge': 'TV & VIDEO PRODUCTION',
+    'prod.title': 'High-Impact Commercial Video Production',
+    'prod.sub': 'Compelling brand narratives and high-quality commercial videos broadcast across major television networks and digital platforms.',
 
     // Contact Section
     'contact.badge': 'Connect With Us',
@@ -191,7 +191,7 @@ export const TRANSLATIONS = {
     'nav.productionTv': 'Production TV',
     'nav.portfolio': 'Portfolio',
     'nav.portfolioShort': 'Portfolio',
-    'nav.productionTvDesc': 'Publicités & Cinéma',
+    'nav.productionTvDesc': 'Publicités & Production TV',
     'nav.possDesc': 'PLV & Présentoirs de vente',
     'nav.outdoorDesc': 'Réseau d’Affichage Extérieur',
     'nav.clients': 'Nos Clients',
@@ -224,7 +224,7 @@ export const TRANSLATIONS = {
     'about.badge': 'Qui Sommes-Nous • Agence Intégrée',
     'about.title1': 'Nous Créons des Marques Qui',
     'about.title2': 'Dominent les Marchés et Inspirent.',
-    'about.desc': 'Chez OMS (One Media Solution), nous combinons stratégie percutante, narration cinématographique et ingénierie média pour créer des campagnes mémorables en Égypte et dans la région MENA.',
+    'about.desc': 'Chez OMS (One Media Solution), nous combinons stratégie percutante, récits visuels captivants et ingénierie média pour créer des campagnes mémorables en Égypte et dans la région MENA.',
     'about.whyUs': 'Pourquoi les Leaders Choisissent OMS',
 
     // Services Section
@@ -243,9 +243,9 @@ export const TRANSLATIONS = {
     'poss.sub': 'Présentoirs de luxe, stands modulaires et îlots de vente interactifs conçus pour maximiser l’impact au point de décision.',
 
     // Production TV Section
-    'prod.badge': 'Production Télévisée & Cinéma',
-    'prod.title': 'Excellence Cinématographique et Impact Commercial',
-    'prod.sub': 'Récits visuels captivants et réalisation cinématographique de pointe diffusés sur les plus grandes chaînes et plateformes.',
+    'prod.badge': 'PRODUCTION TV & VIDÉO',
+    'prod.title': 'Des publicités vidéo à fort impact',
+    'prod.sub': 'Des récits visuels captivants et des productions vidéo de qualité diffusés sur les grandes chaînes et plateformes.',
 
     // Contact Section
     'contact.badge': 'Contactez-Nous',

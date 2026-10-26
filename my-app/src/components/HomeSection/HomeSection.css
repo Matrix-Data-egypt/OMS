@@ -592,9 +592,9 @@ html[lang="ar"] .home-clients-title,
   gap: 8px;
   min-height: 48px;
   padding: 12px 20px;
-  border: 2px solid rgba(10, 10, 10, 0.16);
+  border: 2px solid var(--oms-border-dark);
   border-radius: 3px;
-  color: var(--oms-black);
+  color: var(--oms-text-title);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -610,19 +610,19 @@ html[lang="ar"] .home-clients-title,
 .home-explore-btn:hover {
   border-color: var(--oms-red);
   background: var(--oms-red);
-  color: var(--oms-white);
+  color: #FFFFFF;
   transform: translateY(-2px);
 }
 
 .home-outdoor-spotlight .home-explore-btn {
-  border-color: rgba(255, 255, 255, 0.22);
-  color: var(--oms-white);
+  border-color: var(--oms-border-dark);
+  color: var(--oms-text-title);
 }
 
 .home-outdoor-spotlight .home-explore-btn:hover {
   border-color: var(--oms-red);
   background: var(--oms-red);
-  color: var(--oms-white);
+  color: #FFFFFF;
 }
 
 /* 07. CLIENT LOGOS
@@ -637,7 +637,6 @@ html[lang="ar"] .home-clients-title,
   padding: 12px 0 24px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
   direction: ltr !important;
   mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
@@ -658,25 +657,12 @@ html[lang="ar"] .home-clients-title,
   animation: homeScrollLeftAcross 48s linear infinite;
 }
 
-.home-track-row-2 {
-  animation: homeScrollRightAcross 54s linear infinite;
-}
-
 @keyframes homeScrollLeftAcross {
   0% {
     transform: translateX(0);
   }
   100% {
     transform: translateX(-50%);
-  }
-}
-
-@keyframes homeScrollRightAcross {
-  0% {
-    transform: translateX(-50%);
-  }
-  100% {
-    transform: translateX(0);
   }
 }
 
@@ -798,7 +784,7 @@ html[lang="ar"] .home-clients-title,
 .home-outdoor-cards-grid,
 .home-poss-cards-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 22px;
   align-items: stretch;
 }
@@ -870,7 +856,7 @@ html[lang="ar"] .home-clients-title,
 
 .home-tv-card:hover .home-tv-play-bubble {
   background: var(--oms-red);
-  color: var(--oms-white);
+  color: #FFFFFF;
   transform: translate(-50%, -50%) scale(1.1);
   box-shadow: 0 0 0 8px rgba(227, 27, 35, 0.22);
 }
@@ -891,7 +877,7 @@ html[lang="ar"] .home-clients-title,
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 4px;
   background: rgba(17, 17, 17, 0.78);
-  color: var(--oms-white);
+  color: #FFFFFF;
   font-size: 0.7rem;
   font-weight: 700;
   text-overflow: ellipsis;
@@ -962,8 +948,8 @@ html[lang="ar"] .home-clients-title,
   min-height: 220px;
   align-items: center;
   justify-content: center;
-  background: var(--oms-black);
-  color: var(--oms-gold-light);
+  background: #11131B;
+  color: #FFFFFF;
   font-size: 0.85rem;
   font-weight: 700;
 }
@@ -973,8 +959,8 @@ html[lang="ar"] .home-clients-title,
 
 .home-outdoor-card {
   border-color: var(--oms-border-dark);
-  background: var(--oms-black-soft);
-  color: var(--oms-white);
+  background: var(--oms-bg-card);
+  color: var(--oms-text-title);
 }
 
 .home-outdoor-card:hover {
@@ -1022,7 +1008,7 @@ html[lang="ar"] .home-clients-title,
   padding: 7px 12px;
   border-radius: 3px;
   background: var(--oms-red);
-  color: var(--oms-white);
+  color: #FFFFFF;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -1039,7 +1025,7 @@ html[lang="ar"] .home-clients-title,
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 4px;
   background: rgba(17, 17, 17, 0.82);
-  color: var(--oms-white);
+  color: #FFFFFF;
   font-size: 0.72rem;
   font-weight: 800;
   text-overflow: ellipsis;
@@ -1079,9 +1065,14 @@ html[lang="ar"] .home-clients-title,
   gap: 8px;
   padding-top: 14px;
   border-top: 1px solid var(--oms-border-dark);
-  color: var(--oms-red-light);
+  color: var(--oms-red-dark);
   font-size: 0.77rem;
   line-height: 1.6;
+}
+
+[data-theme="dark"] .home-tv-action-hint,
+[data-theme="dark"] .home-outdoor-loc-pill {
+  color: var(--oms-red-light);
 }
 
 .pin-icon {
@@ -1317,12 +1308,12 @@ html[lang="ar"] .home-clients-title,
 --------------------------------------------------------- */
 
 .objectives-section {
-  background: var(--oms-black);
-  color: var(--oms-white);
+  background: #11131B;
+  color: #F1F5F9;
 }
 
 .objectives-section .section-intro h2 {
-  color: var(--oms-white);
+  color: #FFFFFF;
 }
 
 .objectives-section .section-intro-desc {
@@ -1347,9 +1338,9 @@ html[lang="ar"] .home-clients-title,
   flex-direction: column;
   min-height: 290px;
   padding: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--oms-radius-md);
-  background: var(--oms-graphite);
+  background: #1B2030;
   transition:
     transform var(--oms-transition),
     border-color var(--oms-transition),
@@ -1360,7 +1351,7 @@ html[lang="ar"] .home-clients-title,
 .objective-card:hover {
   transform: translateY(-5px);
   border-color: var(--oms-red);
-  background: #1F1F1F;
+  background: #252B3B;
   box-shadow: 0 16px 48px rgba(227, 27, 35, 0.1);
 }
 
@@ -1392,7 +1383,7 @@ html[lang="ar"] .home-clients-title,
 
 .objective-card h3 {
   margin-bottom: 13px;
-  color: var(--oms-white);
+  color: #FFFFFF;
   font-size: 1.27rem;
   font-weight: 800;
   letter-spacing: -0.025em;
@@ -1611,8 +1602,8 @@ html[lang="ar"] .home-clients-title,
   overflow-y: auto;
   border: 1px solid rgba(227, 27, 35, 0.22);
   border-radius: var(--oms-radius-lg);
-  background: var(--oms-black);
-  color: var(--oms-white);
+  background: #11131B;
+  color: #FFFFFF;
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.5);
   animation: omsModalIn 220ms ease both;
 }
@@ -1633,7 +1624,7 @@ html[lang="ar"] .home-clients-title,
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 50%;
   background: rgba(17, 17, 17, 0.8);
-  color: var(--oms-white);
+  color: #FFFFFF;
   cursor: pointer;
   transition:
     background var(--oms-transition),
@@ -1643,7 +1634,7 @@ html[lang="ar"] .home-clients-title,
 .home-modal-close-btn:hover {
   background: var(--oms-red);
   border-color: var(--oms-red);
-  color: var(--oms-white);
+  color: #FFFFFF;
 }
 
 .home-modal-viewport {
@@ -1705,12 +1696,12 @@ html[lang="ar"] .home-clients-title,
 .home-modal-badge-red {
   border-color: rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.06);
-  color: var(--oms-ivory);
+  color: #E2E8F0;
 }
 
 .home-modal-title {
   margin-bottom: 12px;
-  color: var(--oms-white);
+  color: #FFFFFF;
   font-size: clamp(1.5rem, 3vw, 2.3rem);
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -1732,7 +1723,7 @@ html[lang="ar"] .home-clients-title,
   padding: 12px 20px;
   border-radius: 3px;
   background: var(--oms-red);
-  color: var(--oms-white) !important;
+  color: #FFFFFF !important;
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.07em;
@@ -1872,6 +1863,7 @@ html[lang="ar"] .home-clients-title,
   .home-tv-cards-grid,
   .home-outdoor-cards-grid,
   .home-poss-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
   }
 
@@ -2170,4 +2162,8 @@ html[lang="ar"] .home-clients-title,
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+[data-theme="light"] .home-container .home-modal-dialog .home-modal-title {
+  color: #FFFFFF !important;
 }

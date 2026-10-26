@@ -50,7 +50,7 @@ const Navbar = ({ user, setUser }) => {
     {
       to: '/production-tv',
       label: t('nav.productionTv', 'Production TV'),
-      desc: t('nav.productionTvDesc', 'إعلانات تجارية وسينمائية'),
+      desc: t('nav.productionTvDesc', 'إعلانات تجارية وإنتاج تلفزيوني'),
     },
     {
       to: '/poss',

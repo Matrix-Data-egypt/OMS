@@ -1,4 +1,4 @@
-/* Production TV Station Dark & Cinematic Styling */
+/* Production TV Station Styling */
 .prod-tv-container {
   background-color: #0d0d11;
   color: #f1f1f5;
@@ -300,7 +300,7 @@
   gap: 20px;
 }
 
-/* 4. Cinema Video Player Modal */
+/* 4. Video Player Modal */
 .prod-modal-backdrop {
   position: fixed;
   inset: 0;
