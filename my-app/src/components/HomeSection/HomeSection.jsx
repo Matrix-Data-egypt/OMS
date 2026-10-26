@@ -437,12 +437,7 @@ const LOCALIZED_BULLETS = {
   ]
 };
 
-/* Animated service names scrolling in hero ticker */
-const HERO_SERVICES = {
-  ar: ['الإنتاج التلفزيوني', 'إعلانات الطرق', 'نقاط البيع POSS', 'التسويق الرقمي', 'العلاقات العامة', 'الهوية البصرية'],
-  en: ['TV Production', 'Outdoor & OOH', 'POSS & Retail', 'Digital Marketing', 'PR & Events', 'Brand Identity'],
-  fr: ['Production TV', 'Affichage OOH', 'PLV & Retail', 'Marketing Digital', 'Relations Publiques', 'Identité de Marque'],
-};
+
 
 export default function HomeSection() {
   const [activeStep, setActiveStep] = useState(1);
@@ -535,7 +530,6 @@ export default function HomeSection() {
   const currentTimelineSteps = LOCALIZED_TIMELINE[language] || TIMELINE_STEPS;
   const currentObjectives = LOCALIZED_OBJECTIVES[language] || CAMPAIGN_OBJECTIVES;
   const currentBullets = LOCALIZED_BULLETS[language] || LOCALIZED_BULLETS.en;
-  const heroServices = HERO_SERVICES[language] || HERO_SERVICES.en;
 
   const activeTimelineObj = currentTimelineSteps.find((ts) => ts.step === activeStep) || currentTimelineSteps[0];
 
@@ -588,17 +582,7 @@ export default function HomeSection() {
               </span>
             </div>
 
-            {/* Animated services ticker */}
-            <div className="hero-services-ticker" aria-hidden="true">
-              <div className="hero-ticker-track">
-                {[...heroServices, ...heroServices].map((s, i) => (
-                  <span key={i} className="hero-ticker-item">
-                    <span className="hero-ticker-dot" />
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </div>
+
 
             <h1 className="hero-main-title-clean">
               {t('home.heroTitle1', 'Your Vision, Amplified')}<br />
@@ -1132,6 +1116,7 @@ function ObjectiveCard({ obj }) {
     </article>
   );
 }
+
 
 function FrameworkGroup({ TH, serviceBullets = [] }) {
   return (

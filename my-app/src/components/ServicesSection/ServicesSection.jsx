@@ -85,7 +85,6 @@ function ServiceCard({ service, language }) {
   );
 }
 
-/* Controlled manual slider with navigation arrows and smooth slide */
 function ServiceCarousel({ services, language }) {
   const scrollRef = React.useRef(null);
   const isRtl = language === 'ar';
