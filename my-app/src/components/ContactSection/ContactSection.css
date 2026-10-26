@@ -352,6 +352,69 @@
   }
 }
 
+/* ── DARK MODE DIRECT OVERRIDES FOR COMPONENT SPECIFICITY ── */
+[data-theme="dark"] .contact-container {
+  background-color: #090A0F !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .brief-architect-card {
+  background-color: #171923 !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+[data-theme="dark"] .architect-header {
+  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-theme="dark"] .architect-title,
+[data-theme="dark"] .group-label {
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .step-tag,
+[data-theme="dark"] .date-stamp,
+[data-theme="dark"] .footer-notice {
+  color: #94A3B8 !important;
+}
+
+[data-theme="dark"] .chip-btn {
+  background-color: #1F2332 !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #E2E8F0 !important;
+}
+
+[data-theme="dark"] .chip-btn:hover {
+  background-color: #2A2F45 !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .chip-btn.active {
+  background-color: rgba(205, 18, 18, 0.25) !important;
+  border-color: #CD1212 !important;
+  color: #FF6B6B !important;
+}
+
+[data-theme="dark"] .input-field label {
+  color: #CBD5E1 !important;
+}
+
+[data-theme="dark"] .input-field input,
+[data-theme="dark"] .architect-form textarea {
+  background-color: #11131B !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .input-field input::placeholder,
+[data-theme="dark"] .architect-form textarea::placeholder {
+  color: #64748B !important;
+}
+
+[data-theme="dark"] .form-footer {
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
 /* Premium Feedback Notification Framework */
 .form-feedback-banner {
   padding: 1rem 1.25rem;
