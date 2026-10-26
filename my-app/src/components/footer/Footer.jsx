@@ -77,9 +77,14 @@ export default function Footer() {
           <Link to="/" className="footer-logo-link" aria-label="Go to homepage">
             <div className="footer-logo-pill">
               <img
-                src="/oms-logo-no-names.png"
+                src="/oms-logo-dark.png"
                 alt="OMS Corporate Logo"
-                className="footer-bottom-logo"
+                className="footer-bottom-logo oms-logo-light-theme"
+              />
+              <img
+                src="/oms-logo-white.png"
+                alt="OMS Corporate Logo"
+                className="footer-bottom-logo oms-logo-dark-theme"
               />
             </div>
           </Link>

@@ -74,9 +74,14 @@ const Navbar = ({ user, setUser }) => {
         <Link to="/" className="nav-bar-logo" onClick={closeMenu} aria-label="OMS Home">
           <div className="nav-logo-backdrop">
             <img
-              src="/oms-logo-no-names.png"
+              src="/oms-logo-dark.png"
               alt="OMS One Media Solution Logo"
-              className="nav-logo-img"
+              className="nav-logo-img oms-logo-light-theme"
+            />
+            <img
+              src="/oms-logo-white.png"
+              alt="OMS One Media Solution Logo"
+              className="nav-logo-img oms-logo-dark-theme"
             />
           </div>
         </Link>
@@ -122,9 +127,14 @@ const Navbar = ({ user, setUser }) => {
             <Link to="/" className="drawer-logo-link" onClick={closeMenu}>
               <div className="nav-logo-backdrop">
                 <img
-                  src="/oms-logo-no-names.png"
+                  src="/oms-logo-dark.png"
                   alt="OMS Logo"
-                  className="drawer-logo-img"
+                  className="drawer-logo-img oms-logo-light-theme"
+                />
+                <img
+                  src="/oms-logo-white.png"
+                  alt="OMS Logo"
+                  className="drawer-logo-img oms-logo-dark-theme"
                 />
               </div>
             </Link>

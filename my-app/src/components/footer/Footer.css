@@ -229,7 +229,7 @@
   align-items: center;
 }
 
-.footer-bottom-logo { height: 26px; width: auto; object-fit: contain; }
+.footer-bottom-logo { height: 26px; width: auto; object-fit: contain; display: block; }
 
 .footer-copyright { color: #525252; margin: 0; font-size: 0.82rem; }
 
