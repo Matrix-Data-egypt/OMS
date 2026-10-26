@@ -89,10 +89,10 @@ export default function Footer() {
         </div>
 
         <nav className="footer-social-links" aria-label="Social Media Corporate Handles">
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="footer-link">LinkedIn</a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="footer-link">Instagram</a>
-          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="footer-link">YouTube</a>
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="footer-link">Facebook</a>
+          <a href="https://www.facebook.com/omsadvertisingagency" target="_blank" rel="noopener noreferrer" className="footer-link">Facebook</a>
+          <a href="https://www.instagram.com/oms_advertising/" target="_blank" rel="noopener noreferrer" className="footer-link">Instagram</a>
+          <a href="https://www.linkedin.com/company/oms-advertising/home/" target="_blank" rel="noopener noreferrer" className="footer-link">LinkedIn</a>
+          <a href="https://www.tiktok.com/@oms_advertising" target="_blank" rel="noopener noreferrer" className="footer-link">TikTok</a>
         </nav>
       </section>
     </footer>

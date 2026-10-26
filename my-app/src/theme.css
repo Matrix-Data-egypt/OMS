@@ -464,6 +464,23 @@ body,
   color: #334155 !important;
 }
 
+[data-theme="light"] .obj-tag {
+  color: #C41E3A !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .obj-kpi-pill {
+  background: #FEF2F4 !important;
+  border: 1px solid rgba(196, 30, 58, 0.3) !important;
+  color: #9B1530 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .obj-team-pill {
+  color: #C41E3A !important;
+  font-weight: 800 !important;
+}
+
 [data-theme="light"] .obj-agent-pill {
   background: #F1F5F9 !important;
   color: #1E293B !important;
@@ -1487,6 +1504,23 @@ body,
 
 [data-theme="dark"] .objective-card p {
   color: #E2E8F0 !important;
+}
+
+[data-theme="dark"] .obj-tag {
+  color: #FF6B81 !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="dark"] .obj-kpi-pill {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="dark"] .obj-team-pill {
+  color: #FF6B81 !important;
+  font-weight: 800 !important;
 }
 
 [data-theme="dark"] .obj-agent-pill {
