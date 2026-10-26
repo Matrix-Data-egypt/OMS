@@ -1823,20 +1823,25 @@ html[lang="ar"] .home-clients-title,
   }
 
   .hero-pillars-bar {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    border: none;
     max-width: 100%;
-    gap: 0;
   }
 
   .pillar-pill {
-    padding: 16px 28px 16px 0;
-    margin-right: 28px;
+    padding: 12px 14px;
+    margin-right: 0;
+    border-right: none;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
   }
 
   .pillar-pill:last-child {
-    border-right: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
     margin-right: 0;
-    padding-right: 0;
+    padding-right: 14px;
   }
 
   .home-preview-section,
@@ -1914,9 +1919,9 @@ html[lang="ar"] .home-clients-title,
 
   .hero-main-title-clean {
     margin-bottom: 0;
-    font-size: clamp(2.8rem, 13vw, 4rem);
-    letter-spacing: -0.045em;
-    line-height: 0.95;
+    font-size: clamp(2.1rem, 8.5vw, 3.2rem);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
   }
 
   .hero-title-divider {
