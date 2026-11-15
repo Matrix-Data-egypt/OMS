@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const deliveryController_js_1 = require("./deliveryController.js");
+const auth_js_1 = require("../../middleware/auth.js");
+const client_1 = require("@prisma/client");
+const router = (0, express_1.Router)();
+router.use(auth_js_1.authenticateToken);
+router.post('/send', (0, auth_js_1.requireRoles)([client_1.UserRole.ADMIN, client_1.UserRole.FINANCE_MANAGER, client_1.UserRole.ACCOUNTANT]), deliveryController_js_1.sendInvoice);
+router.post('/retry/:logId', (0, auth_js_1.requireRoles)([client_1.UserRole.ADMIN, client_1.UserRole.FINANCE_MANAGER, client_1.UserRole.ACCOUNTANT]), deliveryController_js_1.retryDelivery);
+router.get('/logs/:invoiceId', (0, auth_js_1.requireRoles)([client_1.UserRole.ADMIN, client_1.UserRole.FINANCE_MANAGER, client_1.UserRole.ACCOUNTANT, client_1.UserRole.SALES]), deliveryController_js_1.getDeliveryLogs);
+exports.default = router;

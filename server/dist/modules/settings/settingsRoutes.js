@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const settingsController_js_1 = require("./settingsController.js");
+const auth_js_1 = require("../../middleware/auth.js");
+const client_1 = require("@prisma/client");
+const router = (0, express_1.Router)();
+router.use(auth_js_1.authenticateToken);
+router.get('/approval-rules', settingsController_js_1.getApprovalRules);
+router.put('/approval-rules', (0, auth_js_1.requireRoles)([client_1.UserRole.ADMIN]), settingsController_js_1.updateApprovalRules);
+exports.default = router;
