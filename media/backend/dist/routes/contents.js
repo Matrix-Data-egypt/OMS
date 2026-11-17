@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import prisma from '../prisma/prismaClient.js';
+import { requireWritePermission } from '../middleware/auth.js';
 const router = Router();
 const contentSchema = z.object({
     name: z.string().min(2, 'اسم المحتوى مطلوب'),
@@ -23,7 +24,7 @@ router.get('/', async (req, res) => {
     }
 });
 // Create content
-router.post('/', async (req, res) => {
+router.post('/', requireWritePermission, async (req, res) => {
     try {
         const parsed = contentSchema.safeParse(req.body);
         if (!parsed.success) {

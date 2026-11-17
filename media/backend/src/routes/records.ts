@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import prisma from '../prisma/prismaClient.js';
+import { requireWritePermission } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -23,6 +24,53 @@ function escapeCsv(field: any): string {
   if (field === null || field === undefined) return '';
   const str = String(field).replace(/"/g, '""');
   return `"${str}"`;
+}
+
+export const STANDARD_MONTHS = [
+  'يناير 2026',
+  'فبراير 2026',
+  'مارس 2026',
+  'أبريل 2026',
+  'مايو 2026',
+  'يونيو 2026',
+  'يوليو 2026',
+  'أغسطس 2026',
+  'سبتمبر 2026',
+  'أكتوبر 2026',
+  'نوفمبر 2026',
+  'ديسمبر 2026',
+];
+
+const MONTH_NAMES_MAP: Record<string, number> = {
+  'يناير': 1, 'jan': 1, 'january': 1, '1': 1, '01': 1,
+  'فبراير': 2, 'feb': 2, 'february': 2, '2': 2, '02': 2,
+  'مارس': 3, 'mar': 3, 'march': 3, '3': 3, '03': 3,
+  'أبريل': 4, 'ابريل': 4, 'apr': 4, 'april': 4, '4': 4, '04': 4,
+  'مايو': 5, 'may': 5, '5': 5, '05': 5,
+  'يونيو': 6, 'jun': 6, 'june': 6, '6': 6, '06': 6,
+  'يوليو': 7, 'jul': 7, 'july': 7, '7': 7, '07': 7,
+  'أغسطس': 8, 'اغسطس': 8, 'aug': 8, 'august': 8, '8': 8, '08': 8,
+  'سبتمبر': 9, 'sep': 9, 'september': 9, '9': 9, '09': 9,
+  'أكتوبر': 10, 'اكتوبر': 10, 'oct': 10, 'october': 10, '10': 10,
+  'نوفمبر': 11, 'nov': 11, 'november': 11, '11': 11,
+  'ديسمبر': 12, 'dec': 12, 'december': 12, '12': 12,
+};
+
+export function parseMonthSortKey(monthStr: string): number {
+  if (!monthStr) return 0;
+  const s = String(monthStr).trim().toLowerCase();
+  const yearMatch = s.match(/(20\d\d)/);
+  const year = yearMatch ? parseInt(yearMatch[1], 10) : 2026;
+
+  let monthNum = 1;
+  for (const [key, val] of Object.entries(MONTH_NAMES_MAP)) {
+    if (s.includes(key)) {
+      monthNum = val;
+      break;
+    }
+  }
+
+  return year * 100 + monthNum;
 }
 
 // 1. Download CSV Template (With EXACT columns in order)
@@ -79,15 +127,28 @@ router.get('/template', (req: Request, res: Response) => {
 // 2. Export Data (With EXACT columns in order)
 router.get('/export', async (req: Request, res: Response) => {
   try {
-    const { search, clientId, supplierId, channelId, contentId, month, status } = req.query;
+    const { search, clientId, supplierId, channelId, contentId, month, months, fromMonth, toMonth, status } = req.query;
 
     const where: any = {};
     if (clientId && typeof clientId === 'string' && clientId !== 'ALL') where.clientId = clientId;
     if (supplierId && typeof supplierId === 'string' && supplierId !== 'ALL') where.supplierId = supplierId;
     if (channelId && typeof channelId === 'string' && channelId !== 'ALL') where.channelId = channelId;
     if (contentId && typeof contentId === 'string' && contentId !== 'ALL') where.contentId = contentId;
-    if (month && typeof month === 'string' && month !== 'ALL') where.month = month;
     if (status && typeof status === 'string' && status !== 'ALL') where.status = status;
+
+    // Multi-select months filter
+    let selectedMonthsList: string[] = [];
+    if (Array.isArray(months)) {
+      selectedMonthsList = months.map(String).map((m) => m.trim()).filter(Boolean);
+    } else if (typeof months === 'string' && months.trim() !== '') {
+      selectedMonthsList = months.split(',').map((m) => m.trim()).filter(Boolean);
+    }
+
+    if (selectedMonthsList.length > 0) {
+      where.month = { in: selectedMonthsList };
+    } else if (month && typeof month === 'string' && month !== 'ALL') {
+      where.month = month;
+    }
 
     if (search && typeof search === 'string' && search.trim() !== '') {
       const q = search.trim();
@@ -102,7 +163,7 @@ router.get('/export', async (req: Request, res: Response) => {
       ];
     }
 
-    const records = await prisma.mediaRecord.findMany({
+    let records = await prisma.mediaRecord.findMany({
       where,
       include: {
         client: true,
@@ -112,6 +173,17 @@ router.get('/export', async (req: Request, res: Response) => {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    // Month Range filter (من شهر كذا إلى شهر كذا)
+    if (fromMonth || toMonth) {
+      const fromKey = fromMonth && typeof fromMonth === 'string' && fromMonth !== 'ALL' ? parseMonthSortKey(fromMonth) : -Infinity;
+      const toKey = toMonth && typeof toMonth === 'string' && toMonth !== 'ALL' ? parseMonthSortKey(toMonth) : Infinity;
+
+      records = records.filter((r) => {
+        const rKey = parseMonthSortKey(r.month);
+        return rKey >= fromKey && rKey <= toKey;
+      });
+    }
 
     const headers = [
       'Client',
@@ -153,7 +225,7 @@ router.get('/export', async (req: Request, res: Response) => {
 });
 
 // 3. Import Data (Parse CSV / JSON rows with EXACT columns in order)
-router.post('/import', async (req: Request, res: Response): Promise<void> => {
+router.post('/import', requireWritePermission, async (req: Request, res: Response): Promise<void> => {
   try {
     const { rows } = req.body;
 
@@ -274,7 +346,7 @@ router.post('/import', async (req: Request, res: Response): Promise<void> => {
 // List records with search & Kaggle-style filters
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { search, clientId, supplierId, channelId, contentId, month, status } = req.query;
+    const { search, clientId, supplierId, channelId, contentId, month, months, fromMonth, toMonth, status } = req.query;
 
     const where: any = {};
 
@@ -290,11 +362,22 @@ router.get('/', async (req: Request, res: Response) => {
     if (contentId && typeof contentId === 'string' && contentId !== 'ALL') {
       where.contentId = contentId;
     }
-    if (month && typeof month === 'string' && month !== 'ALL') {
-      where.month = month;
-    }
     if (status && typeof status === 'string' && status !== 'ALL') {
       where.status = status;
+    }
+
+    // Multi-select months filter
+    let selectedMonthsList: string[] = [];
+    if (Array.isArray(months)) {
+      selectedMonthsList = months.map(String).map((m) => m.trim()).filter(Boolean);
+    } else if (typeof months === 'string' && months.trim() !== '') {
+      selectedMonthsList = months.split(',').map((m) => m.trim()).filter(Boolean);
+    }
+
+    if (selectedMonthsList.length > 0) {
+      where.month = { in: selectedMonthsList };
+    } else if (month && typeof month === 'string' && month !== 'ALL') {
+      where.month = month;
     }
 
     if (search && typeof search === 'string' && search.trim() !== '') {
@@ -310,7 +393,7 @@ router.get('/', async (req: Request, res: Response) => {
       ];
     }
 
-    const records = await prisma.mediaRecord.findMany({
+    let records = await prisma.mediaRecord.findMany({
       where,
       include: {
         client: true,
@@ -322,6 +405,17 @@ router.get('/', async (req: Request, res: Response) => {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    // Month Range filter (من شهر كذا إلى شهر كذا)
+    if (fromMonth || toMonth) {
+      const fromKey = fromMonth && typeof fromMonth === 'string' && fromMonth !== 'ALL' ? parseMonthSortKey(fromMonth) : -Infinity;
+      const toKey = toMonth && typeof toMonth === 'string' && toMonth !== 'ALL' ? parseMonthSortKey(toMonth) : Infinity;
+
+      records = records.filter((r) => {
+        const rKey = parseMonthSortKey(r.month);
+        return rKey >= fromKey && rKey <= toKey;
+      });
+    }
 
     res.json({ success: true, data: records });
   } catch (error: any) {
@@ -347,7 +441,9 @@ router.get('/filter-facets', async (req: Request, res: Response) => {
       }),
     ]);
 
-    const months = Array.from(new Set(monthsList.map((m) => m.month).filter(Boolean)));
+    const distinctDbMonths = monthsList.map((m) => m.month).filter(Boolean);
+    const combinedMonths = Array.from(new Set([...STANDARD_MONTHS, ...distinctDbMonths]));
+    combinedMonths.sort((a, b) => parseMonthSortKey(a) - parseMonthSortKey(b));
 
     res.json({
       success: true,
@@ -356,7 +452,7 @@ router.get('/filter-facets', async (req: Request, res: Response) => {
         suppliers,
         channels,
         contents,
-        months,
+        months: combinedMonths,
       },
     });
   } catch (error: any) {
@@ -390,7 +486,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
 });
 
 // Create record
-router.post('/', async (req: Request, res: Response): Promise<void> => {
+router.post('/', requireWritePermission, async (req: Request, res: Response): Promise<void> => {
   try {
     const parsed = recordSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -422,7 +518,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 });
 
 // Update record
-router.put('/:id', async (req: Request, res: Response): Promise<void> => {
+router.put('/:id', requireWritePermission, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const parsed = recordSchema.safeParse(req.body);
@@ -455,7 +551,7 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
 });
 
 // Delete record
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', requireWritePermission, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await prisma.mediaRecord.delete({ where: { id } });

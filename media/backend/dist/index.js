@@ -8,6 +8,7 @@ import contentTypeRoutes from './routes/contentTypes.js';
 import contentRoutes from './routes/contents.js';
 import recordRoutes from './routes/records.js';
 import accountingRoutes from './routes/accountingIntegration.js';
+import authRoutes from './routes/auth.js';
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5002;
@@ -17,6 +18,7 @@ app.use(cors({
 }));
 app.use(express.json());
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/channels', channelRoutes);

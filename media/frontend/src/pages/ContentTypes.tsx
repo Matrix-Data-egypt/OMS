@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../services/api.js';
 import { MediaContentType } from '../types/index.js';
 import { Layers, Plus, Trash2, Copy, Check } from 'lucide-react';
+import { useAuth } from '../context/AuthContext.js';
 
 export const ContentTypes: React.FC = () => {
+  const { isReadOnly } = useAuth();
   const [types, setTypes] = useState<MediaContentType[]>([]);
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -87,30 +89,32 @@ export const ContentTypes: React.FC = () => {
       )}
 
       {/* Add Content Type Form */}
-      <div className="bg-white p-6 rounded-3xl border border-neutral-200/80 shadow-sm space-y-4">
-        <h2 className="text-sm font-extrabold text-neutral-900 flex items-center gap-2">
-          <Plus className="w-4 h-4 text-[#DC2626]" />
-          <span>إضافة نوع محتوى جديد (كتابة الاسم فقط)</span>
-        </h2>
+      {!isReadOnly && (
+        <div className="bg-white p-6 rounded-3xl border border-neutral-200/80 shadow-sm space-y-4">
+          <h2 className="text-sm font-extrabold text-neutral-900 flex items-center gap-2">
+            <Plus className="w-4 h-4 text-[#DC2626]" />
+            <span>إضافة نوع محتوى جديد (كتابة الاسم فقط)</span>
+          </h2>
 
-        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            required
-            placeholder="اكتب نوع المحتوى (مثل: فيديو ترويجي، ريلز، بانر جرافيك، مقال)..."
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="flex-1 p-3 bg-neutral-50 border border-neutral-200 rounded-2xl text-xs font-bold focus:outline-none focus:border-[#DC2626] transition-colors"
-          />
-          <button
-            type="submit"
-            disabled={submitting}
-            className="px-6 py-3 bg-[#DC2626] hover:bg-[#B91C1C] disabled:bg-neutral-300 text-white text-xs font-black rounded-2xl shadow-md shadow-red-600/20 transition-all shrink-0"
-          >
-            {submitting ? 'جاري الإضافة...' : 'حفظ وتوليد ID'}
-          </button>
-        </form>
-      </div>
+          <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              required
+              placeholder="اكتب نوع المحتوى (مثل: فيديو ترويجي، ريلز، بانر جرافيك، مقال)..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="flex-1 p-3 bg-neutral-50 border border-neutral-200 rounded-2xl text-xs font-bold focus:outline-none focus:border-[#DC2626] transition-colors"
+            />
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-6 py-3 bg-[#DC2626] hover:bg-[#B91C1C] disabled:bg-neutral-300 text-white text-xs font-black rounded-2xl shadow-md shadow-red-600/20 transition-all shrink-0"
+            >
+              {submitting ? 'جاري الإضافة...' : 'حفظ وتوليد ID'}
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Content Types Table */}
       <div className="bg-white rounded-3xl border border-neutral-200/80 shadow-sm overflow-hidden">
@@ -172,15 +176,17 @@ export const ContentTypes: React.FC = () => {
                     <td className="p-4 text-neutral-500 text-[11px]">
                       {new Date(ct.createdAt).toLocaleDateString('ar-EG')}
                     </td>
-                    <td className="p-4 text-end">
-                      <button
-                        onClick={() => handleDelete(ct.id)}
-                        className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                        title="حذف نوع المحتوى"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
+                    {!isReadOnly && (
+                      <td className="p-4 text-end">
+                        <button
+                          onClick={() => handleDelete(ct.id)}
+                          className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                          title="حذف نوع المحتوى"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

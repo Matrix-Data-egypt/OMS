@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import prisma from '../prisma/prismaClient.js';
+import { requireWritePermission } from '../middleware/auth.js';
 const router = Router();
 const channelSchema = z.object({
     name: z.string().min(2, 'اسم القناة الإعلانية مطلوب'),
@@ -21,7 +22,7 @@ router.get('/', async (req, res) => {
     }
 });
 // Create channel (Name only)
-router.post('/', async (req, res) => {
+router.post('/', requireWritePermission, async (req, res) => {
     try {
         const parsed = channelSchema.safeParse(req.body);
         if (!parsed.success) {

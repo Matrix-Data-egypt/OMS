@@ -5,12 +5,16 @@ export async function apiRequest<T = any>(
   options: RequestInit = {}
 ): Promise<{ success: boolean; data?: T; message?: string; errors?: any }> {
   try {
+    const token = localStorage.getItem('oms_media_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers as Record<string, string>),
+    };
+
     const res = await fetch(`${API_BASE}${endpoint}`, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers as Record<string, string>),
-      },
+      headers,
     });
 
     const data = await res.json();

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { apiRequest } from '../services/api.js';
 import { MediaRecord, FilterFacets } from '../types/index.js';
+import { useAuth } from '../context/AuthContext.js';
 import {
   Search,
   SlidersHorizontal,
@@ -18,9 +19,11 @@ import {
   FileSpreadsheet,
   AlertCircle,
   FileDown,
+  Eye,
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
+  const { isReadOnly, user } = useAuth();
   const [records, setRecords] = useState<MediaRecord[]>([]);
   const [facets, setFacets] = useState<FilterFacets | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +35,11 @@ export const Dashboard: React.FC = () => {
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [selectedChannel, setSelectedChannel] = useState('');
   const [selectedContent, setSelectedContent] = useState('');
+  const [monthFilterMode, setMonthFilterMode] = useState<'single' | 'multi' | 'range'>('single');
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+  const [fromMonth, setFromMonth] = useState('');
+  const [toMonth, setToMonth] = useState('');
 
   // Modals
   const [showAddModal, setShowAddModal] = useState(false);
@@ -76,7 +83,15 @@ export const Dashboard: React.FC = () => {
     if (selectedSupplier) params.append('supplierId', selectedSupplier);
     if (selectedChannel) params.append('channelId', selectedChannel);
     if (selectedContent) params.append('contentId', selectedContent);
-    if (selectedMonth) params.append('month', selectedMonth);
+
+    if (monthFilterMode === 'single' && selectedMonth) {
+      params.append('month', selectedMonth);
+    } else if (monthFilterMode === 'multi' && selectedMonths.length > 0) {
+      params.append('months', selectedMonths.join(','));
+    } else if (monthFilterMode === 'range') {
+      if (fromMonth) params.append('fromMonth', fromMonth);
+      if (toMonth) params.append('toMonth', toMonth);
+    }
 
     const res = await apiRequest<MediaRecord[]>(`/records?${params.toString()}`);
     if (res.success && res.data) {
@@ -91,7 +106,17 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     fetchRecords();
-  }, [selectedClient, selectedSupplier, selectedChannel, selectedContent, selectedMonth]);
+  }, [
+    selectedClient,
+    selectedSupplier,
+    selectedChannel,
+    selectedContent,
+    selectedMonth,
+    selectedMonths,
+    fromMonth,
+    toMonth,
+    monthFilterMode,
+  ]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,6 +129,9 @@ export const Dashboard: React.FC = () => {
     setSelectedChannel('');
     setSelectedContent('');
     setSelectedMonth('');
+    setSelectedMonths([]);
+    setFromMonth('');
+    setToMonth('');
     setSearchTerm('');
   };
 
@@ -112,7 +140,9 @@ export const Dashboard: React.FC = () => {
     selectedSupplier,
     selectedChannel,
     selectedContent,
-    selectedMonth,
+    monthFilterMode === 'single' && selectedMonth ? selectedMonth : null,
+    monthFilterMode === 'multi' && selectedMonths.length > 0 ? `${selectedMonths.length} شهور` : null,
+    monthFilterMode === 'range' && (fromMonth || toMonth) ? 'range' : null,
   ].filter(Boolean).length;
 
   // Export Data as CSV (Client | supplier | Channel | Content | Content Type | Month | Net to Channel | Net to Client | Notes)
@@ -123,7 +153,15 @@ export const Dashboard: React.FC = () => {
     if (selectedSupplier) params.append('supplierId', selectedSupplier);
     if (selectedChannel) params.append('channelId', selectedChannel);
     if (selectedContent) params.append('contentId', selectedContent);
-    if (selectedMonth) params.append('month', selectedMonth);
+
+    if (monthFilterMode === 'single' && selectedMonth) {
+      params.append('month', selectedMonth);
+    } else if (monthFilterMode === 'multi' && selectedMonths.length > 0) {
+      params.append('months', selectedMonths.join(','));
+    } else if (monthFilterMode === 'range') {
+      if (fromMonth) params.append('fromMonth', fromMonth);
+      if (toMonth) params.append('toMonth', toMonth);
+    }
 
     window.open(`/api/records/export?${params.toString()}`, '_blank');
   };
@@ -301,17 +339,19 @@ export const Dashboard: React.FC = () => {
 
           {/* Action CTAs */}
           <div className="flex items-center gap-2.5 flex-wrap">
-            {/* Import Button */}
-            <button
-              onClick={() => setShowImportModal(true)}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold border border-neutral-700 shadow-md transition-all"
-              title="استيراد بيانات من ملف CSV أو Excel"
-            >
-              <Upload className="w-4 h-4 text-[#20BEFF]" />
-              <span>استيراد بيانات (Import)</span>
-            </button>
+            {/* Import Button (Hidden for View-Only / Manager) */}
+            {!isReadOnly && (
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold border border-neutral-700 shadow-md transition-all"
+                title="استيراد بيانات من ملف CSV أو Excel"
+              >
+                <Upload className="w-4 h-4 text-[#20BEFF]" />
+                <span>استيراد بيانات (Import)</span>
+              </button>
+            )}
 
-            {/* Export Button */}
+            {/* Export Button (Available for everyone) */}
             <button
               onClick={handleExport}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold border border-neutral-700 shadow-md transition-all"
@@ -321,17 +361,39 @@ export const Dashboard: React.FC = () => {
               <span>تصدير بيانات (Export)</span>
             </button>
 
-            {/* Add New Campaign */}
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-2xl bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-black shadow-lg shadow-red-900/30 transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              <span>إضافة حملة جديدة</span>
-            </button>
+            {/* Add New Campaign (Hidden for View-Only / Manager) */}
+            {!isReadOnly ? (
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-2xl bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-black shadow-lg shadow-red-900/30 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>إضافة حملة جديدة</span>
+              </button>
+            ) : (
+              <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold">
+                <Eye className="w-4 h-4 text-amber-400" />
+                <span>وضع المراقبة: استعراض وتصدير التقارير فقط</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* View Only Alert for Manager */}
+      {isReadOnly && (
+        <div className="bg-amber-50 border border-amber-200/80 text-amber-950 p-4 rounded-3xl flex items-center gap-3 text-xs font-bold shadow-sm">
+          <div className="w-9 h-9 rounded-2xl bg-amber-200/70 text-amber-900 flex items-center justify-center shrink-0 font-black">
+            <Eye className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="font-black text-sm block">مرحباً بك {user?.name || 'يا مدير'} (حساب متابعة وعرض فقط)</span>
+            <span className="text-amber-800 text-[11px] font-medium">
+              أنت الآن في وضع المشاهدة لقسم الميديا: يمكنك تصفح كافة الحملات والبيانات والفلترة المتقدمة للشهور وتصدير التقارير دون إمكانية إجراء أي تعديل أو حذف.
+            </span>
+          </div>
+        </div>
+      )}
 
       {message && (
         <div
@@ -417,105 +479,253 @@ export const Dashboard: React.FC = () => {
 
         {/* Expandable Kaggle Filter Panel */}
         {filterDrawerOpen && facets && (
-          <div className="pt-4 border-t border-neutral-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 bg-neutral-50/70 p-4 rounded-2xl border border-neutral-200/60 text-xs">
-            {/* 1. Client Filter */}
-            <div>
-              <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
-                <Users className="w-3.5 h-3.5 text-neutral-500" />
-                <span>العميل (Client)</span>
-              </label>
-              <select
-                value={selectedClient}
-                onChange={(e) => setSelectedClient(e.target.value)}
-                className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
-              >
-                <option value="">جميع العملاء</option>
-                {facets.clients.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+          <div className="pt-4 border-t border-neutral-100 space-y-3 bg-neutral-50/70 p-4 rounded-2xl border border-neutral-200/60 text-xs">
+            {/* Row 1: The 4 Primary Dropdown Filters */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              {/* 1. Client Filter */}
+              <div>
+                <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
+                  <Users className="w-3.5 h-3.5 text-neutral-500" />
+                  <span>العميل (Client)</span>
+                </label>
+                <select
+                  value={selectedClient}
+                  onChange={(e) => setSelectedClient(e.target.value)}
+                  className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
+                >
+                  <option value="">جميع العملاء</option>
+                  {facets.clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 2. Supplier Filter */}
+              <div>
+                <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
+                  <Truck className="w-3.5 h-3.5 text-neutral-500" />
+                  <span>المورد (supplier)</span>
+                </label>
+                <select
+                  value={selectedSupplier}
+                  onChange={(e) => setSelectedSupplier(e.target.value)}
+                  className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
+                >
+                  <option value="">جميع الموردين</option>
+                  {facets.suppliers.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 3. Channel Filter */}
+              <div>
+                <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
+                  <Tv className="w-3.5 h-3.5 text-neutral-500" />
+                  <span>القناة (Channel)</span>
+                </label>
+                <select
+                  value={selectedChannel}
+                  onChange={(e) => setSelectedChannel(e.target.value)}
+                  className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
+                >
+                  <option value="">جميع القنوات</option>
+                  {facets.channels.map((ch) => (
+                    <option key={ch.id} value={ch.id}>
+                      {ch.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 4. Content Filter */}
+              <div>
+                <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
+                  <FileVideo className="w-3.5 h-3.5 text-neutral-500" />
+                  <span>المحتوى (Content)</span>
+                </label>
+                <select
+                  value={selectedContent}
+                  onChange={(e) => setSelectedContent(e.target.value)}
+                  className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
+                >
+                  <option value="">جميع المحتويات</option>
+                  {facets.contents.map((cnt) => (
+                    <option key={cnt.id} value={cnt.id}>
+                      {cnt.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            {/* 2. Supplier Filter */}
-            <div>
-              <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
-                <Truck className="w-3.5 h-3.5 text-neutral-500" />
-                <span>المورد (supplier)</span>
-              </label>
-              <select
-                value={selectedSupplier}
-                onChange={(e) => setSelectedSupplier(e.target.value)}
-                className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
-              >
-                <option value="">جميع الموردين</option>
-                {facets.suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Row 2: Advanced Month Filter (Single / Multi / Range) */}
+            <div className="bg-white p-3.5 rounded-2xl border border-neutral-200/90 shadow-sm space-y-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-100 pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-red-50 text-[#DC2626] flex items-center justify-center font-black">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-black text-neutral-800 text-xs">فلترة الشهور (Month Filtering)</span>
+                    <p className="text-[10px] text-neutral-400 font-semibold">
+                      اختر شهر محدد، أو عدة شهور معاً، أو حدد نطاقاً زمنياً (من شهر إلى شهر)
+                    </p>
+                  </div>
+                </div>
 
-            {/* 3. Channel Filter */}
-            <div>
-              <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
-                <Tv className="w-3.5 h-3.5 text-neutral-500" />
-                <span>القناة (Channel)</span>
-              </label>
-              <select
-                value={selectedChannel}
-                onChange={(e) => setSelectedChannel(e.target.value)}
-                className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
-              >
-                <option value="">جميع القنوات</option>
-                {facets.channels.map((ch) => (
-                  <option key={ch.id} value={ch.id}>
-                    {ch.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                {/* Mode Switcher Tabs */}
+                <div className="inline-flex p-1 bg-neutral-100 rounded-xl gap-1 text-[11px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMonthFilterMode('single');
+                      setSelectedMonths([]);
+                      setFromMonth('');
+                      setToMonth('');
+                    }}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      monthFilterMode === 'single'
+                        ? 'bg-white text-neutral-900 shadow-sm font-black'
+                        : 'text-neutral-500 hover:text-neutral-900'
+                    }`}
+                  >
+                    شهر واحد
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMonthFilterMode('multi');
+                      setSelectedMonth('');
+                      setFromMonth('');
+                      setToMonth('');
+                    }}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      monthFilterMode === 'multi'
+                        ? 'bg-white text-neutral-900 shadow-sm font-black'
+                        : 'text-neutral-500 hover:text-neutral-900'
+                    }`}
+                  >
+                    عدة أشهر {selectedMonths.length > 0 && `(${selectedMonths.length})`}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMonthFilterMode('range');
+                      setSelectedMonth('');
+                      setSelectedMonths([]);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      monthFilterMode === 'range'
+                        ? 'bg-white text-neutral-900 shadow-sm font-black'
+                        : 'text-neutral-500 hover:text-neutral-900'
+                    }`}
+                  >
+                    من شهر إلى شهر (نطاق)
+                  </button>
+                </div>
+              </div>
 
-            {/* 4. Content Filter */}
-            <div>
-              <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
-                <FileVideo className="w-3.5 h-3.5 text-neutral-500" />
-                <span>المحتوى (Content)</span>
-              </label>
-              <select
-                value={selectedContent}
-                onChange={(e) => setSelectedContent(e.target.value)}
-                className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
-              >
-                <option value="">جميع المحتويات</option>
-                {facets.contents.map((cnt) => (
-                  <option key={cnt.id} value={cnt.id}>
-                    {cnt.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+              {/* Mode 1: Single Month */}
+              {monthFilterMode === 'single' && (
+                <div className="max-w-xs pt-1">
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs font-semibold focus:border-[#DC2626]"
+                  >
+                    <option value="">جميع الشهور</option>
+                    {facets.months.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
-            {/* 5. Month Filter */}
-            <div>
-              <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-neutral-500" />
-                <span>الشهر (Month)</span>
-              </label>
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
-              >
-                <option value="">جميع الشهور</option>
-                {facets.months.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
+              {/* Mode 2: Multi-select Months */}
+              {monthFilterMode === 'multi' && (
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-neutral-500 font-bold">انقر على الشهور التي تريد تصفية البيانات بها:</span>
+                    {selectedMonths.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMonths([])}
+                        className="text-[#DC2626] hover:underline font-bold"
+                      >
+                        إلغاء تحديد الكل ({selectedMonths.length})
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1 bg-neutral-50/50 rounded-xl border border-neutral-100">
+                    {facets.months.map((m) => {
+                      const isSelected = selectedMonths.includes(m);
+                      return (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedMonths(selectedMonths.filter((x) => x !== m));
+                            } else {
+                              setSelectedMonths([...selectedMonths, m]);
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                            isSelected
+                              ? 'bg-[#171717] text-white border-neutral-900 shadow-sm'
+                              : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-400'
+                          }`}
+                        >
+                          {isSelected ? '✓ ' : ''}{m}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Mode 3: Range (From Month to To Month) */}
+              {monthFilterMode === 'range' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl pt-1">
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-600 mb-1">من شهر (بداية الفترة):</label>
+                    <select
+                      value={fromMonth}
+                      onChange={(e) => setFromMonth(e.target.value)}
+                      className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs font-semibold focus:border-[#DC2626]"
+                    >
+                      <option value="">-- من البداية --</option>
+                      {facets.months.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-600 mb-1">إلى شهر (نهاية الفترة):</label>
+                    <select
+                      value={toMonth}
+                      onChange={(e) => setToMonth(e.target.value)}
+                      className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs font-semibold focus:border-[#DC2626]"
+                    >
+                      <option value="">-- حتى النهاية --</option>
+                      {facets.months.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -561,10 +771,46 @@ export const Dashboard: React.FC = () => {
               </span>
             )}
 
-            {selectedMonth && (
+            {monthFilterMode === 'single' && selectedMonth && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-bold text-neutral-800">
                 <span>الشهر: {selectedMonth}</span>
                 <button onClick={() => setSelectedMonth('')} className="hover:text-red-600">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            )}
+
+            {monthFilterMode === 'multi' && selectedMonths.length > 0 && (
+              <>
+                {selectedMonths.map((m) => (
+                  <span
+                    key={m}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-bold text-neutral-800"
+                  >
+                    <span>شهر: {m}</span>
+                    <button
+                      onClick={() => setSelectedMonths(selectedMonths.filter((x) => x !== m))}
+                      className="hover:text-red-600"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                ))}
+              </>
+            )}
+
+            {monthFilterMode === 'range' && (fromMonth || toMonth) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-bold text-neutral-800">
+                <span>
+                  الفترة: من {fromMonth || 'البداية'} إلى {toMonth || 'النهاية'}
+                </span>
+                <button
+                  onClick={() => {
+                    setFromMonth('');
+                    setToMonth('');
+                  }}
+                  className="hover:text-red-600"
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </span>

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../services/api.js';
 import { MediaChannel } from '../types/index.js';
 import { Tv, Plus, Trash2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext.js';
 
 export const Channels: React.FC = () => {
+  const { isReadOnly } = useAuth();
   const [channels, setChannels] = useState<MediaChannel[]>([]);
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -80,30 +82,32 @@ export const Channels: React.FC = () => {
       )}
 
       {/* Add Channel Form (Name ONLY) */}
-      <div className="bg-white p-6 rounded-3xl border border-neutral-200/80 shadow-sm space-y-4">
-        <h2 className="text-sm font-extrabold text-neutral-900 flex items-center gap-2">
-          <Plus className="w-4 h-4 text-[#DC2626]" />
-          <span>إضافة قناة جديدة (الاسم فقط)</span>
-        </h2>
+      {!isReadOnly && (
+        <div className="bg-white p-6 rounded-3xl border border-neutral-200/80 shadow-sm space-y-4">
+          <h2 className="text-sm font-extrabold text-neutral-900 flex items-center gap-2">
+            <Plus className="w-4 h-4 text-[#DC2626]" />
+            <span>إضافة قناة جديدة (الاسم فقط)</span>
+          </h2>
 
-        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            required
-            placeholder="اكتب اسم القناة (مثل: Facebook, YouTube, Google Search, TikTok)..."
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="flex-1 p-3 bg-neutral-50 border border-neutral-200 rounded-2xl text-xs font-bold focus:outline-none focus:border-[#DC2626] transition-colors"
-          />
-          <button
-            type="submit"
-            disabled={submitting}
-            className="px-6 py-3 bg-[#DC2626] hover:bg-[#B91C1C] disabled:bg-neutral-300 text-white text-xs font-black rounded-2xl shadow-md shadow-red-600/20 transition-all shrink-0"
-          >
-            {submitting ? 'جاري الإضافة...' : 'حفظ القناة'}
-          </button>
-        </form>
-      </div>
+          <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              required
+              placeholder="اكتب اسم القناة (مثل: Facebook, YouTube, Google Search, TikTok)..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="flex-1 p-3 bg-neutral-50 border border-neutral-200 rounded-2xl text-xs font-bold focus:outline-none focus:border-[#DC2626] transition-colors"
+            />
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-6 py-3 bg-[#DC2626] hover:bg-[#B91C1C] disabled:bg-neutral-300 text-white text-xs font-black rounded-2xl shadow-md shadow-red-600/20 transition-all shrink-0"
+            >
+              {submitting ? 'جاري الإضافة...' : 'حفظ القناة'}
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Channels Table */}
       <div className="bg-white rounded-3xl border border-neutral-200/80 shadow-sm overflow-hidden">
@@ -149,15 +153,17 @@ export const Channels: React.FC = () => {
                     <td className="p-4 text-neutral-500 text-[11px]">
                       {new Date(ch.createdAt).toLocaleDateString('ar-EG')}
                     </td>
-                    <td className="p-4 text-end">
-                      <button
-                        onClick={() => handleDelete(ch.id)}
-                        className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                        title="حذف القناة"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
+                    {!isReadOnly && (
+                      <td className="p-4 text-end">
+                        <button
+                          onClick={() => handleDelete(ch.id)}
+                          className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                          title="حذف القناة"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

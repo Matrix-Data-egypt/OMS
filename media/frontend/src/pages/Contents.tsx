@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../services/api.js';
 import { MediaContent, MediaContentType } from '../types/index.js';
 import { FileVideo, Plus, Trash2, Copy, Check, Layers } from 'lucide-react';
+import { useAuth } from '../context/AuthContext.js';
 
 export const Contents: React.FC = () => {
+  const { isReadOnly } = useAuth();
   const [contents, setContents] = useState<MediaContent[]>([]);
   const [types, setTypes] = useState<MediaContentType[]>([]);
   const [name, setName] = useState('');
@@ -98,51 +100,53 @@ export const Contents: React.FC = () => {
       )}
 
       {/* Add Content Form (Name + Link with Content Type ID) */}
-      <div className="bg-white p-6 rounded-3xl border border-neutral-200/80 shadow-sm space-y-4">
-        <h2 className="text-sm font-extrabold text-neutral-900 flex items-center gap-2">
-          <Plus className="w-4 h-4 text-[#DC2626]" />
-          <span>إضافة محتوى جديد وربطه بالنوع</span>
-        </h2>
+      {!isReadOnly && (
+        <div className="bg-white p-6 rounded-3xl border border-neutral-200/80 shadow-sm space-y-4">
+          <h2 className="text-sm font-extrabold text-neutral-900 flex items-center gap-2">
+            <Plus className="w-4 h-4 text-[#DC2626]" />
+            <span>إضافة محتوى جديد وربطه بالنوع</span>
+          </h2>
 
-        <form onSubmit={handleAdd} className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-          <div className="sm:col-span-6">
-            <input
-              type="text"
-              required
-              placeholder="اكتب اسم المحتوى الإعلاني..."
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 bg-neutral-50 border border-neutral-200 rounded-2xl text-xs font-bold focus:outline-none focus:border-[#DC2626] transition-colors"
-            />
-          </div>
+          <form onSubmit={handleAdd} className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+            <div className="sm:col-span-6">
+              <input
+                type="text"
+                required
+                placeholder="اكتب اسم المحتوى الإعلاني..."
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full p-3 bg-neutral-50 border border-neutral-200 rounded-2xl text-xs font-bold focus:outline-none focus:border-[#DC2626] transition-colors"
+              />
+            </div>
 
-          <div className="sm:col-span-4">
-            <select
-              required
-              value={contentTypeId}
-              onChange={(e) => setContentTypeId(e.target.value)}
-              className="w-full p-3 bg-neutral-50 border border-neutral-200 rounded-2xl text-xs font-bold focus:outline-none focus:border-[#DC2626] transition-colors"
-            >
-              <option value="">-- اختر نوع المحتوى المربوط --</option>
-              {types.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} (ID: {t.id.slice(0, 8)}...)
-                </option>
-              ))}
-            </select>
-          </div>
+            <div className="sm:col-span-4">
+              <select
+                required
+                value={contentTypeId}
+                onChange={(e) => setContentTypeId(e.target.value)}
+                className="w-full p-3 bg-neutral-50 border border-neutral-200 rounded-2xl text-xs font-bold focus:outline-none focus:border-[#DC2626] transition-colors"
+              >
+                <option value="">-- اختر نوع المحتوى المربوط --</option>
+                {types.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} (ID: {t.id.slice(0, 8)}...)
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div className="sm:col-span-2">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-3 bg-[#DC2626] hover:bg-[#B91C1C] disabled:bg-neutral-300 text-white text-xs font-black rounded-2xl shadow-md shadow-red-600/20 transition-all shrink-0"
-            >
-              {submitting ? 'حفظ...' : 'حفظ وربط'}
-            </button>
-          </div>
-        </form>
-      </div>
+            <div className="sm:col-span-2">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3 bg-[#DC2626] hover:bg-[#B91C1C] disabled:bg-neutral-300 text-white text-xs font-black rounded-2xl shadow-md shadow-red-600/20 transition-all shrink-0"
+              >
+                {submitting ? 'حفظ...' : 'حفظ وربط'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Contents Table */}
       <div className="bg-white rounded-3xl border border-neutral-200/80 shadow-sm overflow-hidden">
@@ -207,15 +211,17 @@ export const Contents: React.FC = () => {
                         {cnt._count?.records || 0} حملة
                       </span>
                     </td>
-                    <td className="p-4 text-end">
-                      <button
-                        onClick={() => handleDelete(cnt.id)}
-                        className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                        title="حذف المحتوى"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
+                    {!isReadOnly && (
+                      <td className="p-4 text-end">
+                        <button
+                          onClick={() => handleDelete(cnt.id)}
+                          className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                          title="حذف المحتوى"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

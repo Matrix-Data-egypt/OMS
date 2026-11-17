@@ -1,3 +1,14 @@
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  username?: string;
+  role: string;
+  systemAccess: string;
+  isReadOnly?: boolean;
+  phone?: string;
+}
+
 export interface MediaClient {
   id: string;
   name: string;

@@ -7,8 +7,6 @@ import {
   Tv,
   Layers,
   FileVideo,
-  Receipt,
-  PlusCircle,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -42,11 +40,6 @@ export const Sidebar: React.FC = () => {
       to: '/contents',
       label: 'المحتوى (Content)',
       icon: FileVideo,
-    },
-    {
-      to: '/accounting-sync',
-      label: 'الربط مع قسم المحاسبة',
-      icon: Receipt,
     },
   ];
 

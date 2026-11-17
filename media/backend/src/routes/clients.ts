@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import prisma from '../prisma/prismaClient.js';
 import crypto from 'crypto';
+import { requireWritePermission } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -64,7 +65,7 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // Create client (Name only) & automatically sync to Accounting!
-router.post('/', async (req: Request, res: Response): Promise<void> => {
+router.post('/', requireWritePermission, async (req: Request, res: Response): Promise<void> => {
   try {
     const parsed = clientSchema.safeParse(req.body);
     if (!parsed.success) {
