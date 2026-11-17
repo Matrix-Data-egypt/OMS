@@ -27,7 +27,7 @@ Please do not report security vulnerabilities through public GitHub issues, pull
 Report privately using one of these options:
 
 GitHub Private Vulnerability Reporting: open the repository's Security tab, then Report a vulnerability.
-Email: security@yourcompany.com (replace with your real address).
+Email: pixelrun2000@gmail.com
 
 Please include as much of the following as you can:
 
