@@ -10,10 +10,20 @@ import { pool } from './db.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5003;
+const PORT = Number(process.env.PORT) || 5003;
 const JWT_SECRET = process.env.JWT_SECRET || 'oms_admin_jwt_secret_secure_key_2026_mde';
 
-app.use(cors({ origin: '*', credentials: true }));
+app.use(
+  cors({
+    origin: [
+      'https://github.io',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175',
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Auth Middleware for Admin
@@ -24,7 +34,7 @@ interface AuthRequest extends Request {
 const requireAdmin = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const token = authHeader && authHeader.split(' ');
 
     if (!token) {
       res.status(401).json({ success: false, message: 'مطلوب تسجيل الدخول كمسؤول' });
@@ -37,12 +47,12 @@ const requireAdmin = async (req: AuthRequest, res: Response, next: NextFunction)
       [decoded.id]
     );
 
-    if (rows.length === 0 || !rows[0].isActive) {
+    if (rows.length === 0 || !rows.isActive) {
       res.status(403).json({ success: false, message: 'الحساب غير مفعّل أو غير موجود' });
       return;
     }
 
-    const user = rows[0];
+    const user = rows;
     if (user.role !== 'ADMIN' && user.systemAccess !== 'ALL') {
       res.status(403).json({ success: false, message: 'ليس لديك صلاحية إدارة المستخدمين (Admin only)' });
       return;
@@ -56,6 +66,16 @@ const requireAdmin = async (req: AuthRequest, res: Response, next: NextFunction)
 };
 
 // ----------------- ROUTES -----------------
+
+// Health Check
+app.get('/api/health', (req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    system: 'OMS Admin Hub',
+    developer: 'MDE – Matrix Data Egypt',
+    timestamp: new Date().toISOString(),
+  });
+});
 
 // Admin Login
 app.post('/api/auth/login', async (req: Request, res: Response): Promise<void> => {
@@ -81,7 +101,7 @@ app.post('/api/auth/login', async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const user = rows[0];
+    const user = rows;
 
     if (!user.isActive) {
       res.status(403).json({ success: false, message: 'هذا الحساب غير مفعّل' });
@@ -179,14 +199,13 @@ app.post('/api/users', requireAdmin, async (req: AuthRequest, res: Response): Pr
 
     const { name, username, email, password, phone, role, systemAccess } = parsed.data;
 
-    // Check unique email / username
     const existing = await pool.query(
       `SELECT id, email, username FROM "public"."users" WHERE LOWER(email) = LOWER($1) OR LOWER(username) = LOWER($2)`,
       [email.trim(), username.trim()]
     );
 
     if (existing.rows.length > 0) {
-      const match = existing.rows[0];
+      const match = existing.rows;
       if (match.email.toLowerCase() === email.trim().toLowerCase()) {
         res.status(400).json({ success: false, message: 'هذا البريد الإلكتروني مسجل بالفعل لمستخدم آخر' });
         return;
@@ -207,7 +226,6 @@ app.post('/api/users', requireAdmin, async (req: AuthRequest, res: Response): Pr
       RETURNING id, name, username, email, phone, role, "systemAccess", "isActive", "createdAt"
     `;
 
-    // Map role safely to PostgreSQL enum UserRole (ADMIN, FINANCE_MANAGER, ACCOUNTANT, SALES)
     let validRole = 'ACCOUNTANT';
     if (['ADMIN', 'FINANCE_MANAGER', 'ACCOUNTANT', 'SALES'].includes(role)) {
       validRole = role;
@@ -226,7 +244,7 @@ app.post('/api/users', requireAdmin, async (req: AuthRequest, res: Response): Pr
 
     res.status(201).json({
       success: true,
-      data: rows[0],
+      data: rows,
       message: `تم إنشاء المستخدم (${name.trim()}) بنجاح وتحديد اختصاصه على [${systemAccess === 'MEDIA' ? 'قسم الميديا فقط' : systemAccess === 'INVOICE' ? 'قسم الفواتير فقط' : 'كافة الأنظمة'}]`,
     });
   } catch (error: any) {
@@ -234,86 +252,51 @@ app.post('/api/users', requireAdmin, async (req: AuthRequest, res: Response): Pr
     res.status(500).json({ success: false, message: 'خطأ أثناء إنشاء المستخدم: ' + error.message });
   }
 });
-
 // Update user details & system access
 app.put('/api/users/:id', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { name, username, email, phone, role, systemAccess, isActive } = req.body;
 
-    // Check unique conflict for email or username
     if (email || username) {
       const conflict = await pool.query(
         `SELECT id FROM "public"."users" WHERE (LOWER(email) = LOWER($1) OR LOWER(username) = LOWER($2)) AND id != $3`,
         [email?.trim() || '', username?.trim() || '', id]
       );
       if (conflict.rows.length > 0) {
-        res.status(400).json({ success: false, message: 'البريد أو اسم المستخدم مستخدم من قبل حساب آخر' });
+        res.status(400).json({ success: false, message: 'البريد الإلكتروني أو اسم المستخدم مستخدم بالفعل' });
         return;
       }
     }
 
-    let validRole = 'ACCOUNTANT';
-    if (['ADMIN', 'FINANCE_MANAGER', 'ACCOUNTANT', 'SALES'].includes(role)) {
+    let validRole = undefined;
+    if (role && ['ADMIN', 'FINANCE_MANAGER', 'ACCOUNTANT', 'SALES'].includes(role)) {
       validRole = role;
     }
 
-    const updateQuery = `
-      UPDATE "public"."users" SET
-        "name" = COALESCE($1, "name"),
-        "username" = COALESCE($2, "username"),
-        "email" = COALESCE($3, "email"),
-        "phone" = COALESCE($4, "phone"),
-        "role" = COALESCE($5::"public"."UserRole", "role"),
-        "systemAccess" = COALESCE($6, "systemAccess"),
-        "isActive" = COALESCE($7, "isActive"),
-        "updatedAt" = NOW()
-      WHERE id = $8
-      RETURNING id, name, username, email, phone, role, "systemAccess", "isActive", "updatedAt"
-    `;
-
-    const { rows } = await pool.query(updateQuery, [
-      name?.trim() || null,
-      username?.trim() || null,
-      email?.trim() || null,
-      phone?.trim() || null,
-      validRole,
-      systemAccess || null,
-      typeof isActive === 'boolean' ? isActive : null,
-      id,
-    ]);
-
-    if (rows.length === 0) {
-      res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
-      return;
-    }
-
-    res.json({
-      success: true,
-      data: rows[0],
-      message: 'تم تحديث بيانات المستخدم وصلاحيات الوصول بنجاح',
-    });
-  } catch (error: any) {
-    console.error('update user error:', error);
-    res.status(500).json({ success: false, message: 'خطأ أثناء تحديث المستخدم: ' + error.message });
-  }
-});
-
-// Reset user password
-app.put('/api/users/:id/reset-password', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const { newPassword } = req.body;
-
-    if (!newPassword || newPassword.length < 6) {
-      res.status(400).json({ success: false, message: 'كلمة المرور يجب ألا تقل عن 6 أحرف' });
-      return;
-    }
-
-    const hash = await bcrypt.hash(newPassword, 10);
     const { rows } = await pool.query(
-      `UPDATE "public"."users" SET "passwordHash" = $1, "updatedAt" = NOW() WHERE id = $2 RETURNING id, name`,
-      [hash, id]
+      `UPDATE "public"."users"
+       SET 
+         name = COALESCE($1, name),
+         username = COALESCE($2, username),
+         email = COALESCE($3, email),
+         phone = COALESCE($4, phone),
+         role = COALESCE($5::"public"."UserRole", role),
+         "systemAccess" = COALESCE($6, "systemAccess"),
+         "isActive" = COALESCE($7, "isActive"),
+         "updatedAt" = NOW()
+       WHERE id = $8
+       RETURNING id, name, username, email, phone, role, "systemAccess", "isActive", "updatedAt"`,
+      [
+        name?.trim() || null,
+        username?.trim() || null,
+        email?.trim() || null,
+        phone !== undefined ? phone?.trim() || null : null,
+        validRole || null,
+        systemAccess || null,
+        isActive !== undefined ? isActive : null,
+        id,
+      ]
     );
 
     if (rows.length === 0) {
@@ -323,10 +306,79 @@ app.put('/api/users/:id/reset-password', requireAdmin, async (req: AuthRequest, 
 
     res.json({
       success: true,
-      message: `تم تغيير كلمة المرور للمستخدم (${rows[0].name}) بنجاح`,
+      data: rows,
+      message: 'تم تحديث بيانات وصلاحيات المستخدم بنجاح',
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: 'خطأ أثناء تغيير كلمة المرور' });
+    console.error('update user error:', error);
+    res.status(500).json({ success: false, message: 'خطأ أثناء تحديث المستخدم: ' + error.message });
+  }
+});
+
+// Toggle user active status (One-click activate/deactivate)
+app.patch('/api/users/:id/toggle-status', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (req.user && req.user.id === id) {
+      res.status(400).json({ success: false, message: 'لا يمكنك تعطيل حسابك الشخصي' });
+      return;
+    }
+
+    const { rows } = await pool.query(
+      `UPDATE "public"."users"
+       SET "isActive" = NOT "isActive", "updatedAt" = NOW()
+       WHERE id = $1
+       RETURNING id, name, "isActive"`,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: rows,
+      message: rows.isActive ? `تم تفعيل حساب (${rows.name})` : `تم تعطيل حساب (${rows.name})`,
+    });
+  } catch (error: any) {
+    console.error('toggle status error:', error);
+    res.status(500).json({ success: false, message: 'خطأ أثناء تغيير حالة الحساب' });
+  }
+});
+
+// Reset user password
+app.put('/api/users/:id/password', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      res.status(400).json({ success: false, message: 'كلمة المرور الجديدة يجب ألا تقل عن 6 أحرف' });
+      return;
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    const { rows } = await pool.query(
+      `UPDATE "public"."users" SET "passwordHash" = $1, "updatedAt" = NOW() WHERE id = $2 RETURNING id, name`,
+      [passwordHash, id]
+    );
+
+    if (rows.length === 0) {
+      res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: `تم تغيير كلمة مرور (${rows.name}) بنجاح`,
+    });
+  } catch (error: any) {
+    console.error('reset password error:', error);
+    res.status(500).json({ success: false, message: 'خطأ أثناء إعادة تعيين كلمة المرور' });
   }
 });
 
@@ -336,53 +388,29 @@ app.delete('/api/users/:id', requireAdmin, async (req: AuthRequest, res: Respons
     const { id } = req.params;
 
     if (req.user && req.user.id === id) {
-      res.status(400).json({ success: false, message: 'لا يمكنك حذف حسابك الشخصي الحالي' });
+      res.status(400).json({ success: false, message: 'لا يمكنك حذف حسابك الشخصي أثناء تسجيل الدخول' });
       return;
     }
 
-    await pool.query(`DELETE FROM "public"."users" WHERE id = $1`, [id]);
-    res.json({ success: true, message: 'تم حذف المستخدم نهائياً بنجاح' });
-  } catch (error: any) {
-    console.error('delete user error:', error);
-    res.status(500).json({ success: false, message: 'لا يمكن حذف المستخدم لوجود سجلات مالية أو فواتير مرتبطة به. يمكنك تعطيل الحساب بدلاً من ذلك.' });
-  }
-});
+    const { rows } = await pool.query(`DELETE FROM "public"."users" WHERE id = $1 RETURNING id, name`, [id]);
 
-// System statistics
-app.get('/api/stats', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const totalUsersRes = await pool.query(`SELECT COUNT(*)::int as count FROM "public"."users"`);
-    const activeUsersRes = await pool.query(`SELECT COUNT(*)::int as count FROM "public"."users" WHERE "isActive" = true`);
-    const invoiceUsersRes = await pool.query(`SELECT COUNT(*)::int as count FROM "public"."users" WHERE "systemAccess" = 'INVOICE'`);
-    const mediaUsersRes = await pool.query(`SELECT COUNT(*)::int as count FROM "public"."users" WHERE "systemAccess" = 'MEDIA'`);
-    const allUsersRes = await pool.query(`SELECT COUNT(*)::int as count FROM "public"."users" WHERE "systemAccess" = 'ALL'`);
+    if (rows.length === 0) {
+      res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
+      return;
+    }
 
     res.json({
       success: true,
-      data: {
-        total: totalUsersRes.rows[0]?.count || 0,
-        active: activeUsersRes.rows[0]?.count || 0,
-        invoiceUsers: invoiceUsersRes.rows[0]?.count || 0,
-        mediaUsers: mediaUsersRes.rows[0]?.count || 0,
-        allAccessUsers: allUsersRes.rows[0]?.count || 0,
-      },
+      message: `تم حذف المستخدم (${rows.name}) بنجاح`,
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: 'خطأ في جلب إحصائيات النظام' });
+    console.error('delete user error:', error);
+    res.status(500).json({ success: false, message: 'خطأ أثناء حذف المستخدم: ' + error.message });
   }
 });
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    system: 'OMS Admin Management API',
-    company: 'OMS',
-    developer: 'MDE – Matrix Data Egypt',
-    port: PORT,
-  });
-});
-
-app.listen(Number(PORT), '127.0.0.1', () => {
-  console.log(`🛡️ OMS Admin Management API running on http://127.0.0.1:${PORT}`);
+// Start Server on 0.0.0.0 for Render
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 OMS Admin Hub API running on port ${PORT}`);
+  console.log(`🌟 System: OMS Admin | Developed by MDE – Matrix Data Egypt`);
 });
