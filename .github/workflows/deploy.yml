@@ -25,18 +25,21 @@ jobs:
         working-directory: ./Invoice/client
         run: |
           npm install
+          chmod -R +x node_modules/.bin
           npm run build
 
       - name: Build Admin Frontend
         working-directory: ./admin/frontend
         run: |
           npm install
+          chmod -R +x node_modules/.bin
           npm run build
 
       - name: Build Media Frontend
         working-directory: ./media/frontend
         run: |
           npm install
+          chmod -R +x node_modules/.bin
           npm run build
 
       - name: Combine Builds into Single Directory
