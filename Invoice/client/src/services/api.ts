@@ -1,4 +1,6 @@
-const API_BASE = '/api';
+const API_BASE =
+  (import.meta as any).env?.VITE_API_BASE_URL ||
+  'https://oms-invoice-api.vercel.app/api';
 
 export const getAuthToken = (): string | null => {
   return localStorage.getItem('oms_token');
@@ -38,8 +40,8 @@ export async function apiRequest<T = any>(
     if (!res.ok) {
       if (res.status === 401) {
         clearAuthToken();
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
+        if (!window.location.pathname.endsWith('/login')) {
+          window.location.href = '/OMS/invoice/login';
         }
       }
       return {
