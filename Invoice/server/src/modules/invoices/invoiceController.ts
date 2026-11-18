@@ -25,14 +25,17 @@ const createInvoiceSchema = z.object({
 
 // Helper to compute subtotal, tax, and total
 export const computeInvoiceTotals = (
-  items: { quantity: number; unitPrice: number; discount: number }[],
+  items: { quantity?: number; unitPrice?: number; discount?: number }[],
   globalDiscount: number,
   vatRate: number,
   applyWht: boolean
 ) => {
   let subtotal = 0;
   for (const item of items) {
-    const itemTotal = item.quantity * item.unitPrice - (item.discount || 0);
+    const qty = item.quantity || 0;
+    const price = item.unitPrice || 0;
+    const disc = item.discount || 0;
+    const itemTotal = qty * price - disc;
     subtotal += Math.max(0, itemTotal);
   }
 
@@ -216,11 +219,11 @@ export const createInvoice = async (req: AuthenticatedRequest, res: Response): P
           items: {
             create: data.items.map((item) => ({
               serviceId: item.serviceId || null,
-              description: item.description,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              discount: item.discount,
-              total: Math.round((item.quantity * item.unitPrice - item.discount) * 100) / 100,
+              description: item.description!,
+              quantity: item.quantity!,
+              unitPrice: item.unitPrice!,
+              discount: item.discount || 0,
+              total: Math.round(((item.quantity || 0) * (item.unitPrice || 0) - (item.discount || 0)) * 100) / 100,
             })),
           },
         },
@@ -250,7 +253,6 @@ export const createInvoice = async (req: AuthenticatedRequest, res: Response): P
     res.status(500).json({ success: false, message: 'حدث خطأ أثناء إنشاء الفاتورة' });
   }
 };
-
 export const updateInvoice = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -331,11 +333,11 @@ export const updateInvoice = async (req: AuthenticatedRequest, res: Response): P
           items: {
             create: data.items.map((item) => ({
               serviceId: item.serviceId || null,
-              description: item.description,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              discount: item.discount,
-              total: Math.round((item.quantity * item.unitPrice - item.discount) * 100) / 100,
+              description: item.description!,
+              quantity: item.quantity!,
+              unitPrice: item.unitPrice!,
+              discount: item.discount || 0,
+              total: Math.round(((item.quantity || 0) * (item.unitPrice || 0) - (item.discount || 0)) * 100) / 100,
             })),
           },
         },
