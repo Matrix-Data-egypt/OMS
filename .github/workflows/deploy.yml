@@ -22,7 +22,7 @@ jobs:
           node-version: 20
 
       - name: Build Invoice Frontend
-        working-directory: ./Invoice/frontend
+        working-directory: ./Invoice/client
         run: |
           npm install
           npm run build
@@ -34,7 +34,7 @@ jobs:
           npm run build
 
       - name: Build Media Frontend
-        working-directory: ./media
+        working-directory: ./media/frontend
         run: |
           npm install
           npm run build
@@ -42,12 +42,38 @@ jobs:
       - name: Combine Builds into Single Directory
         run: |
           mkdir -p _site/invoice _site/admin _site/media
-          cp -r ./Invoice/frontend/dist/* _site/invoice/
+          cp -r ./Invoice/client/dist/* _site/invoice/
           cp -r ./admin/frontend/dist/* _site/admin/
-          cp -r ./media/dist/* _site/media/
+          cp -r ./media/frontend/dist/* _site/media/
           cp _site/invoice/index.html _site/invoice/404.html
           cp _site/admin/index.html _site/admin/404.html
           cp _site/media/index.html _site/media/404.html
+          cat << 'EOF' > _site/index.html
+          <!DOCTYPE html>
+          <html lang="ar" dir="rtl">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>OMS Business Suite</title>
+            <style>
+              body { font-family: system-ui, sans-serif; background: #171717; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+              h1 { color: #DC2626; margin-bottom: 10px; }
+              .links { display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap; justify-content: center; }
+              a { background: #DC2626; color: #fff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+              a:hover { background: #b91c1c; }
+            </style>
+          </head>
+          <body>
+            <h1>نظام فواتير وميديا OMS</h1>
+            <p>اختر البوابة التي تود الدخول إليها:</p>
+            <div class="links">
+              <a href="/OMS/admin/">بوابة الإدارة (Admin)</a>
+              <a href="/OMS/invoice/">نظام الفواتير (Invoice)</a>
+              <a href="/OMS/media/">قسم الميديا (Media)</a>
+            </div>
+          </body>
+          </html>
+          EOF
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
