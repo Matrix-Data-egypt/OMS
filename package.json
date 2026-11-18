@@ -4,11 +4,12 @@
   "scripts": {
     "build": "npm run build:invoice",
     "start": "npm run start:invoice",
-    "build:invoice": "cd Invoice/server && NODE_OPTIONS='--max-old-space-size=1024' npm install --no-audit --no-fund --ignore-scripts=false && node ./node_modules/prisma/build/index.js generate && node ./node_modules/typescript/bin/tsc && cd ../.. && rm -rf Invoice/client media admin *.bat *.md",
-    "start:invoice": "cd Invoice/server && node ./node_modules/prisma/build/index.js db push && node dist/index.js",
-    "build:media": "cd media/backend && NODE_OPTIONS='--max-old-space-size=1024' npm install --no-audit --no-fund --ignore-scripts=false && node ./node_modules/prisma/build/index.js generate && node ./node_modules/typescript/bin/tsc && cd ../.. && rm -rf media/frontend Invoice admin *.bat *.md",
-    "start:media": "cd media/backend && node ./node_modules/prisma/build/index.js db push && node dist/index.js",
-    "build:admin": "cd admin/backend && NODE_OPTIONS='--max-old-space-size=1024' npm install --no-audit --no-fund --ignore-scripts=false && node ./node_modules/typescript/bin/tsc && cd ../.. && rm -rf admin/frontend Invoice media *.bat *.md",
+    "build:invoice": "cd Invoice/server && npm install --no-audit --no-fund && node ./node_modules/typescript/bin/tsc && cd ../.. && rm -rf Invoice/client media admin *.bat *.md",
+    "start:invoice": "cd Invoice/server && node dist/index.js",
+    "build:media": "cd media/backend && npm install --no-audit --no-fund && node ./node_modules/typescript/bin/tsc && cd ../.. && rm -rf media/frontend Invoice admin *.bat *.md",
+    "start:media": "cd media/backend && node dist/index.js",
+    "build:admin": "cd admin/backend && npm install --no-audit --no-fund && node ./node_modules/typescript/bin/tsc && cd ../.. && rm -rf admin/frontend Invoice media *.bat *.md",
     "start:admin": "cd admin/backend && node dist/index.js"
   }
 }
+
