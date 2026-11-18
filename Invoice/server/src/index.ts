@@ -17,10 +17,11 @@ dotenv.config();
 const app = express();
 const PORT = Number(process.env.PORT) || 5001;
 
-// Middleware
+// Middleware - السماح بالاتصال من واجهات GitHub Pages والمحلي
 app.use(
   cors({
     origin: [
+      'https://matrix-data-egypt.github.io',
       'https://github.io',
       'http://localhost:5173',
       'http://localhost:5174',
@@ -37,6 +38,14 @@ app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   }
   next();
+});
+
+// Root route for quick verification
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'OMS Invoice API is running on Vercel',
+  });
 });
 
 // API Routes
@@ -72,19 +81,11 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// Listen on 0.0.0.0 so Render can route traffic to the server
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 OMS Invoice API running on port ${PORT}`);
-  console.log(`🌟 System: OMS Invoice | Developed by MDE – Matrix Data Egypt`);
-});
+// تشغيل الخادم محليًا فقط؛ أما على Vercel فيتم تصديره كـ Serverless Function
+if (!process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 OMS Invoice API running on port ${PORT}`);
+  });
+}
 
-server.on('error', (err: any) => {
-  if (err.code === 'EADDRINUSE') {
-    console.warn(`⚠️ Port ${PORT} is in use, trying port ${PORT + 1}...`);
-    app.listen(PORT + 1, '0.0.0.0', () => {
-      console.log(`🚀 OMS Invoice API running on port ${PORT + 1}`);
-    });
-  } else {
-    console.error('Server error:', err);
-  }
-});
+export default app;
