@@ -1,6 +1,4 @@
-const API_BASE =
-  (import.meta as any).env?.VITE_API_BASE_URL ||
-  'https://oms-invoice-api.vercel.app/api';
+const API_BASE = 'https://oms-invoice-api.vercel.app/api';
 
 export const getAuthToken = (): string | null => {
   return localStorage.getItem('oms_token');
