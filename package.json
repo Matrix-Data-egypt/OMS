@@ -2,13 +2,13 @@
   "name": "oms-backend-gateway",
   "version": "1.0.0",
   "scripts": {
-    "build": "cd Invoice/server && npm install --foreground-scripts && npx prisma generate && npx prisma db push && npm run build",
-    "start": "cd Invoice/server && npm start",
-    "build:invoice": "cd Invoice/server && npm install --foreground-scripts && npx prisma generate && npx prisma db push && npm run build",
-    "start:invoice": "cd Invoice/server && npm start",
-    "build:media": "cd media/backend && npm install --foreground-scripts && npx prisma generate && npx prisma db push && npm run build",
-    "start:media": "cd media/backend && npm start",
-    "build:admin": "cd admin/backend && npm install && npm run build",
-    "start:admin": "cd admin/backend && npm start"
+    "build": "cd Invoice/server && npm install --ignore-scripts=false && node ./node_modules/prisma/build/index.js generate && node ./node_modules/prisma/build/index.js db push && node ./node_modules/typescript/bin/tsc",
+    "start": "cd Invoice/server && node dist/index.js",
+    "build:invoice": "cd Invoice/server && npm install --ignore-scripts=false && node ./node_modules/prisma/build/index.js generate && node ./node_modules/prisma/build/index.js db push && node ./node_modules/typescript/bin/tsc",
+    "start:invoice": "cd Invoice/server && node dist/index.js",
+    "build:media": "cd media/backend && npm install --ignore-scripts=false && node ./node_modules/prisma/build/index.js generate && node ./node_modules/prisma/build/index.js db push && node ./node_modules/typescript/bin/tsc",
+    "start:media": "cd media/backend && node dist/index.js",
+    "build:admin": "cd admin/backend && npm install --ignore-scripts=false && node ./node_modules/typescript/bin/tsc",
+    "start:admin": "cd admin/backend && node dist/index.js"
   }
 }
