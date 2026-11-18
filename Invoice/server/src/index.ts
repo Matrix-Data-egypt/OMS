@@ -15,12 +15,17 @@ import reportRoutes from './modules/reports/reportRoutes.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5001;
 
 // Middleware
 app.use(
   cors({
-    origin: '*',
+    origin: [
+      'https://github.io',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175',
+    ],
     credentials: true,
   })
 );
@@ -67,16 +72,17 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-const server = app.listen(Number(PORT), '127.0.0.1', () => {
-  console.log(`🚀 OMS Invoice API running on http://127.0.0.1:${PORT}`);
+// Listen on 0.0.0.0 so Render can route traffic to the server
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 OMS Invoice API running on port ${PORT}`);
   console.log(`🌟 System: OMS Invoice | Developed by MDE – Matrix Data Egypt`);
 });
 
 server.on('error', (err: any) => {
   if (err.code === 'EADDRINUSE') {
-    console.warn(`⚠️ Port ${PORT} is in use, trying port ${Number(PORT) + 1}...`);
-    app.listen(Number(PORT) + 1, '127.0.0.1', () => {
-      console.log(`🚀 OMS Invoice API running on http://127.0.0.1:${Number(PORT) + 1}`);
+    console.warn(`⚠️ Port ${PORT} is in use, trying port ${PORT + 1}...`);
+    app.listen(PORT + 1, '0.0.0.0', () => {
+      console.log(`🚀 OMS Invoice API running on port ${PORT + 1}`);
     });
   } else {
     console.error('Server error:', err);
