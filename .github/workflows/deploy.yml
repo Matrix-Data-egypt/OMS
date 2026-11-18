@@ -1,0 +1,59 @@
+name: Deploy All Frontends to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build Invoice Frontend
+        working-directory: ./Invoice/frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Build Admin Frontend
+        working-directory: ./admin/frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Build Media Frontend
+        working-directory: ./media
+        run: |
+          npm install
+          npm run build
+
+      - name: Combine Builds into Single Directory
+        run: |
+          mkdir -p _site/invoice _site/admin _site/media
+          cp -r ./Invoice/frontend/dist/* _site/invoice/
+          cp -r ./admin/frontend/dist/* _site/admin/
+          cp -r ./media/dist/* _site/media/
+          cp _site/invoice/index.html _site/invoice/404.html
+          cp _site/admin/index.html _site/admin/404.html
+          cp _site/media/index.html _site/media/404.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
