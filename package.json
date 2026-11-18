@@ -2,11 +2,11 @@
   "name": "oms-backend-gateway",
   "version": "1.0.0",
   "scripts": {
-    "build": "cd Invoice/server && npm install && npx prisma generate && npx prisma db push && npm run build",
+    "build": "cd Invoice/server && npm install --foreground-scripts && npx prisma generate && npx prisma db push && npm run build",
     "start": "cd Invoice/server && npm start",
-    "build:invoice": "cd Invoice/server && npm install && npx prisma generate && npx prisma db push && npm run build",
+    "build:invoice": "cd Invoice/server && npm install --foreground-scripts && npx prisma generate && npx prisma db push && npm run build",
     "start:invoice": "cd Invoice/server && npm start",
-    "build:media": "cd media/backend && npm install && npx prisma generate && npx prisma db push && npm run build",
+    "build:media": "cd media/backend && npm install --foreground-scripts && npx prisma generate && npx prisma db push && npm run build",
     "start:media": "cd media/backend && npm start",
     "build:admin": "cd admin/backend && npm install && npm run build",
     "start:admin": "cd admin/backend && npm start"
