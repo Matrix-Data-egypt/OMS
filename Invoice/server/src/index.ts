@@ -17,19 +17,39 @@ dotenv.config();
 const app = express();
 const PORT = Number(process.env.PORT) || 5001;
 
-// Middleware - السماح بالاتصال من واجهات GitHub Pages والمحلي
-app.use(
-  cors({
-    origin: [
+// إعدادات CORS مرنة وشاملة لـ GitHub Pages و Vercel والمحلي
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // السماح بالطلبات بدون origin (مثل Postman أو تطبيقات الموبايل)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
       'https://matrix-data-egypt.github.io',
       'https://github.io',
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:5175',
-    ],
-    credentials: true,
-  })
-);
+    ];
+
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.github.io') ||
+      origin.endsWith('.vercel.app')
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+};
+
+app.use(cors(corsOptions));
+// معالجة طلبات Preflight (OPTIONS) لجميع المسارات فوراً
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 
 // Request logger for audit
