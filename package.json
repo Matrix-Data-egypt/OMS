@@ -1,4 +1,4 @@
-
+```json
 {
   "name": "oms-invoice-server",
   "version": "1.0.0",
@@ -6,8 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "prisma:generate": "prisma generate --schema ./prisma/schema.prisma",
-    "build": "tsc",
+    "build": "prisma generate --schema ./prisma/schema.prisma && tsc",
     "start": "node dist/index.js"
   },
   "keywords": [
@@ -39,3 +38,4 @@
     "typescript": "^5.6.3"
   }
 }
+```
