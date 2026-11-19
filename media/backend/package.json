@@ -3,12 +3,12 @@
   "name": "oms-media-backend",
   "version": "1.0.0",
   "description": "OMS Media Department Backend API - Developed by MDE",
-  "main": "dist/server.js",
+  "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch src/index.ts",
     "build": "prisma generate --schema ./prisma/schema.prisma && tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/index.js",
     "prisma:generate": "prisma generate --schema ./prisma/schema.prisma",
     "prisma:push": "prisma db push",
     "prisma:seed": "tsx src/prisma/seed.ts"
