@@ -1,9 +1,111 @@
-import { Router, Request, Response } from 'express';
+
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
+import jwt from 'jsonwebtoken';
 import prisma from '../prisma/prismaClient.js';
 import { requireWritePermission } from '../middleware/auth.js';
 
 const router = Router();
+
+/**
+ * Read-only media access middleware.
+ * Authenticates the user and checks current database permissions.
+ * Unlike requireWritePermission, this allows read-only users.
+ */
+async function requireMediaAccess(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith('Bearer ')) {
+    res.status(401).json({
+      success: false,
+      message: 'يجب تسجيل الدخول أولاً',
+    });
+    return;
+  }
+
+  const token = authHeader.slice(7).trim();
+
+  if (!token) {
+    res.status(401).json({
+      success: false,
+      message: 'رمز الدخول غير موجود',
+    });
+    return;
+  }
+
+  const secret = process.env.JWT_SECRET;
+
+  if (!secret) {
+    res.status(500).json({
+      success: false,
+      message: 'إعدادات المصادقة غير مكتملة',
+    });
+    return;
+  }
+
+  try {
+    const decoded = jwt.verify(token, secret) as jwt.JwtPayload;
+
+    if (!decoded.id || typeof decoded.id !== 'string') {
+      res.status(401).json({
+        success: false,
+        message: 'رمز الدخول غير صالح',
+      });
+      return;
+    }
+
+    const users = await prisma.$queryRaw<any[]>`
+      SELECT id, name, username, role, "systemAccess", "isActive"
+      FROM "public"."users"
+      WHERE id = ${decoded.id}
+      LIMIT 1
+    `;
+
+    if (!users || users.length === 0 || !users[0].isActive) {
+      res.status(403).json({
+        success: false,
+        message: 'المستخدم غير موجود أو غير مفعّل',
+      });
+      return;
+    }
+
+    const user = users[0];
+
+    const hasAccess =
+      user.role === 'MEDIA_ADMIN'
+        ? user.systemAccess === 'MEDIA'
+        : ['MEDIA', 'ALL'].includes(user.systemAccess);
+
+    if (!hasAccess) {
+      res.status(403).json({
+        success: false,
+        message: 'غير مصرح لك بالدخول إلى نظام الميديا',
+      });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.status(401).json({
+        success: false,
+        message: 'رمز الدخول غير صالح أو منتهي',
+      });
+      return;
+    }
+
+    console.error('Media read authorization error:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'حدث خطأ أثناء التحقق من الصلاحيات',
+    });
+  }
+}
 
 const recordSchema = z.object({
   title: z.string().optional(),
@@ -16,13 +118,20 @@ const recordSchema = z.object({
   netToChannel: z.number().nonnegative().default(0),
   netToClient: z.number().nonnegative().default(0),
   notes: z.string().optional(),
-  status: z.enum(['PLANNED', 'ACTIVE', 'COMPLETED', 'INVOICED']).default('PLANNED'),
+  status: z.enum([
+    'PLANNED',
+    'ACTIVE',
+    'COMPLETED',
+    'INVOICED',
+  ]).default('PLANNED'),
 });
 
-// Helper: Escape CSV fields
+// Escape CSV fields
 function escapeCsv(field: any): string {
   if (field === null || field === undefined) return '';
+
   const str = String(field).replace(/"/g, '""');
+
   return `"${str}"`;
 }
 
@@ -58,11 +167,13 @@ const MONTH_NAMES_MAP: Record<string, number> = {
 
 export function parseMonthSortKey(monthStr: string): number {
   if (!monthStr) return 0;
+
   const s = String(monthStr).trim().toLowerCase();
   const yearMatch = s.match(/(20\d\d)/);
   const year = yearMatch ? parseInt(yearMatch[1], 10) : 2026;
 
   let monthNum = 1;
+
   for (const [key, val] of Object.entries(MONTH_NAMES_MAP)) {
     if (s.includes(key)) {
       monthNum = val;
@@ -73,118 +184,129 @@ export function parseMonthSortKey(monthStr: string): number {
   return year * 100 + monthNum;
 }
 
-// 1. Download CSV Template (With EXACT columns in order)
-// Client | supplier | Channel | Content | Content Type | Month | Net to Channel | Net to Client | Notes
-router.get('/template', (req: Request, res: Response) => {
-  const headers = [
-    'Client',
-    'supplier',
-    'Channel',
-    'Content',
-    'Content Type',
-    'Month',
-    'Net to Channel',
-    'Net to Client',
-    'Notes',
-  ];
+// Shared record filters
+function buildRecordWhere(query: Request['query']): any {
+  const {
+    search,
+    clientId,
+    supplierId,
+    channelId,
+    contentId,
+    month,
+    months,
+    status,
+  } = query;
 
-  const sampleRows = [
-    [
-      'شركة النيل للاستثمار العقاري',
-      'Meta Platforms (Facebook & Instagram Ads)',
-      'Facebook',
-      'فيديو إطلاق المرحلة الأولى للمشروع العقاري',
-      'فيديو إعلاني سينمائي (Commercial Video)',
-      'يناير 2026',
-      '25000',
-      '32000',
-      'حملة مستهدفة للتجمع والشيخ زايد',
-    ],
-    [
-      'مطاعم برجر شوب مصر',
-      'TikTok Ads MENA',
-      'TikTok',
-      'ريلز عرض التخفيضات الأسبوعية 30%',
-      'ريلز ومقاطع قصيرة (Reels & Shorts)',
-      'فبراير 2026',
-      '12000',
-      '16500',
-      'فيديوهات ريلز مع فود بلوجرز',
-    ],
-  ];
+  const where: any = {};
 
-  const csvContent =
-    '\uFEFF' + // UTF-8 BOM for Arabic support in Excel
-    headers.join(',') +
-    '\n' +
-    sampleRows.map((row) => row.map(escapeCsv).join(',')).join('\n');
+  if (clientId && typeof clientId === 'string' && clientId !== 'ALL') {
+    where.clientId = clientId;
+  }
 
-  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-  res.setHeader('Content-Disposition', 'attachment; filename="OMS_Media_Template.csv"');
-  res.send(csvContent);
-});
+  if (supplierId && typeof supplierId === 'string' && supplierId !== 'ALL') {
+    where.supplierId = supplierId;
+  }
 
-// 2. Export Data (With EXACT columns in order)
-router.get('/export', async (req: Request, res: Response) => {
-  try {
-    const { search, clientId, supplierId, channelId, contentId, month, months, fromMonth, toMonth, status } = req.query;
+  if (channelId && typeof channelId === 'string' && channelId !== 'ALL') {
+    where.channelId = channelId;
+  }
 
-    const where: any = {};
-    if (clientId && typeof clientId === 'string' && clientId !== 'ALL') where.clientId = clientId;
-    if (supplierId && typeof supplierId === 'string' && supplierId !== 'ALL') where.supplierId = supplierId;
-    if (channelId && typeof channelId === 'string' && channelId !== 'ALL') where.channelId = channelId;
-    if (contentId && typeof contentId === 'string' && contentId !== 'ALL') where.contentId = contentId;
-    if (status && typeof status === 'string' && status !== 'ALL') where.status = status;
+  if (contentId && typeof contentId === 'string' && contentId !== 'ALL') {
+    where.contentId = contentId;
+  }
 
-    // Multi-select months filter
-    let selectedMonthsList: string[] = [];
-    if (Array.isArray(months)) {
-      selectedMonthsList = months.map(String).map((m) => m.trim()).filter(Boolean);
-    } else if (typeof months === 'string' && months.trim() !== '') {
-      selectedMonthsList = months.split(',').map((m) => m.trim()).filter(Boolean);
-    }
+  if (status && typeof status === 'string' && status !== 'ALL') {
+    where.status = status;
+  }
 
-    if (selectedMonthsList.length > 0) {
-      where.month = { in: selectedMonthsList };
-    } else if (month && typeof month === 'string' && month !== 'ALL') {
-      where.month = month;
-    }
+  let selectedMonthsList: string[] = [];
 
-    if (search && typeof search === 'string' && search.trim() !== '') {
-      const q = search.trim();
-      where.OR = [
-        { title: { contains: q, mode: 'insensitive' } },
-        { notes: { contains: q, mode: 'insensitive' } },
-        { client: { name: { contains: q, mode: 'insensitive' } } },
-        { supplier: { name: { contains: q, mode: 'insensitive' } } },
-        { channel: { name: { contains: q, mode: 'insensitive' } } },
-        { content: { name: { contains: q, mode: 'insensitive' } } },
-        { month: { contains: q, mode: 'insensitive' } },
-      ];
-    }
+  if (Array.isArray(months)) {
+    selectedMonthsList = months
+      .map(String)
+      .map((m) => m.trim())
+      .filter(Boolean);
+  } else if (typeof months === 'string' && months.trim() !== '') {
+    selectedMonthsList = months
+      .split(',')
+      .map((m) => m.trim())
+      .filter(Boolean);
+  }
 
-    let records = await prisma.mediaRecord.findMany({
-      where,
-      include: {
-        client: true,
-        supplier: true,
-        channel: true,
-        content: { include: { contentType: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  if (selectedMonthsList.length > 0) {
+    where.month = { in: selectedMonthsList };
+  } else if (
+    month &&
+    typeof month === 'string' &&
+    month !== 'ALL'
+  ) {
+    where.month = month;
+  }
 
-    // Month Range filter (من شهر كذا إلى شهر كذا)
-    if (fromMonth || toMonth) {
-      const fromKey = fromMonth && typeof fromMonth === 'string' && fromMonth !== 'ALL' ? parseMonthSortKey(fromMonth) : -Infinity;
-      const toKey = toMonth && typeof toMonth === 'string' && toMonth !== 'ALL' ? parseMonthSortKey(toMonth) : Infinity;
+  if (search && typeof search === 'string' && search.trim() !== '') {
+    const q = search.trim();
 
-      records = records.filter((r) => {
-        const rKey = parseMonthSortKey(r.month);
-        return rKey >= fromKey && rKey <= toKey;
-      });
-    }
+    where.OR = [
+      { title: { contains: q, mode: 'insensitive' } },
+      { notes: { contains: q, mode: 'insensitive' } },
+      { client: { name: { contains: q, mode: 'insensitive' } } },
+      { supplier: { name: { contains: q, mode: 'insensitive' } } },
+      { channel: { name: { contains: q, mode: 'insensitive' } } },
+      { content: { name: { contains: q, mode: 'insensitive' } } },
+      { month: { contains: q, mode: 'insensitive' } },
+    ];
+  }
 
+  return where;
+}
+
+// Apply month range filter
+function applyMonthRange(
+  records: any[],
+  fromMonth: unknown,
+  toMonth: unknown
+): any[] {
+  if (!fromMonth && !toMonth) {
+    return records;
+  }
+
+  const fromKey =
+    fromMonth &&
+    typeof fromMonth === 'string' &&
+    fromMonth !== 'ALL'
+      ? parseMonthSortKey(fromMonth)
+      : -Infinity;
+
+  const toKey =
+    toMonth &&
+    typeof toMonth === 'string' &&
+    toMonth !== 'ALL'
+      ? parseMonthSortKey(toMonth)
+      : Infinity;
+
+  return records.filter((record) => {
+    const recordKey = parseMonthSortKey(record.month);
+
+    return recordKey >= fromKey && recordKey <= toKey;
+  });
+}
+
+const recordInclude = {
+  client: true,
+  supplier: true,
+  channel: true,
+  content: {
+    include: {
+      contentType: true,
+    },
+  },
+};
+
+// 1. Download CSV Template
+router.get(
+  '/template',
+  requireMediaAccess,
+  (req: Request, res: Response) => {
     const headers = [
       'Client',
       'supplier',
@@ -197,368 +319,561 @@ router.get('/export', async (req: Request, res: Response) => {
       'Notes',
     ];
 
-    const rows = records.map((r) => [
-      escapeCsv(r.client?.name || ''),
-      escapeCsv(r.supplier?.name || ''),
-      escapeCsv(r.channel?.name || ''),
-      escapeCsv(r.content?.name || ''),
-      escapeCsv(r.content?.contentType?.name || ''),
-      escapeCsv(r.month || ''),
-      escapeCsv(Number(r.netToChannel || 0)),
-      escapeCsv(Number(r.netToClient || r.cost || 0)),
-      escapeCsv(r.notes || ''),
-    ]);
+    const sampleRows = [
+      [
+        'شركة النيل للاستثمار العقاري',
+        'Meta Platforms (Facebook & Instagram Ads)',
+        'Facebook',
+        'فيديو إطلاق المرحلة الأولى للمشروع العقاري',
+        'فيديو إعلاني سينمائي (Commercial Video)',
+        'يناير 2026',
+        '25000',
+        '32000',
+        'حملة مستهدفة للتجمع والشيخ زايد',
+      ],
+      [
+        'مطاعم برجر شوب مصر',
+        'TikTok Ads MENA',
+        'TikTok',
+        'ريلز عرض التخفيضات الأسبوعية 30%',
+        'ريلز ومقاطع قصيرة (Reels & Shorts)',
+        'فبراير 2026',
+        '12000',
+        '16500',
+        'فيديوهات ريلز مع فود بلوجرز',
+      ],
+    ];
 
     const csvContent =
-      '\uFEFF' + // UTF-8 BOM for Arabic in Excel
+      '\uFEFF' +
       headers.join(',') +
       '\n' +
-      rows.map((row) => row.join(',')).join('\n');
+      sampleRows
+        .map((row) => row.map(escapeCsv).join(','))
+        .join('\n');
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="OMS_Media_Export.csv"');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="OMS_Media_Template.csv"'
+    );
+
     res.send(csvContent);
-  } catch (error: any) {
-    console.error('export error:', error);
-    res.status(500).json({ success: false, message: 'خطأ أثناء تصدير البيانات' });
   }
-});
+);
 
-// 3. Import Data (Parse CSV / JSON rows with EXACT columns in order)
-router.post('/import', requireWritePermission, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { rows } = req.body;
+// 2. Export Data
+router.get(
+  '/export',
+  requireMediaAccess,
+  async (req: Request, res: Response) => {
+    try {
+      const where = buildRecordWhere(req.query);
 
-    if (!Array.isArray(rows) || rows.length === 0) {
-      res.status(400).json({ success: false, message: 'لم يتم العثور على أي صفوف صالحة للاستيراد' });
-      return;
-    }
-
-    let createdCount = 0;
-    let errorsList: string[] = [];
-
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      // Expected keys: Client, supplier, Channel, Content, Content Type, Month, Net to Channel, Net to Client, Notes
-      const clientName = (row['Client'] || row['client'] || '').trim();
-      const supplierName = (row['supplier'] || row['Supplier'] || '').trim();
-      const channelName = (row['Channel'] || row['channel'] || '').trim();
-      const contentName = (row['Content'] || row['content'] || '').trim();
-      const contentTypeName = (row['Content Type'] || row['content_type'] || row['contentType'] || 'عام').trim();
-      const month = (row['Month'] || row['month'] || 'غير محدد').trim();
-      const netToChannel = parseFloat(String(row['Net to Channel'] || row['netToChannel'] || 0)) || 0;
-      const netToClient = parseFloat(String(row['Net to Client'] || row['netToClient'] || 0)) || 0;
-      const notes = (row['Notes'] || row['notes'] || '').trim();
-
-      if (!clientName || !supplierName || !channelName || !contentName) {
-        errorsList.push(`الصف رقم ${i + 1}: ينقصه بيانات أساسية (Client, Supplier, Channel, أو Content)`);
-        continue;
-      }
-
-      // Upsert Client in Media
-      const client = await prisma.mediaClient.upsert({
-        where: { name: clientName },
-        update: {},
-        create: { name: clientName },
+      let records = await prisma.mediaRecord.findMany({
+        where,
+        include: recordInclude,
+        orderBy: { createdAt: 'desc' },
       });
 
-      // Automatically sync Client into Accounting department (public.clients)
-      try {
-        const existingInAcc = await prisma.$queryRaw<any[]>`
-          SELECT id FROM "public"."clients" WHERE "name" = ${clientName} LIMIT 1
-        `;
-        if (existingInAcc.length === 0) {
-          const newAccId = (await import('crypto')).randomUUID();
-          await prisma.$executeRaw`
-            INSERT INTO "public"."clients" ("id", "name", "companyName", "notes", "isActive", "createdAt", "updatedAt")
-            VALUES (${newAccId}, ${clientName}, ${clientName}, 'عميل مستورد عبر ميديا', true, NOW(), NOW())
-          `;
-        }
-      } catch (err) {
-        console.error('Accounting client sync error during import:', err);
-      }
+      records = applyMonthRange(
+        records,
+        req.query.fromMonth,
+        req.query.toMonth
+      );
 
-      // Upsert Supplier
-      const supplier = await prisma.mediaSupplier.upsert({
-        where: { name: supplierName },
-        update: {},
-        create: { name: supplierName },
-      });
-
-      // Upsert Channel
-      const channel = await prisma.mediaChannel.upsert({
-        where: { name: channelName },
-        update: {},
-        create: { name: channelName },
-      });
-
-      // Upsert Content Type
-      const ct = await prisma.mediaContentType.upsert({
-        where: { name: contentTypeName || 'عام' },
-        update: {},
-        create: { name: contentTypeName || 'عام' },
-      });
-
-      // Upsert Content
-      let content = await prisma.mediaContent.findFirst({
-        where: { name: contentName, contentTypeId: ct.id },
-      });
-      if (!content) {
-        content = await prisma.mediaContent.create({
-          data: { name: contentName, contentTypeId: ct.id },
-        });
-      }
-
-      // Create Media Record
-      await prisma.mediaRecord.create({
-        data: {
-          title: `${contentName} - ${channelName}`,
-          clientId: client.id,
-          supplierId: supplier.id,
-          channelId: channel.id,
-          contentId: content.id,
-          month,
-          cost: netToClient > 0 ? netToClient : netToChannel,
-          netToChannel,
-          netToClient,
-          notes,
-          status: 'PLANNED',
-        },
-      });
-
-      createdCount++;
-    }
-
-    res.json({
-      success: true,
-      message: `تم استيراد ${createdCount} حملة وسجل بنجاح!`,
-      data: {
-        importedCount: createdCount,
-        errors: errorsList,
-      },
-    });
-  } catch (error: any) {
-    console.error('import error:', error);
-    res.status(500).json({ success: false, message: 'خطأ أثناء استيراد البيانات' });
-  }
-});
-
-// List records with search & Kaggle-style filters
-router.get('/', async (req: Request, res: Response) => {
-  try {
-    const { search, clientId, supplierId, channelId, contentId, month, months, fromMonth, toMonth, status } = req.query;
-
-    const where: any = {};
-
-    if (clientId && typeof clientId === 'string' && clientId !== 'ALL') {
-      where.clientId = clientId;
-    }
-    if (supplierId && typeof supplierId === 'string' && supplierId !== 'ALL') {
-      where.supplierId = supplierId;
-    }
-    if (channelId && typeof channelId === 'string' && channelId !== 'ALL') {
-      where.channelId = channelId;
-    }
-    if (contentId && typeof contentId === 'string' && contentId !== 'ALL') {
-      where.contentId = contentId;
-    }
-    if (status && typeof status === 'string' && status !== 'ALL') {
-      where.status = status;
-    }
-
-    // Multi-select months filter
-    let selectedMonthsList: string[] = [];
-    if (Array.isArray(months)) {
-      selectedMonthsList = months.map(String).map((m) => m.trim()).filter(Boolean);
-    } else if (typeof months === 'string' && months.trim() !== '') {
-      selectedMonthsList = months.split(',').map((m) => m.trim()).filter(Boolean);
-    }
-
-    if (selectedMonthsList.length > 0) {
-      where.month = { in: selectedMonthsList };
-    } else if (month && typeof month === 'string' && month !== 'ALL') {
-      where.month = month;
-    }
-
-    if (search && typeof search === 'string' && search.trim() !== '') {
-      const q = search.trim();
-      where.OR = [
-        { title: { contains: q, mode: 'insensitive' } },
-        { notes: { contains: q, mode: 'insensitive' } },
-        { client: { name: { contains: q, mode: 'insensitive' } } },
-        { supplier: { name: { contains: q, mode: 'insensitive' } } },
-        { channel: { name: { contains: q, mode: 'insensitive' } } },
-        { content: { name: { contains: q, mode: 'insensitive' } } },
-        { month: { contains: q, mode: 'insensitive' } },
+      const headers = [
+        'Client',
+        'supplier',
+        'Channel',
+        'Content',
+        'Content Type',
+        'Month',
+        'Net to Channel',
+        'Net to Client',
+        'Notes',
       ];
-    }
 
-    let records = await prisma.mediaRecord.findMany({
-      where,
-      include: {
-        client: true,
-        supplier: true,
-        channel: true,
-        content: {
-          include: { contentType: true },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+      const rows = records.map((record) => [
+        escapeCsv(record.client?.name || ''),
+        escapeCsv(record.supplier?.name || ''),
+        escapeCsv(record.channel?.name || ''),
+        escapeCsv(record.content?.name || ''),
+        escapeCsv(record.content?.contentType?.name || ''),
+        escapeCsv(record.month || ''),
+        escapeCsv(Number(record.netToChannel || 0)),
+        escapeCsv(Number(record.netToClient || record.cost || 0)),
+        escapeCsv(record.notes || ''),
+      ]);
 
-    // Month Range filter (من شهر كذا إلى شهر كذا)
-    if (fromMonth || toMonth) {
-      const fromKey = fromMonth && typeof fromMonth === 'string' && fromMonth !== 'ALL' ? parseMonthSortKey(fromMonth) : -Infinity;
-      const toKey = toMonth && typeof toMonth === 'string' && toMonth !== 'ALL' ? parseMonthSortKey(toMonth) : Infinity;
+      const csvContent =
+        '\uFEFF' +
+        headers.join(',') +
+        '\n' +
+        rows.map((row) => row.join(',')).join('\n');
 
-      records = records.filter((r) => {
-        const rKey = parseMonthSortKey(r.month);
-        return rKey >= fromKey && rKey <= toKey;
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="OMS_Media_Export.csv"'
+      );
+
+      res.send(csvContent);
+    } catch (error) {
+      console.error('export error:', error);
+
+      res.status(500).json({
+        success: false,
+        message: 'خطأ أثناء تصدير البيانات',
       });
     }
-
-    res.json({ success: true, data: records });
-  } catch (error: any) {
-    console.error('getRecords error:', error);
-    res.status(500).json({ success: false, message: 'خطأ في جلب سجلات الميديا' });
   }
-});
+);
 
-// Get filter facets (values available for Kaggle-style filter menu)
-router.get('/filter-facets', async (req: Request, res: Response) => {
-  try {
-    const [clients, suppliers, channels, contents, monthsList] = await Promise.all([
-      prisma.mediaClient.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
-      prisma.mediaSupplier.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
-      prisma.mediaChannel.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
-      prisma.mediaContent.findMany({
-        select: { id: true, name: true, contentType: { select: { name: true } } },
-        orderBy: { name: 'asc' },
-      }),
-      prisma.mediaRecord.findMany({
-        select: { month: true },
-        distinct: ['month'],
-      }),
-    ]);
+// 3. Import Data
+router.post(
+  '/import',
+  requireWritePermission,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { rows } = req.body;
 
-    const distinctDbMonths = monthsList.map((m) => m.month).filter(Boolean);
-    const combinedMonths = Array.from(new Set([...STANDARD_MONTHS, ...distinctDbMonths]));
-    combinedMonths.sort((a, b) => parseMonthSortKey(a) - parseMonthSortKey(b));
+      if (!Array.isArray(rows) || rows.length === 0) {
+        res.status(400).json({
+          success: false,
+          message: 'لم يتم العثور على أي صفوف صالحة للاستيراد',
+        });
+        return;
+      }
 
-    res.json({
-      success: true,
-      data: {
+      let createdCount = 0;
+      const errorsList: string[] = [];
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+
+        if (!row || typeof row !== 'object' || Array.isArray(row)) {
+          errorsList.push(`الصف رقم ${i + 1}: تنسيق الصف غير صالح`);
+          continue;
+        }
+
+        const clientName = String(
+          row['Client'] || row['client'] || ''
+        ).trim();
+
+        const supplierName = String(
+          row['supplier'] || row['Supplier'] || ''
+        ).trim();
+
+        const channelName = String(
+          row['Channel'] || row['channel'] || ''
+        ).trim();
+
+        const contentName = String(
+          row['Content'] || row['content'] || ''
+        ).trim();
+
+        const contentTypeName = String(
+          row['Content Type'] ||
+          row['content_type'] ||
+          row['contentType'] ||
+          'عام'
+        ).trim();
+
+        const month = String(
+          row['Month'] || row['month'] || 'غير محدد'
+        ).trim();
+
+        const netToChannel =
+          parseFloat(
+            String(row['Net to Channel'] || row['netToChannel'] || 0)
+          ) || 0;
+
+        const netToClient =
+          parseFloat(
+            String(row['Net to Client'] || row['netToClient'] || 0)
+          ) || 0;
+
+        const notes = String(
+          row['Notes'] || row['notes'] || ''
+        ).trim();
+
+        if (
+          !clientName ||
+          !supplierName ||
+          !channelName ||
+          !contentName
+        ) {
+          errorsList.push(
+            `الصف رقم ${i + 1}: ينقصه بيانات أساسية (Client, Supplier, Channel, أو Content)`
+          );
+          continue;
+        }
+
+        if (
+          !Number.isFinite(netToChannel) ||
+          !Number.isFinite(netToClient) ||
+          netToChannel < 0 ||
+          netToClient < 0
+        ) {
+          errorsList.push(
+            `الصف رقم ${i + 1}: قيمة مالية غير صالحة`
+          );
+          continue;
+        }
+
+        try {
+          // Create or find Media Client.
+          // No writes are made to Invoice / Accounting tables.
+          const client = await prisma.mediaClient.upsert({
+            where: { name: clientName },
+            update: {},
+            create: { name: clientName },
+          });
+
+          const supplier = await prisma.mediaSupplier.upsert({
+            where: { name: supplierName },
+            update: {},
+            create: { name: supplierName },
+          });
+
+          const channel = await prisma.mediaChannel.upsert({
+            where: { name: channelName },
+            update: {},
+            create: { name: channelName },
+          });
+
+          const contentType = await prisma.mediaContentType.upsert({
+            where: { name: contentTypeName || 'عام' },
+            update: {},
+            create: { name: contentTypeName || 'عام' },
+          });
+
+          let content = await prisma.mediaContent.findFirst({
+            where: {
+              name: contentName,
+              contentTypeId: contentType.id,
+            },
+          });
+
+          if (!content) {
+            content = await prisma.mediaContent.create({
+              data: {
+                name: contentName,
+                contentTypeId: contentType.id,
+              },
+            });
+          }
+
+          await prisma.mediaRecord.create({
+            data: {
+              title: `${contentName} - ${channelName}`,
+              clientId: client.id,
+              supplierId: supplier.id,
+              channelId: channel.id,
+              contentId: content.id,
+              month,
+              cost: netToClient > 0 ? netToClient : netToChannel,
+              netToChannel,
+              netToClient,
+              notes,
+              status: 'PLANNED',
+            },
+          });
+
+          createdCount++;
+        } catch (rowError) {
+          console.error(`Import row ${i + 1} error:`, rowError);
+
+          errorsList.push(
+            `الصف رقم ${i + 1}: حدث خطأ أثناء حفظ البيانات`
+          );
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `تم استيراد ${createdCount} حملة وسجل بنجاح!`,
+        data: {
+          importedCount: createdCount,
+          errors: errorsList,
+        },
+      });
+    } catch (error) {
+      console.error('import error:', error);
+
+      res.status(500).json({
+        success: false,
+        message: 'خطأ أثناء استيراد البيانات',
+      });
+    }
+  }
+);
+
+// 4. List Records
+router.get(
+  '/',
+  requireMediaAccess,
+  async (req: Request, res: Response) => {
+    try {
+      const where = buildRecordWhere(req.query);
+
+      let records = await prisma.mediaRecord.findMany({
+        where,
+        include: recordInclude,
+        orderBy: { createdAt: 'desc' },
+      });
+
+      records = applyMonthRange(
+        records,
+        req.query.fromMonth,
+        req.query.toMonth
+      );
+
+      res.json({
+        success: true,
+        data: records,
+      });
+    } catch (error) {
+      console.error('getRecords error:', error);
+
+      res.status(500).json({
+        success: false,
+        message: 'خطأ في جلب سجلات الميديا',
+      });
+    }
+  }
+);
+
+// 5. Get Filter Facets
+router.get(
+  '/filter-facets',
+  requireMediaAccess,
+  async (req: Request, res: Response) => {
+    try {
+      const [
         clients,
         suppliers,
         channels,
         contents,
-        months: combinedMonths,
-      },
-    });
-  } catch (error: any) {
-    res.status(500).json({ success: false, message: 'خطأ في جلب خيارات الفلاتر' });
-  }
-});
+        monthsList,
+      ] = await Promise.all([
+        prisma.mediaClient.findMany({
+          select: { id: true, name: true },
+          orderBy: { name: 'asc' },
+        }),
 
-// Get single record
-router.get('/:id', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const record = await prisma.mediaRecord.findUnique({
-      where: { id },
-      include: {
-        client: true,
-        supplier: true,
-        channel: true,
-        content: { include: { contentType: true } },
-      },
-    });
+        prisma.mediaSupplier.findMany({
+          select: { id: true, name: true },
+          orderBy: { name: 'asc' },
+        }),
 
-    if (!record) {
-      res.status(404).json({ success: false, message: 'السجل غير موجود' });
-      return;
+        prisma.mediaChannel.findMany({
+          select: { id: true, name: true },
+          orderBy: { name: 'asc' },
+        }),
+
+        prisma.mediaContent.findMany({
+          select: {
+            id: true,
+            name: true,
+            contentType: {
+              select: { name: true },
+            },
+          },
+          orderBy: { name: 'asc' },
+        }),
+
+        prisma.mediaRecord.findMany({
+          select: { month: true },
+          distinct: ['month'],
+        }),
+      ]);
+
+      const distinctDbMonths = monthsList
+        .map((item) => item.month)
+        .filter(Boolean);
+
+      const combinedMonths = Array.from(
+        new Set([...STANDARD_MONTHS, ...distinctDbMonths])
+      );
+
+      combinedMonths.sort(
+        (a, b) => parseMonthSortKey(a) - parseMonthSortKey(b)
+      );
+
+      res.json({
+        success: true,
+        data: {
+          clients,
+          suppliers,
+          channels,
+          contents,
+          months: combinedMonths,
+        },
+      });
+    } catch (error) {
+      console.error('filter facets error:', error);
+
+      res.status(500).json({
+        success: false,
+        message: 'خطأ في جلب خيارات الفلاتر',
+      });
     }
-
-    res.json({ success: true, data: record });
-  } catch (error: any) {
-    res.status(500).json({ success: false, message: 'خطأ في جلب بيانات السجل' });
   }
-});
+);
 
-// Create record
-router.post('/', requireWritePermission, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const parsed = recordSchema.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ success: false, errors: parsed.error.errors });
-      return;
+// 6. Get Single Record
+router.get(
+  '/:id',
+  requireMediaAccess,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+
+      const record = await prisma.mediaRecord.findUnique({
+        where: { id },
+        include: recordInclude,
+      });
+
+      if (!record) {
+        res.status(404).json({
+          success: false,
+          message: 'السجل غير موجود',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: record,
+      });
+    } catch (error) {
+      console.error('getSingleRecord error:', error);
+
+      res.status(500).json({
+        success: false,
+        message: 'خطأ في جلب بيانات السجل',
+      });
     }
-
-    const data = parsed.data;
-    const cost = data.netToClient > 0 ? data.netToClient : data.cost;
-
-    const record = await prisma.mediaRecord.create({
-      data: {
-        ...data,
-        cost,
-      },
-      include: {
-        client: true,
-        supplier: true,
-        channel: true,
-        content: { include: { contentType: true } },
-      },
-    });
-
-    res.status(201).json({ success: true, data: record, message: 'تم حفظ حملة الميديا بنجاح' });
-  } catch (error: any) {
-    console.error('createRecord error:', error);
-    res.status(500).json({ success: false, message: 'خطأ أثناء إنشاء سجل الميديا' });
   }
-});
+);
 
-// Update record
-router.put('/:id', requireWritePermission, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const parsed = recordSchema.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ success: false, errors: parsed.error.errors });
-      return;
+// 7. Create Record
+router.post(
+  '/',
+  requireWritePermission,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const parsed = recordSchema.safeParse(req.body);
+
+      if (!parsed.success) {
+        res.status(400).json({
+          success: false,
+          errors: parsed.error.errors,
+        });
+        return;
+      }
+
+      const data = parsed.data;
+      const cost =
+        data.netToClient > 0 ? data.netToClient : data.cost;
+
+      const record = await prisma.mediaRecord.create({
+        data: {
+          ...data,
+          cost,
+        },
+        include: recordInclude,
+      });
+
+      res.status(201).json({
+        success: true,
+        data: record,
+        message: 'تم حفظ حملة الميديا بنجاح',
+      });
+    } catch (error) {
+      console.error('createRecord error:', error);
+
+      res.status(500).json({
+        success: false,
+        message: 'خطأ أثناء إنشاء سجل الميديا',
+      });
     }
-
-    const data = parsed.data;
-    const cost = data.netToClient > 0 ? data.netToClient : data.cost;
-
-    const updated = await prisma.mediaRecord.update({
-      where: { id },
-      data: {
-        ...data,
-        cost,
-      },
-      include: {
-        client: true,
-        supplier: true,
-        channel: true,
-        content: { include: { contentType: true } },
-      },
-    });
-
-    res.json({ success: true, data: updated, message: 'تم تحديث سجل الميديا بنجاح' });
-  } catch (error: any) {
-    res.status(500).json({ success: false, message: 'خطأ أثناء تحديث سجل الميديا' });
   }
-});
+);
 
-// Delete record
-router.delete('/:id', requireWritePermission, async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    await prisma.mediaRecord.delete({ where: { id } });
-    res.json({ success: true, message: 'تم حذف السجل بنجاح' });
-  } catch (error: any) {
-    res.status(500).json({ success: false, message: 'خطأ أثناء حذف السجل' });
+// 8. Update Record
+router.put(
+  '/:id',
+  requireWritePermission,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const parsed = recordSchema.safeParse(req.body);
+
+      if (!parsed.success) {
+        res.status(400).json({
+          success: false,
+          errors: parsed.error.errors,
+        });
+        return;
+      }
+
+      const data = parsed.data;
+      const cost =
+        data.netToClient > 0 ? data.netToClient : data.cost;
+
+      const updated = await prisma.mediaRecord.update({
+        where: { id },
+        data: {
+          ...data,
+          cost,
+        },
+        include: recordInclude,
+      });
+
+      res.json({
+        success: true,
+        data: updated,
+        message: 'تم تحديث سجل الميديا بنجاح',
+      });
+    } catch (error) {
+      console.error('updateRecord error:', error);
+
+      res.status(500).json({
+        success: false,
+        message: 'خطأ أثناء تحديث سجل الميديا',
+      });
+    }
   }
-});
+);
+
+// 9. Delete Record
+router.delete(
+  '/:id',
+  requireWritePermission,
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      await prisma.mediaRecord.delete({
+        where: { id },
+      });
+
+      res.json({
+        success: true,
+        message: 'تم حذف السجل بنجاح',
+      });
+    } catch (error) {
+      console.error('deleteRecord error:', error);
+
+      res.status(500).json({
+        success: false,
+        message: 'خطأ أثناء حذف السجل',
+      });
+    }
+  }
+);
 
 export default router;
