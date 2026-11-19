@@ -17,9 +17,23 @@ async function createMediaAdmin() {
     );
   }
 
+  const existingUsers = await prisma.$queryRaw<any[]>`
+    SELECT id, email, username, role, "systemAccess"
+    FROM public.users
+    WHERE email = ${email}
+       OR username = ${username}
+    LIMIT 1
+  `;
+
+  if (existingUsers.length > 0) {
+    throw new Error(
+      'A user with this email or username already exists. No changes were made.'
+    );
+  }
+
   const passwordHash = await bcrypt.hash(password, 12);
 
-  const result = await prisma.$executeRaw`
+  await prisma.$executeRaw`
     INSERT INTO public.users (
       id,
       email,
@@ -44,18 +58,9 @@ async function createMediaAdmin() {
       NOW(),
       NOW()
     )
-    ON CONFLICT (email)
-    DO UPDATE SET
-      username = EXCLUDED.username,
-      "passwordHash" = EXCLUDED."passwordHash",
-      name = EXCLUDED.name,
-      role = EXCLUDED.role,
-      "systemAccess" = EXCLUDED."systemAccess",
-      "isActive" = TRUE,
-      "updatedAt" = NOW()
   `;
 
-  console.log('Media Admin account created or updated.');
+  console.log('Media Admin account created successfully.');
 }
 
 createMediaAdmin()
