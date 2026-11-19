@@ -14,7 +14,19 @@ const loginSchema = z.object({
   password: z.string().min(1, 'كلمة المرور مطلوبة'),
 });
 
-function hasMediaAccess(user: any): boolean {
+interface MediaUser {
+  id: string;
+  name: string;
+  email: string;
+  username: string | null;
+  passwordHash?: string;
+  role: string;
+  systemAccess: string;
+  isActive: boolean;
+  phone: string | null;
+}
+
+function hasMediaAccess(user: MediaUser): boolean {
   if (user.role === 'MEDIA_ADMIN') {
     return user.systemAccess === 'MEDIA';
   }
@@ -25,12 +37,30 @@ function hasMediaAccess(user: any): boolean {
   );
 }
 
-function isUserReadOnly(user: any): boolean {
+function isUserReadOnly(user: MediaUser): boolean {
   return (
     user.username === 'manager' ||
     user.username === 'مدير' ||
-    (user.name && user.name.includes('عرض فقط'))
+    (typeof user.name === 'string' &&
+      user.name.includes('عرض فقط'))
   );
+}
+
+function getJwtSecret(): string | null {
+  return process.env.JWT_SECRET || null;
+}
+
+function createUserResponse(user: MediaUser) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    username: user.username,
+    role: user.role,
+    systemAccess: user.systemAccess,
+    isReadOnly: isUserReadOnly(user),
+    phone: user.phone,
+  };
 }
 
 // ==========================================
@@ -39,18 +69,26 @@ function isUserReadOnly(user: any): boolean {
 
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
   try {
-    const parseResult = loginSchema.safeParse(req.body);
+    const parsed = loginSchema.safeParse(req.body);
 
-    if (!parseResult.success) {
+    if (!parsed.success) {
       res.status(400).json({
         success: false,
-        errors: parseResult.error.errors,
+        errors: parsed.error.errors,
       });
       return;
     }
 
-    const { username, email, loginIdentifier, password } = parseResult.data;
-    const identifier = (loginIdentifier || username || email || '').trim();
+    const {
+      username,
+      email,
+      loginIdentifier,
+      password,
+    } = parsed.data;
+
+    const identifier = (
+      loginIdentifier || username || email || ''
+    ).trim();
 
     if (!identifier) {
       res.status(400).json({
@@ -60,9 +98,11 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const secret = process.env.JWT_SECRET;
+    const secret = getJwtSecret();
 
     if (!secret) {
+      console.error('JWT_SECRET is not configured');
+
       res.status(500).json({
         success: false,
         message: 'إعدادات المصادقة غير مكتملة',
@@ -70,7 +110,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const users = await prisma.$queryRaw<any[]>`
+    const users = await prisma.$queryRaw<MediaUser[]>`
       SELECT
         id,
         name,
@@ -82,12 +122,21 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         "isActive",
         phone
       FROM "public"."users"
-      WHERE LOWER(email) = LOWER(${identifier})
-         OR LOWER(username) = LOWER(${identifier})
-         OR (
-           ${identifier} = 'مدير'
-           AND (username = 'manager' OR username = 'مدير')
-         )
+      WHERE
+        (
+          email IS NOT NULL
+          AND LOWER(email) = LOWER(${identifier})
+        )
+        OR
+        (
+          username IS NOT NULL
+          AND LOWER(username) = LOWER(${identifier})
+        )
+        OR
+        (
+          ${identifier} = 'مدير'
+          AND (username = 'manager' OR username = 'مدير')
+        )
       LIMIT 1
     `;
 
@@ -117,6 +166,14 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    if (!user.passwordHash) {
+      res.status(401).json({
+        success: false,
+        message: 'بيانات الدخول غير صحيحة',
+      });
+      return;
+    }
+
     const passwordMatch = await bcrypt.compare(
       password,
       user.passwordHash
@@ -137,30 +194,24 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         id: user.id,
         email: user.email,
         username: user.username,
-        name: user.name,
         role: user.role,
         systemAccess: user.systemAccess,
         isReadOnly,
       },
       secret,
-      { expiresIn: '7d' }
+      {
+        expiresIn: '7d',
+        issuer: 'MDE-OMS-Media',
+        audience: 'OMS-Media-API',
+      }
     );
 
-    res.json({
+    res.status(200).json({
       success: true,
       message: 'تم تسجيل الدخول بنجاح إلى قسم الميديا',
       data: {
         token,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          username: user.username,
-          role: user.role,
-          systemAccess: user.systemAccess,
-          isReadOnly,
-          phone: user.phone,
-        },
+        user: createUserResponse(user),
       },
     });
   } catch (error) {
@@ -181,7 +232,7 @@ router.get('/me', async (req: Request, res: Response): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       res.status(401).json({
         success: false,
         message: 'مطلوب تسجيل الدخول',
@@ -199,7 +250,7 @@ router.get('/me', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const secret = process.env.JWT_SECRET;
+    const secret = getJwtSecret();
 
     if (!secret) {
       res.status(500).json({
@@ -209,7 +260,10 @@ router.get('/me', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const decoded = jwt.verify(token, secret) as jwt.JwtPayload;
+    const decoded = jwt.verify(token, secret, {
+      issuer: 'MDE-OMS-Media',
+      audience: 'OMS-Media-API',
+    }) as jwt.JwtPayload;
 
     if (!decoded.id || typeof decoded.id !== 'string') {
       res.status(401).json({
@@ -219,7 +273,8 @@ router.get('/me', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const users = await prisma.$queryRaw<any[]>`
+    // Always load the latest account data from the database.
+    const users = await prisma.$queryRaw<MediaUser[]>`
       SELECT
         id,
         name,
@@ -234,15 +289,23 @@ router.get('/me', async (req: Request, res: Response): Promise<void> => {
       LIMIT 1
     `;
 
-    if (!users || users.length === 0 || !users[0].isActive) {
+    if (!users || users.length === 0) {
       res.status(403).json({
         success: false,
-        message: 'المستخدم غير موجود أو غير مفعّل',
+        message: 'المستخدم غير موجود',
       });
       return;
     }
 
     const user = users[0];
+
+    if (!user.isActive) {
+      res.status(403).json({
+        success: false,
+        message: 'هذا الحساب غير مفعّل',
+      });
+      return;
+    }
 
     if (!hasMediaAccess(user)) {
       res.status(403).json({
@@ -252,25 +315,27 @@ router.get('/me', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const isReadOnly = isUserReadOnly(user);
-
-    res.json({
+    res.status(200).json({
       success: true,
-      data: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        username: user.username,
-        role: user.role,
-        systemAccess: user.systemAccess,
-        isReadOnly,
-        phone: user.phone,
-      },
+      data: createUserResponse(user),
     });
-  } catch {
-    res.status(401).json({
+  } catch (error) {
+    if (
+      error instanceof jwt.JsonWebTokenError ||
+      error instanceof jwt.TokenExpiredError
+    ) {
+      res.status(401).json({
+        success: false,
+        message: 'جلسة الدخول غير صالحة أو منتهية',
+      });
+      return;
+    }
+
+    console.error('Media profile error:', error);
+
+    res.status(500).json({
       success: false,
-      message: 'جلسة الدخول غير صالحة أو منتهية',
+      message: 'حدث خطأ أثناء تحميل بيانات المستخدم',
     });
   }
 });
