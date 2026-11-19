@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'node:crypto';
-import prisma from './prismaClient';
+import prisma from './prismaClient.js';
 
 dotenv.config();
 
