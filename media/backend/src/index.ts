@@ -15,6 +15,10 @@ import authRoutes from './routes/auth.js';
 
 const app = express();
 
+// ==========================================
+// CORS
+// ==========================================
+
 const allowedOrigins = [
   'https://matrix-data-egypt.github.io',
   'http://localhost:5173',
@@ -39,19 +43,30 @@ app.use(
   })
 );
 
-app.use(express.json());
+// ==========================================
+// Middleware
+// ==========================================
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/clients', clientRoutes);
-app.use('/api/suppliers', supplierRoutes);
-app.use('/api/channels', channelRoutes);
-app.use('/api/content-types', contentTypeRoutes);
-app.use('/api/contents', contentRoutes);
-app.use('/api/records', recordRoutes);
-app.use('/api/accounting', accountingRoutes);
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 
+// ==========================================
+// Root
+// ==========================================
+
+app.get('/', (_req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'OMS Media Department API is running',
+    company: 'MDE - Matrix Data Egypt',
+    health: '/api/health',
+  });
+});
+
+// ==========================================
 // Health Check
+// ==========================================
+
 app.get('/api/health', (_req, res) => {
   res.status(200).json({
     status: 'ok',
@@ -63,5 +78,55 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// Export Express app
+// ==========================================
+// API Routes
+// ==========================================
+
+app.use('/api/auth', authRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/channels', channelRoutes);
+app.use('/api/content-types', contentTypeRoutes);
+app.use('/api/contents', contentRoutes);
+app.use('/api/records', recordRoutes);
+app.use('/api/accounting', accountingRoutes);
+
+// ==========================================
+// 404
+// ==========================================
+
+app.use((_req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'API endpoint not found',
+  });
+});
+
+// ==========================================
+// Error Handler
+// ==========================================
+
+app.use(
+  (
+    error: Error,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction
+  ) => {
+    console.error('API Error:', error.message);
+
+    res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+      ...(process.env.NODE_ENV !== 'production' && {
+        error: error.message,
+      }),
+    });
+  }
+);
+
+// ==========================================
+// Vercel Serverless
+// ==========================================
+
 export default app;
