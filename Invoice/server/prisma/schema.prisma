@@ -12,6 +12,7 @@ enum UserRole {
   FINANCE_MANAGER
   ACCOUNTANT
   SALES
+  MEDIA_ADMIN
 }
 
 enum InvoiceStatus {
