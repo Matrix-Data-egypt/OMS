@@ -1,3 +1,4 @@
+
 {
   "name": "oms-media-backend",
   "version": "1.0.0",
@@ -5,13 +6,13 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-   "dev": "tsx watch src/server.ts",
-   "build": "prisma generate --schema ./prisma/schema.prisma && tsc",
-   "start": "node dist/server.js",
-   "prisma:generate": "prisma generate --schema ./prisma/schema.prisma",
-   "prisma:push": "prisma db push",
-   "prisma:seed": "tsx src/prisma/seed.ts"
-}
+    "dev": "tsx watch src/server.ts",
+    "build": "prisma generate --schema ./prisma/schema.prisma && tsc",
+    "start": "node dist/server.js",
+    "prisma:generate": "prisma generate --schema ./prisma/schema.prisma",
+    "prisma:push": "prisma db push",
+    "prisma:seed": "tsx src/prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
