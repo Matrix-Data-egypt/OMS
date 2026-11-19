@@ -1,9 +1,8 @@
-
 {
   "name": "oms-media-backend",
   "version": "1.0.0",
   "description": "OMS Media Department Backend API - Developed by MDE",
-  "main": "dist/server.js"
+  "main": "dist/server.js",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
