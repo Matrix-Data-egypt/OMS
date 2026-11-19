@@ -4,10 +4,11 @@
 "description": "OMS Invoice Management System API - Developed by MDE",
 "main": "dist/index.js",
 "scripts": {
-"dev": "tsx watch src/index.ts",
-"build": "npx prisma generate && tsc",
-"start": "node dist/index.js"
-},
+  "dev": "tsx watch src/index.ts",
+  "build": "npx prisma generate && tsc",
+  "start": "node dist/index.js",
+  "prisma:generate": "npx prisma generate"
+}
 "keywords": [
 "oms",
 "invoice",
