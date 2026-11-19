@@ -1,19 +1,20 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import prisma from '../prisma/prismaClient.js';
 
 export interface AuthenticatedRequest extends Request {
   user?: any;
 }
 
-export function requireWritePermission(
+export async function requireWritePermission(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-): void {
+): Promise<void> {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader?.startsWith('Bearer ')) {
     res.status(401).json({
       success: false,
       message: 'يجب تسجيل الدخول أولاً',
@@ -42,13 +43,9 @@ export function requireWritePermission(
   }
 
   try {
-    const decoded = jwt.verify(token, secret) as any;
+    const decoded = jwt.verify(token, secret) as jwt.JwtPayload;
 
-    if (
-      !decoded ||
-      typeof decoded !== 'object' ||
-      !decoded.id
-    ) {
+    if (!decoded.id || typeof decoded.id !== 'string') {
       res.status(401).json({
         success: false,
         message: 'رمز الدخول غير صالح',
@@ -56,9 +53,27 @@ export function requireWritePermission(
       return;
     }
 
+    const users = await prisma.$queryRaw<any[]>`
+      SELECT id, name, username, role, "systemAccess", "isActive"
+      FROM "public"."users"
+      WHERE id = ${decoded.id}
+      LIMIT 1
+    `;
+
+    if (!users || users.length === 0 || !users[0].isActive) {
+      res.status(403).json({
+        success: false,
+        message: 'المستخدم غير موجود أو غير مفعّل',
+      });
+      return;
+    }
+
+    const user = users[0];
+
     if (
-      decoded.systemAccess !== 'MEDIA' &&
-      decoded.systemAccess !== 'ALL'
+      user.role === 'MEDIA_ADMIN'
+        ? user.systemAccess !== 'MEDIA'
+        : !['MEDIA', 'ALL'].includes(user.systemAccess)
     ) {
       res.status(403).json({
         success: false,
@@ -67,11 +82,12 @@ export function requireWritePermission(
       return;
     }
 
-    if (
-      decoded.isReadOnly ||
-      decoded.username === 'manager' ||
-      decoded.username === 'مدير'
-    ) {
+    const isReadOnly =
+      user.username === 'manager' ||
+      user.username === 'مدير' ||
+      (user.name && user.name.includes('عرض فقط'));
+
+    if (isReadOnly) {
       res.status(403).json({
         success: false,
         message: 'حسابك بصلاحية المشاهدة فقط',
@@ -79,12 +95,30 @@ export function requireWritePermission(
       return;
     }
 
-    req.user = decoded;
+    req.user = {
+      id: user.id,
+      name: user.name,
+      username: user.username,
+      role: user.role,
+      systemAccess: user.systemAccess,
+      isReadOnly,
+    };
+
     next();
-  } catch {
-    res.status(401).json({
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.status(401).json({
+        success: false,
+        message: 'رمز الدخول غير صالح أو منتهي',
+      });
+      return;
+    }
+
+    console.error('Authorization middleware error:', error);
+
+    res.status(500).json({
       success: false,
-      message: 'رمز الدخول غير صالح أو منتهي',
+      message: 'حدث خطأ أثناء التحقق من الصلاحيات',
     });
   }
 }
