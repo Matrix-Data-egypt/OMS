@@ -1,6 +1,8 @@
+
+import 'dotenv/config';
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 
 import clientRoutes from './routes/clients.js';
 import supplierRoutes from './routes/suppliers.js';
@@ -11,25 +13,36 @@ import recordRoutes from './routes/records.js';
 import accountingRoutes from './routes/accountingIntegration.js';
 import authRoutes from './routes/auth.js';
 
-dotenv.config();
-
 const app = express();
-const PORT = Number(process.env.PORT) || 5002;
+
+// Allowed frontend origins
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  ...(process.env.FRONTEND_URLS || process.env.FRONTEND_URL || '')
+    .split(',')
+    .map((url) => url.trim())
+    .filter(Boolean),
+];
 
 app.use(
   cors({
-    origin: [
-      'https://github.io',
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5175',
-    ],
+    origin: (origin, callback) => {
+      // Allow requests without an Origin header (e.g. server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(null, false);
+    },
     credentials: true,
   })
 );
+
 app.use(express.json());
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/suppliers', supplierRoutes);
@@ -39,9 +52,9 @@ app.use('/api/contents', contentRoutes);
 app.use('/api/records', recordRoutes);
 app.use('/api/accounting', accountingRoutes);
 
-// Health check
+// Health Check
 app.get('/api/health', (req, res) => {
-  res.json({
+  res.status(200).json({
     status: 'ok',
     system: 'OMS Media Department API',
     company: 'OMS',
@@ -51,19 +64,5 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Listen on 0.0.0.0 so Render can route traffic to the server
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 OMS Media Department API running on port ${PORT}`);
-  console.log(`🌟 Media Section | Developed by MDE – Matrix Data Egypt`);
-});
-
-server.on('error', (err: any) => {
-  if (err.code === 'EADDRINUSE') {
-    console.warn(`⚠️ Port ${PORT} is in use, trying port ${PORT + 1}...`);
-    app.listen(PORT + 1, '0.0.0.0', () => {
-      console.log(`🚀 OMS Media Department API running on port ${PORT + 1}`);
-    });
-  } else {
-    console.error('Server error:', err);
-  }
-});
+// Export Express app for Vercel
+export default app;
