@@ -1,8 +1,10 @@
+
 import prisma from './prismaClient';
 import bcrypt from 'bcryptjs';
 
 const UserRole = {
   ADMIN: 'ADMIN',
+  MEDIA_ADMIN: 'MEDIA_ADMIN',
   FINANCE_MANAGER: 'FINANCE_MANAGER',
   ACCOUNTANT: 'ACCOUNTANT',
   SALES: 'SALES',
@@ -11,8 +13,10 @@ const UserRole = {
 export async function runSeed() {
   console.log('--- Starting OMS Invoice Seed ---');
 
+  // Hash for default system accounts
   const passwordHash = await bcrypt.hash('Oms@123456', 10);
 
+  // 1. Main System Admin
   await prisma.user.upsert({
     where: { email: 'admin@oms.com' },
     update: {},
@@ -26,6 +30,39 @@ export async function runSeed() {
     },
   });
 
+  // 2. Media Admin - Media System Only
+  const mediaAdminPassword = process.env.MEDIA_ADMIN_PASSWORD;
+
+  if (!mediaAdminPassword) {
+    throw new Error(
+      'MEDIA_ADMIN_PASSWORD environment variable is required to create the Media Admin account.'
+    );
+  }
+
+  const mediaAdminPasswordHash = await bcrypt.hash(
+    mediaAdminPassword,
+    10
+  );
+
+  await prisma.user.upsert({
+    where: { email: 'media.admin@oms.com' },
+    update: {
+      role: UserRole.MEDIA_ADMIN,
+      systemAccess: 'MEDIA',
+      isActive: true,
+    },
+    create: {
+      email: 'media.admin@oms.com',
+      username: 'media_admin',
+      name: 'Media Administrator',
+      passwordHash: mediaAdminPasswordHash,
+      role: UserRole.MEDIA_ADMIN,
+      systemAccess: 'MEDIA',
+      isActive: true,
+    },
+  });
+
+  // 3. Finance Manager
   await prisma.user.upsert({
     where: { email: 'finance@oms.com' },
     update: {},
@@ -38,6 +75,7 @@ export async function runSeed() {
     },
   });
 
+  // 4. Accountant
   await prisma.user.upsert({
     where: { email: 'accountant@oms.com' },
     update: {},
@@ -50,6 +88,7 @@ export async function runSeed() {
     },
   });
 
+  // 5. Sales Representative
   await prisma.user.upsert({
     where: { email: 'sales@oms.com' },
     update: {},
@@ -62,6 +101,7 @@ export async function runSeed() {
     },
   });
 
+  // 6. Reset Approval Rules
   await prisma.approvalRule.deleteMany({});
 
   const rules = [
@@ -88,9 +128,12 @@ export async function runSeed() {
     },
   ];
 
-  for (const r of rules) {
-    await prisma.approvalRule.create({ data: r });
+  for (const rule of rules) {
+    await prisma.approvalRule.create({
+      data: rule,
+    });
   }
 
-  console.log('✅ Seed finished successfully');
+  console.log('Media Admin account configured successfully.');
+  console.log('OMS Invoice Seed finished successfully.');
 }
