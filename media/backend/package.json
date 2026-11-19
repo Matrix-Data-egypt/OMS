@@ -12,6 +12,7 @@
     "prisma:generate": "prisma generate --schema ./prisma/schema.prisma",
     "prisma:push": "prisma db push",
     "prisma:seed": "tsx src/prisma/seed.ts"
+    "create:media-admin": "tsx src/prisma/createMediaAdmin.ts"
   },
   "allowScripts": {
     "@prisma/client@5.22.0": true,
