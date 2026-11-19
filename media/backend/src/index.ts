@@ -17,6 +17,7 @@ const app = express();
 
 // Allowed frontend origins
 const allowedOrigins = [
+  'https://matrix-data-egypt.github.io',
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5175',
