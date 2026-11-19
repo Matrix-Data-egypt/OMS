@@ -15,7 +15,6 @@ import authRoutes from './routes/auth.js';
 
 const app = express();
 
-// Allowed frontend origins
 const allowedOrigins = [
   'https://matrix-data-egypt.github.io',
   'http://localhost:5173',
@@ -23,19 +22,18 @@ const allowedOrigins = [
   'http://localhost:5175',
   ...(process.env.FRONTEND_URLS || process.env.FRONTEND_URL || '')
     .split(',')
-    .map((url) => url.trim())
+    .map((url) => url.trim().replace(/\/$/, ''))
     .filter(Boolean),
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests without an Origin header (e.g. server-to-server)
       if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      return callback(null, false);
+      return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
   })
@@ -54,16 +52,16 @@ app.use('/api/records', recordRoutes);
 app.use('/api/accounting', accountingRoutes);
 
 // Health Check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   res.status(200).json({
     status: 'ok',
     system: 'OMS Media Department API',
     company: 'OMS',
-    developer: 'MDE – Matrix Data Egypt',
+    developer: 'MDE - Matrix Data Egypt',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
   });
 });
 
-// Export Express app for Vercel
+// Export Express app
 export default app;
