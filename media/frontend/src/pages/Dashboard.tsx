@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { apiRequest } from '../services/api.js';
 import { MediaRecord, FilterFacets } from '../types/index.js';
@@ -16,19 +17,18 @@ import {
   Receipt,
   Download,
   Upload,
-  FileSpreadsheet,
-  AlertCircle,
   FileDown,
   Eye,
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const { isReadOnly, user } = useAuth();
+
   const [records, setRecords] = useState<MediaRecord[]>([]);
   const [facets, setFacets] = useState<FilterFacets | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Search & Filters State (Kaggle Style)
+  // Search & Filters State
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState('');
@@ -64,11 +64,28 @@ export const Dashboard: React.FC = () => {
   });
 
   const [actionLoading, setActionLoading] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [message, setMessage] = useState<{
+    text: string;
+    type: 'success' | 'error';
+  } | null>(null);
+
+  // Calculate financial totals
+  const totalNetToClient = records.reduce(
+    (total, record) =>
+      total + Number(record.netToClient ?? record.cost ?? 0),
+    0
+  );
+
+  const totalNetToChannel = records.reduce(
+    (total, record) =>
+      total + Number(record.netToChannel ?? 0),
+    0
+  );
 
   // Fetch filter facets
   const fetchFacets = async () => {
     const res = await apiRequest<FilterFacets>('/records/filter-facets');
+
     if (res.success && res.data) {
       setFacets(res.data);
     }
@@ -77,27 +94,45 @@ export const Dashboard: React.FC = () => {
   // Fetch records with query params
   const fetchRecords = async () => {
     setLoading(true);
-    const params = new URLSearchParams();
-    if (searchTerm.trim()) params.append('search', searchTerm.trim());
-    if (selectedClient) params.append('clientId', selectedClient);
-    if (selectedSupplier) params.append('supplierId', selectedSupplier);
-    if (selectedChannel) params.append('channelId', selectedChannel);
-    if (selectedContent) params.append('contentId', selectedContent);
 
-    if (monthFilterMode === 'single' && selectedMonth) {
-      params.append('month', selectedMonth);
-    } else if (monthFilterMode === 'multi' && selectedMonths.length > 0) {
-      params.append('months', selectedMonths.join(','));
-    } else if (monthFilterMode === 'range') {
-      if (fromMonth) params.append('fromMonth', fromMonth);
-      if (toMonth) params.append('toMonth', toMonth);
-    }
+    try {
+      const params = new URLSearchParams();
 
-    const res = await apiRequest<MediaRecord[]>(`/records?${params.toString()}`);
-    if (res.success && res.data) {
-      setRecords(res.data);
+      if (searchTerm.trim()) {
+        params.append('search', searchTerm.trim());
+      }
+
+      if (selectedClient) params.append('clientId', selectedClient);
+      if (selectedSupplier) params.append('supplierId', selectedSupplier);
+      if (selectedChannel) params.append('channelId', selectedChannel);
+      if (selectedContent) params.append('contentId', selectedContent);
+
+      if (monthFilterMode === 'single' && selectedMonth) {
+        params.append('month', selectedMonth);
+      } else if (monthFilterMode === 'multi' && selectedMonths.length > 0) {
+        params.append('months', selectedMonths.join(','));
+      } else if (monthFilterMode === 'range') {
+        if (fromMonth) params.append('fromMonth', fromMonth);
+        if (toMonth) params.append('toMonth', toMonth);
+      }
+
+      const query = params.toString();
+      const res = await apiRequest<MediaRecord[]>(
+        `/records${query ? `?${query}` : ''}`
+      );
+
+      if (res.success && res.data) {
+        setRecords(res.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch media records:', error);
+      setMessage({
+        text: 'حدث خطأ أثناء تحميل سجلات الميديا',
+        type: 'error',
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -133,6 +168,7 @@ export const Dashboard: React.FC = () => {
     setFromMonth('');
     setToMonth('');
     setSearchTerm('');
+    setMonthFilterMode('single');
   };
 
   const activeFiltersCount = [
@@ -141,13 +177,16 @@ export const Dashboard: React.FC = () => {
     selectedChannel,
     selectedContent,
     monthFilterMode === 'single' && selectedMonth ? selectedMonth : null,
-    monthFilterMode === 'multi' && selectedMonths.length > 0 ? `${selectedMonths.length} شهور` : null,
+    monthFilterMode === 'multi' && selectedMonths.length > 0
+      ? `${selectedMonths.length} شهور`
+      : null,
     monthFilterMode === 'range' && (fromMonth || toMonth) ? 'range' : null,
   ].filter(Boolean).length;
 
-  // Export Data as CSV (Client | supplier | Channel | Content | Content Type | Month | Net to Channel | Net to Client | Notes)
-  const handleExport = () => {
+  // Build export query parameters
+  const buildFilterParams = () => {
     const params = new URLSearchParams();
+
     if (searchTerm.trim()) params.append('search', searchTerm.trim());
     if (selectedClient) params.append('clientId', selectedClient);
     if (selectedSupplier) params.append('supplierId', selectedSupplier);
@@ -163,66 +202,109 @@ export const Dashboard: React.FC = () => {
       if (toMonth) params.append('toMonth', toMonth);
     }
 
-    window.open(`/api/records/export?${params.toString()}`, '_blank');
+    return params;
+  };
+
+  // Export Data
+  const handleExport = () => {
+    const params = buildFilterParams();
+    const query = params.toString();
+
+    window.open(
+      `https://oms-media-api.vercel.app/api/records/export${query ? `?${query}` : ''}`,
+      '_blank'
+    );
   };
 
   // Download Empty Template
   const handleDownloadTemplate = () => {
-    window.open('/api/records/template', '_blank');
+    window.open(
+      'https://oms-media-api.vercel.app/api/records/template',
+      '_blank'
+    );
   };
 
-  // Parse CSV File on file selection
+  // Parse CSV File
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     if (!file) return;
+
     setImportFile(file);
 
     const reader = new FileReader();
+
     reader.onload = (event) => {
       const text = event.target?.result as string;
       parseCSVText(text);
     };
+
+    reader.onerror = () => {
+      setMessage({
+        text: 'تعذر قراءة الملف المحدد',
+        type: 'error',
+      });
+    };
+
     reader.readAsText(file, 'UTF-8');
   };
 
-  // Robust CSV Parser supporting commas within quotes and Arabic
+  // CSV Parser supporting commas within quotes
   const parseCSVText = (text: string) => {
-    const lines = text.split(/\r\n|\n/).filter((l) => l.trim().length > 0);
+    const lines = text
+      .split(/\r\n|\n/)
+      .filter((line) => line.trim().length > 0);
+
     if (lines.length < 2) {
-      setMessage({ text: 'الملف لا يحتوي على صفوف بيانات كافية', type: 'error' });
+      setMessage({
+        text: 'الملف لا يحتوي على صفوف بيانات كافية',
+        type: 'error',
+      });
       return;
     }
 
     const splitLine = (line: string): string[] => {
       const result: string[] = [];
-      let cur = '';
+      let current = '';
       let inQuotes = false;
+
       for (let i = 0; i < line.length; i++) {
-        const c = line[i];
-        if (c === '"') {
-          inQuotes = !inQuotes;
-        } else if (c === ',' && !inQuotes) {
-          result.push(cur.trim().replace(/^"|"$/g, ''));
-          cur = '';
+        const char = line[i];
+
+        if (char === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
         } else {
-          cur += c;
+          current += char;
         }
       }
-      result.push(cur.trim().replace(/^"|"$/g, ''));
+
+      result.push(current.trim());
+
       return result;
     };
 
     const headers = splitLine(lines[0]);
-    const parsedRows: any[] = [];
+    const parsedRows: Record<string, string>[] = [];
 
     for (let i = 1; i < lines.length; i++) {
       const values = splitLine(lines[i]);
+
       if (values.length >= 4) {
-        const rowObj: Record<string, string> = {};
-        headers.forEach((h, idx) => {
-          rowObj[h] = values[idx] || '';
+        const rowObject: Record<string, string> = {};
+
+        headers.forEach((header, index) => {
+          rowObject[header] = values[index] || '';
         });
-        parsedRows.push(rowObj);
+
+        parsedRows.push(rowObject);
       }
     }
 
@@ -232,133 +314,197 @@ export const Dashboard: React.FC = () => {
   // Execute Import
   const handleExecuteImport = async () => {
     if (importPreview.length === 0) return;
+
     setImporting(true);
+    setMessage(null);
 
-    const res = await apiRequest('/records/import', {
-      method: 'POST',
-      body: JSON.stringify({ rows: importPreview }),
-    });
-
-    setImporting(false);
-    if (res.success) {
-      setShowImportModal(false);
-      setImportFile(null);
-      setImportPreview([]);
-      setMessage({
-        text: res.message || `تم استيراد ${res.data?.importedCount} سجل بنجاح!`,
-        type: 'success',
+    try {
+      const res = await apiRequest('/records/import', {
+        method: 'POST',
+        body: JSON.stringify({
+          rows: importPreview,
+        }),
       });
-      fetchRecords();
-      fetchFacets();
-    } else {
-      setMessage({ text: res.message || 'فشل استيراد البيانات', type: 'error' });
+
+      if (res.success) {
+        setShowImportModal(false);
+        setImportFile(null);
+        setImportPreview([]);
+
+        setMessage({
+          text:
+            res.message ||
+            `تم استيراد ${res.data?.importedCount ?? 0} سجل بنجاح!`,
+          type: 'success',
+        });
+
+        await fetchRecords();
+        await fetchFacets();
+      } else {
+        setMessage({
+          text: res.message || 'فشل استيراد البيانات',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      console.error('Import error:', error);
+      setMessage({
+        text: 'حدث خطأ أثناء استيراد البيانات',
+        type: 'error',
+      });
+    } finally {
+      setImporting(false);
     }
   };
 
   // Add single campaign
   const handleCreateCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setActionLoading(true);
     setMessage(null);
 
-    const res = await apiRequest('/records', {
-      method: 'POST',
-      body: JSON.stringify({
-        ...newCampaign,
-        netToChannel: Number(newCampaign.netToChannel),
-        netToClient: Number(newCampaign.netToClient),
-        cost: Number(newCampaign.netToClient || newCampaign.netToChannel),
-      }),
-    });
-
-    setActionLoading(false);
-    if (res.success) {
-      setShowAddModal(false);
-      setMessage({ text: 'تمت إضافة حملة الميديا بنجاح', type: 'success' });
-      setNewCampaign({
-        title: '',
-        clientId: '',
-        supplierId: '',
-        channelId: '',
-        contentId: '',
-        month: 'يناير 2026',
-        netToChannel: 0,
-        netToClient: 0,
-        notes: '',
-        status: 'PLANNED',
+    try {
+      const res = await apiRequest('/records', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...newCampaign,
+          netToChannel: Number(newCampaign.netToChannel),
+          netToClient: Number(newCampaign.netToClient),
+          cost: Number(
+            newCampaign.netToClient || newCampaign.netToChannel
+          ),
+        }),
       });
-      fetchRecords();
-      fetchFacets();
-    } else {
-      setMessage({ text: res.message || 'فشل حفظ الحملة', type: 'error' });
+
+      if (res.success) {
+        setShowAddModal(false);
+
+        setMessage({
+          text: 'تمت إضافة حملة الميديا بنجاح',
+          type: 'success',
+        });
+
+        setNewCampaign({
+          title: '',
+          clientId: '',
+          supplierId: '',
+          channelId: '',
+          contentId: '',
+          month: 'يناير 2026',
+          netToChannel: 0,
+          netToClient: 0,
+          notes: '',
+          status: 'PLANNED',
+        });
+
+        await fetchRecords();
+        await fetchFacets();
+      } else {
+        setMessage({
+          text: res.message || 'فشل حفظ الحملة',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      console.error('Create campaign error:', error);
+      setMessage({
+        text: 'حدث خطأ أثناء حفظ الحملة',
+        type: 'error',
+      });
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  // One-click issue invoice in accounting department
+  // Issue invoice in accounting department
   const handleIssueInvoice = async (recordId: string) => {
+    if (isReadOnly) return;
+
     setActionLoading(true);
     setMessage(null);
-    const res = await apiRequest('/accounting/create-invoice-from-media', {
-      method: 'POST',
-      body: JSON.stringify({ mediaRecordId: recordId }),
-    });
-    setActionLoading(false);
 
-    if (res.success && res.data) {
+    try {
+      const res = await apiRequest(
+        '/accounting/create-invoice-from-media',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            mediaRecordId: recordId,
+          }),
+        }
+      );
+
+      if (res.success && res.data) {
+        setMessage({
+          text: `تم إصدار الفاتورة المحاسبية رقم (${res.data.invoiceNumber}) بمبلغ ${res.data.totalAmount} ج.م وربطها بنظام المحاسبة!`,
+          type: 'success',
+        });
+
+        await fetchRecords();
+      } else {
+        setMessage({
+          text: res.message || 'فشل إصدار الفاتورة',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      console.error('Issue invoice error:', error);
       setMessage({
-        text: `تم إصدار الفاتورة المحاسبية رقم (${res.data.invoiceNumber}) بمبلغ ${res.data.totalAmount} ج.م وربطها بنظام المحاسبة!`,
-        type: 'success',
+        text: 'حدث خطأ أثناء إصدار الفاتورة',
+        type: 'error',
       });
-      fetchRecords();
-    } else {
-      setMessage({ text: res.message || 'فشل إصدار الفاتورة', type: 'error' });
+    } finally {
+      setActionLoading(false);
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Banner with Action Buttons (Add, Import, Export) */}
+      {/* Top Banner */}
       <div className="bg-gradient-to-r from-[#171717] via-[#222222] to-[#171717] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-neutral-800">
         <div className="absolute top-0 end-0 -mt-8 -me-8 w-48 h-48 bg-[#DC2626]/20 rounded-full blur-3xl pointer-events-none" />
+
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#DC2626] animate-pulse" />
-              <span className="text-xs font-bold text-red-400">لوحة تحكم قسم الميديا وتخطيط الحملات</span>
+              <span className="text-xs font-bold text-red-400">
+                لوحة تحكم قسم الميديا وتخطيط الحملات
+              </span>
             </div>
+
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
               سجلات الميديا والبيانات المالية
             </h1>
+
             <p className="text-xs text-neutral-400 mt-1 max-w-xl">
-              إدخال واستخراج البيانات (Import & Export)، تصفية ذكية على نظام Kaggle، وربط المحاسبة
+              إدخال واستخراج البيانات (Import & Export)، تصفية ذكية على نظام
+              Kaggle، وربط المحاسبة
             </p>
           </div>
 
-          {/* Action CTAs */}
           <div className="flex items-center gap-2.5 flex-wrap">
-            {/* Import Button (Hidden for View-Only / Manager) */}
             {!isReadOnly && (
               <button
                 onClick={() => setShowImportModal(true)}
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold border border-neutral-700 shadow-md transition-all"
-                title="استيراد بيانات من ملف CSV أو Excel"
+                title="استيراد بيانات من ملف CSV"
               >
                 <Upload className="w-4 h-4 text-[#20BEFF]" />
                 <span>استيراد بيانات (Import)</span>
               </button>
             )}
 
-            {/* Export Button (Available for everyone) */}
             <button
               onClick={handleExport}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold border border-neutral-700 shadow-md transition-all"
-              title="تصدير البيانات الحالية كملف CSV مرتب"
+              title="تصدير البيانات الحالية كملف CSV"
             >
               <Download className="w-4 h-4 text-emerald-400" />
               <span>تصدير بيانات (Export)</span>
             </button>
 
-            {/* Add New Campaign (Hidden for View-Only / Manager) */}
             {!isReadOnly ? (
               <button
                 onClick={() => setShowAddModal(true)}
@@ -377,21 +523,28 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* View Only Alert for Manager */}
+      {/* View Only Alert */}
       {isReadOnly && (
         <div className="bg-amber-50 border border-amber-200/80 text-amber-950 p-4 rounded-3xl flex items-center gap-3 text-xs font-bold shadow-sm">
           <div className="w-9 h-9 rounded-2xl bg-amber-200/70 text-amber-900 flex items-center justify-center shrink-0 font-black">
             <Eye className="w-4 h-4" />
           </div>
+
           <div>
-            <span className="font-black text-sm block">مرحباً بك {user?.name || 'يا مدير'} (حساب متابعة وعرض فقط)</span>
+            <span className="font-black text-sm block">
+              مرحباً بك {user?.name || 'يا مدير'} (حساب متابعة وعرض فقط)
+            </span>
+
             <span className="text-amber-800 text-[11px] font-medium">
-              أنت الآن في وضع المشاهدة لقسم الميديا: يمكنك تصفح كافة الحملات والبيانات والفلترة المتقدمة للشهور وتصدير التقارير دون إمكانية إجراء أي تعديل أو حذف.
+              أنت الآن في وضع المشاهدة لقسم الميديا: يمكنك تصفح كافة الحملات
+              والبيانات والفلترة المتقدمة للشهور وتصدير التقارير دون إمكانية
+              إجراء أي تعديل أو حذف.
             </span>
           </div>
         </div>
       )}
 
+      {/* Feedback Message */}
       {message && (
         <div
           className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-2 ${
@@ -407,37 +560,51 @@ export const Dashboard: React.FC = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-sm space-y-2">
-          <span className="text-xs font-bold text-neutral-500">إجمالي سجلات الحملات</span>
-          <div className="text-2xl font-black text-neutral-900">{records.length}</div>
-          <div className="text-[11px] text-neutral-400">سجل إعلاني موثق</div>
+          <span className="text-xs font-bold text-neutral-500">
+            إجمالي سجلات الحملات
+          </span>
+          <div className="text-2xl font-black text-neutral-900">
+            {records.length}
+          </div>
+          <div className="text-[11px] text-neutral-400">
+            سجل إعلاني موثق
+          </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-sm space-y-2">
-          <span className="text-xs font-bold text-neutral-500">إجمالي Net to Client (ج.م)</span>
+          <span className="text-xs font-bold text-neutral-500">
+            إجمالي Net to Client (ج.م)
+          </span>
           <div className="text-2xl font-black text-[#DC2626]">
-            {totalNetToClient.toLocaleString()} ج.م
+            {totalNetToClient.toLocaleString('en-US')} ج.م
           </div>
-          <div className="text-[11px] text-neutral-400">القيمة الصافية المستحقة على العملاء</div>
+          <div className="text-[11px] text-neutral-400">
+            القيمة الصافية المستحقة على العملاء
+          </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-sm space-y-2">
-          <span className="text-xs font-bold text-neutral-500">إجمالي Net to Channel (ج.م)</span>
+          <span className="text-xs font-bold text-neutral-500">
+            إجمالي Net to Channel (ج.م)
+          </span>
           <div className="text-2xl font-black text-blue-600">
-            {totalNetToChannel.toLocaleString()} ج.م
+            {totalNetToChannel.toLocaleString('en-US')} ج.م
           </div>
-          <div className="text-[11px] text-neutral-400">التكلفة الصافية للقنوات والموردين</div>
+          <div className="text-[11px] text-neutral-400">
+            التكلفة الصافية للقنوات والموردين
+          </div>
         </div>
-
       </div>
 
-      {/* ============================================================== */}
-      {/* KAGGLE-STYLE SEARCH & FILTER BAR                               */}
-      {/* ============================================================== */}
+      {/* Search & Filters */}
       <div className="bg-white rounded-3xl border border-neutral-200/80 shadow-sm p-4 space-y-3">
         <div className="flex flex-col sm:flex-row items-center gap-3">
-          {/* Main Search Input */}
-          <form onSubmit={handleSearchSubmit} className="relative flex-1 w-full">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="relative flex-1 w-full"
+          >
             <Search className="w-4 h-4 text-neutral-400 absolute top-3.5 start-3.5" />
+
             <input
               type="text"
               value={searchTerm}
@@ -447,7 +614,6 @@ export const Dashboard: React.FC = () => {
             />
           </form>
 
-          {/* Kaggle Filter Toggle Button */}
           <button
             type="button"
             onClick={() => setFilterDrawerOpen(!filterDrawerOpen)}
@@ -459,6 +625,7 @@ export const Dashboard: React.FC = () => {
           >
             <SlidersHorizontal className="w-4 h-4 text-[#DC2626]" />
             <span>الفلاتر المتقدمة (Filters)</span>
+
             {activeFiltersCount > 0 && (
               <span className="w-5 h-5 rounded-full bg-[#DC2626] text-white text-[10px] flex items-center justify-center font-black">
                 {activeFiltersCount}
@@ -467,108 +634,114 @@ export const Dashboard: React.FC = () => {
           </button>
         </div>
 
-        {/* Expandable Kaggle Filter Panel */}
+        {/* Filter Panel */}
         {filterDrawerOpen && facets && (
           <div className="pt-4 border-t border-neutral-100 space-y-3 bg-neutral-50/70 p-4 rounded-2xl border border-neutral-200/60 text-xs">
-            {/* Row 1: The 4 Primary Dropdown Filters */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-              {/* 1. Client Filter */}
+              {/* Client */}
               <div>
                 <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
                   <Users className="w-3.5 h-3.5 text-neutral-500" />
                   <span>العميل (Client)</span>
                 </label>
+
                 <select
                   value={selectedClient}
                   onChange={(e) => setSelectedClient(e.target.value)}
                   className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
                 >
                   <option value="">جميع العملاء</option>
-                  {facets.clients.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
+                  {facets.clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* 2. Supplier Filter */}
+              {/* Supplier */}
               <div>
                 <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
                   <Truck className="w-3.5 h-3.5 text-neutral-500" />
-                  <span>المورد (supplier)</span>
+                  <span>المورد (Supplier)</span>
                 </label>
+
                 <select
                   value={selectedSupplier}
                   onChange={(e) => setSelectedSupplier(e.target.value)}
                   className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
                 >
                   <option value="">جميع الموردين</option>
-                  {facets.suppliers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
+                  {facets.suppliers.map((supplier) => (
+                    <option key={supplier.id} value={supplier.id}>
+                      {supplier.name}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* 3. Channel Filter */}
+              {/* Channel */}
               <div>
                 <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
                   <Tv className="w-3.5 h-3.5 text-neutral-500" />
                   <span>القناة (Channel)</span>
                 </label>
+
                 <select
                   value={selectedChannel}
                   onChange={(e) => setSelectedChannel(e.target.value)}
                   className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
                 >
                   <option value="">جميع القنوات</option>
-                  {facets.channels.map((ch) => (
-                    <option key={ch.id} value={ch.id}>
-                      {ch.name}
+                  {facets.channels.map((channel) => (
+                    <option key={channel.id} value={channel.id}>
+                      {channel.name}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* 4. Content Filter */}
+              {/* Content */}
               <div>
                 <label className="block font-black text-neutral-700 mb-1 flex items-center gap-1">
                   <FileVideo className="w-3.5 h-3.5 text-neutral-500" />
                   <span>المحتوى (Content)</span>
                 </label>
+
                 <select
                   value={selectedContent}
                   onChange={(e) => setSelectedContent(e.target.value)}
                   className="w-full p-2 bg-white border border-neutral-200 rounded-xl text-xs font-medium focus:border-[#DC2626]"
                 >
                   <option value="">جميع المحتويات</option>
-                  {facets.contents.map((cnt) => (
-                    <option key={cnt.id} value={cnt.id}>
-                      {cnt.name}
+                  {facets.contents.map((content) => (
+                    <option key={content.id} value={content.id}>
+                      {content.name}
                     </option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {/* Row 2: Advanced Month Filter (Single / Multi / Range) */}
+            {/* Month Filters */}
             <div className="bg-white p-3.5 rounded-2xl border border-neutral-200/90 shadow-sm space-y-2.5">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-100 pb-2">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-red-50 text-[#DC2626] flex items-center justify-center font-black">
                     <Calendar className="w-4 h-4" />
                   </div>
+
                   <div>
-                    <span className="font-black text-neutral-800 text-xs">فلترة الشهور (Month Filtering)</span>
+                    <span className="font-black text-neutral-800 text-xs">
+                      فلترة الشهور (Month Filtering)
+                    </span>
                     <p className="text-[10px] text-neutral-400 font-semibold">
-                      اختر شهر محدد، أو عدة شهور معاً، أو حدد نطاقاً زمنياً (من شهر إلى شهر)
+                      اختر شهر محدد، أو عدة شهور معاً، أو حدد نطاقاً زمنياً
                     </p>
                   </div>
                 </div>
 
-                {/* Mode Switcher Tabs */}
+                {/* Mode Switcher */}
                 <div className="inline-flex p-1 bg-neutral-100 rounded-xl gap-1 text-[11px] font-bold">
                   <button
                     type="button"
@@ -586,6 +759,7 @@ export const Dashboard: React.FC = () => {
                   >
                     شهر واحد
                   </button>
+
                   <button
                     type="button"
                     onClick={() => {
@@ -602,6 +776,7 @@ export const Dashboard: React.FC = () => {
                   >
                     عدة أشهر {selectedMonths.length > 0 && `(${selectedMonths.length})`}
                   </button>
+
                   <button
                     type="button"
                     onClick={() => {
@@ -620,7 +795,7 @@ export const Dashboard: React.FC = () => {
                 </div>
               </div>
 
-              {/* Mode 1: Single Month */}
+              {/* Single Month */}
               {monthFilterMode === 'single' && (
                 <div className="max-w-xs pt-1">
                   <select
@@ -629,20 +804,23 @@ export const Dashboard: React.FC = () => {
                     className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs font-semibold focus:border-[#DC2626]"
                   >
                     <option value="">جميع الشهور</option>
-                    {facets.months.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
+                    {facets.months.map((month) => (
+                      <option key={month} value={month}>
+                        {month}
                       </option>
                     ))}
                   </select>
                 </div>
               )}
 
-              {/* Mode 2: Multi-select Months */}
+              {/* Multiple Months */}
               {monthFilterMode === 'multi' && (
                 <div className="space-y-2 pt-1">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-neutral-500 font-bold">انقر على الشهور التي تريد تصفية البيانات بها:</span>
+                    <span className="text-neutral-500 font-bold">
+                      انقر على الشهور التي تريد تصفية البيانات بها:
+                    </span>
+
                     {selectedMonths.length > 0 && (
                       <button
                         type="button"
@@ -653,19 +831,21 @@ export const Dashboard: React.FC = () => {
                       </button>
                     )}
                   </div>
+
                   <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1 bg-neutral-50/50 rounded-xl border border-neutral-100">
-                    {facets.months.map((m) => {
-                      const isSelected = selectedMonths.includes(m);
+                    {facets.months.map((month) => {
+                      const isSelected = selectedMonths.includes(month);
+
                       return (
                         <button
-                          key={m}
+                          key={month}
                           type="button"
                           onClick={() => {
-                            if (isSelected) {
-                              setSelectedMonths(selectedMonths.filter((x) => x !== m));
-                            } else {
-                              setSelectedMonths([...selectedMonths, m]);
-                            }
+                            setSelectedMonths((previous) =>
+                              isSelected
+                                ? previous.filter((item) => item !== month)
+                                : [...previous, month]
+                            );
                           }}
                           className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
                             isSelected
@@ -673,7 +853,8 @@ export const Dashboard: React.FC = () => {
                               : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-400'
                           }`}
                         >
-                          {isSelected ? '✓ ' : ''}{m}
+                          {isSelected ? '✓ ' : ''}
+                          {month}
                         </button>
                       );
                     })}
@@ -681,35 +862,42 @@ export const Dashboard: React.FC = () => {
                 </div>
               )}
 
-              {/* Mode 3: Range (From Month to To Month) */}
+              {/* Month Range */}
               {monthFilterMode === 'range' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl pt-1">
                   <div>
-                    <label className="block text-[11px] font-bold text-neutral-600 mb-1">من شهر (بداية الفترة):</label>
+                    <label className="block text-[11px] font-bold text-neutral-600 mb-1">
+                      من شهر (بداية الفترة):
+                    </label>
+
                     <select
                       value={fromMonth}
                       onChange={(e) => setFromMonth(e.target.value)}
                       className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs font-semibold focus:border-[#DC2626]"
                     >
                       <option value="">-- من البداية --</option>
-                      {facets.months.map((m) => (
-                        <option key={m} value={m}>
-                          {m}
+                      {facets.months.map((month) => (
+                        <option key={month} value={month}>
+                          {month}
                         </option>
                       ))}
                     </select>
                   </div>
+
                   <div>
-                    <label className="block text-[11px] font-bold text-neutral-600 mb-1">إلى شهر (نهاية الفترة):</label>
+                    <label className="block text-[11px] font-bold text-neutral-600 mb-1">
+                      إلى شهر (نهاية الفترة):
+                    </label>
+
                     <select
                       value={toMonth}
                       onChange={(e) => setToMonth(e.target.value)}
                       className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs font-semibold focus:border-[#DC2626]"
                     >
                       <option value="">-- حتى النهاية --</option>
-                      {facets.months.map((m) => (
-                        <option key={m} value={m}>
-                          {m}
+                      {facets.months.map((month) => (
+                        <option key={month} value={month}>
+                          {month}
                         </option>
                       ))}
                     </select>
@@ -720,15 +908,23 @@ export const Dashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Active Filter Chips / Pills (Kaggle Style) */}
+        {/* Active Filter Chips */}
         {activeFiltersCount > 0 && (
           <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-neutral-100">
-            <span className="text-[11px] font-bold text-neutral-400">الفلاتر المطبقة:</span>
+            <span className="text-[11px] font-bold text-neutral-400">
+              الفلاتر المطبقة:
+            </span>
 
             {selectedClient && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-bold text-neutral-800">
-                <span>العميل: {facets?.clients.find((c) => c.id === selectedClient)?.name}</span>
-                <button onClick={() => setSelectedClient('')} className="hover:text-red-600">
+                <span>
+                  العميل: {facets?.clients.find((item) => item.id === selectedClient)?.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedClient('')}
+                  className="hover:text-red-600"
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </span>
@@ -736,8 +932,14 @@ export const Dashboard: React.FC = () => {
 
             {selectedSupplier && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-bold text-neutral-800">
-                <span>المورد: {facets?.suppliers.find((s) => s.id === selectedSupplier)?.name}</span>
-                <button onClick={() => setSelectedSupplier('')} className="hover:text-red-600">
+                <span>
+                  المورد: {facets?.suppliers.find((item) => item.id === selectedSupplier)?.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSupplier('')}
+                  className="hover:text-red-600"
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </span>
@@ -745,8 +947,14 @@ export const Dashboard: React.FC = () => {
 
             {selectedChannel && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-bold text-neutral-800">
-                <span>القناة: {facets?.channels.find((ch) => ch.id === selectedChannel)?.name}</span>
-                <button onClick={() => setSelectedChannel('')} className="hover:text-red-600">
+                <span>
+                  القناة: {facets?.channels.find((item) => item.id === selectedChannel)?.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedChannel('')}
+                  className="hover:text-red-600"
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </span>
@@ -754,8 +962,14 @@ export const Dashboard: React.FC = () => {
 
             {selectedContent && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-bold text-neutral-800">
-                <span>المحتوى: {facets?.contents.find((cnt) => cnt.id === selectedContent)?.name}</span>
-                <button onClick={() => setSelectedContent('')} className="hover:text-red-600">
+                <span>
+                  المحتوى: {facets?.contents.find((item) => item.id === selectedContent)?.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedContent('')}
+                  className="hover:text-red-600"
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </span>
@@ -764,30 +978,36 @@ export const Dashboard: React.FC = () => {
             {monthFilterMode === 'single' && selectedMonth && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-bold text-neutral-800">
                 <span>الشهر: {selectedMonth}</span>
-                <button onClick={() => setSelectedMonth('')} className="hover:text-red-600">
+                <button
+                  type="button"
+                  onClick={() => setSelectedMonth('')}
+                  className="hover:text-red-600"
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </span>
             )}
 
-            {monthFilterMode === 'multi' && selectedMonths.length > 0 && (
-              <>
-                {selectedMonths.map((m) => (
-                  <span
-                    key={m}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-bold text-neutral-800"
+            {monthFilterMode === 'multi' &&
+              selectedMonths.map((month) => (
+                <span
+                  key={month}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-bold text-neutral-800"
+                >
+                  <span>شهر: {month}</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedMonths((previous) =>
+                        previous.filter((item) => item !== month)
+                      )
+                    }
+                    className="hover:text-red-600"
                   >
-                    <span>شهر: {m}</span>
-                    <button
-                      onClick={() => setSelectedMonths(selectedMonths.filter((x) => x !== m))}
-                      className="hover:text-red-600"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
-                ))}
-              </>
-            )}
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              ))}
 
             {monthFilterMode === 'range' && (fromMonth || toMonth) && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-bold text-neutral-800">
@@ -795,6 +1015,7 @@ export const Dashboard: React.FC = () => {
                   الفترة: من {fromMonth || 'البداية'} إلى {toMonth || 'النهاية'}
                 </span>
                 <button
+                  type="button"
                   onClick={() => {
                     setFromMonth('');
                     setToMonth('');
@@ -807,6 +1028,7 @@ export const Dashboard: React.FC = () => {
             )}
 
             <button
+              type="button"
               onClick={handleResetFilters}
               className="text-[11px] font-bold text-[#DC2626] hover:underline ms-2"
             >
@@ -816,19 +1038,21 @@ export const Dashboard: React.FC = () => {
         )}
       </div>
 
-      {/* ============================================================== */}
-      {/* MAIN DATA TABLE: ORDERED EXACTLY AS REQUESTED & IN THE IMAGE   */}
-      {/* Client | supplier | Channel | Content | Content Type | Month | Net to Channel | Net to Client | Notes */}
-      {/* ============================================================== */}
+      {/* Main Data Table */}
       <div className="bg-white rounded-3xl border border-neutral-200/80 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-neutral-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="font-black text-xs text-neutral-900">جدول حملات الميديا وتفاصيل التكاليف</span>
+            <span className="font-black text-xs text-neutral-900">
+              جدول حملات الميديا وتفاصيل التكاليف
+            </span>
+
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 font-bold text-neutral-600">
               {records.length} صف
             </span>
           </div>
+
           <button
+            type="button"
             onClick={handleExport}
             className="text-xs font-bold text-[#DC2626] hover:underline flex items-center gap-1"
           >
@@ -853,6 +1077,7 @@ export const Dashboard: React.FC = () => {
                 <th className="p-3.5 text-end">إجراء المحاسبة</th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-neutral-100 font-medium">
               {loading ? (
                 <tr>
@@ -863,67 +1088,73 @@ export const Dashboard: React.FC = () => {
               ) : records.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="p-12 text-center text-neutral-400 font-bold">
-                    لا توجد بيانات مطابقة. يمكنك استخدام زر (Import) لاستيراد ملف البيانات أو إضافة حملة يدوياً.
+                    لا توجد بيانات مطابقة. يمكنك استخدام زر Import لاستيراد ملف البيانات أو إضافة حملة يدوياً.
                   </td>
                 </tr>
               ) : (
-                records.map((r) => (
-                  <tr key={r.id} className="hover:bg-neutral-50/70 transition-colors">
-                    {/* 1. Client */}
+                records.map((record) => (
+                  <tr
+                    key={record.id}
+                    className="hover:bg-neutral-50/70 transition-colors"
+                  >
                     <td className="p-3.5 font-black text-neutral-900 text-sm whitespace-nowrap">
-                      {r.client?.name}
+                      {record.client?.name || '-'}
                     </td>
 
-                    {/* 2. supplier */}
                     <td className="p-3.5 font-bold text-neutral-700 whitespace-nowrap">
-                      {r.supplier?.name}
+                      {record.supplier?.name || '-'}
                     </td>
 
-                    {/* 3. Channel */}
                     <td className="p-3.5 whitespace-nowrap">
                       <span className="px-2.5 py-1 rounded-lg bg-red-50 text-[#DC2626] font-extrabold border border-red-100">
-                        {r.channel?.name}
+                        {record.channel?.name || '-'}
                       </span>
                     </td>
 
-                    {/* 4. Content */}
-                    <td className="p-3.5 font-bold text-neutral-800">{r.content?.name}</td>
+                    <td className="p-3.5 font-bold text-neutral-800">
+                      {record.content?.name || '-'}
+                    </td>
 
-                    {/* 5. Content Type */}
                     <td className="p-3.5 whitespace-nowrap">
                       <span className="px-2 py-0.5 rounded-lg bg-purple-50 text-purple-700 font-semibold border border-purple-100 text-[11px]">
-                        {r.content?.contentType?.name || 'عام'}
+                        {record.content?.contentType?.name || 'عام'}
                       </span>
                     </td>
 
-                    {/* 6. Month */}
-                    <td className="p-3.5 font-bold text-neutral-700 whitespace-nowrap">{r.month}</td>
+                    <td className="p-3.5 font-bold text-neutral-700 whitespace-nowrap">
+                      {record.month}
+                    </td>
 
-                    {/* 7. Net to Channel */}
                     <td className="p-3.5 font-black text-blue-700 whitespace-nowrap">
-                      {Number(r.netToChannel || 0).toLocaleString()} ج.م
+                      {Number(record.netToChannel || 0).toLocaleString('en-US')} ج.م
                     </td>
 
-                    {/* 8. Net to Client */}
                     <td className="p-3.5 font-black text-[#DC2626] whitespace-nowrap">
-                      {Number(r.netToClient || r.cost || 0).toLocaleString()} ج.م
+                      {Number(
+                        record.netToClient ?? record.cost ?? 0
+                      ).toLocaleString('en-US')} ج.م
                     </td>
 
-                    {/* 9. Notes */}
-                    <td className="p-3.5 text-neutral-500 max-w-xs truncate">{r.notes || '-'}</td>
+                    <td className="p-3.5 text-neutral-500 max-w-xs truncate">
+                      {record.notes || '-'}
+                    </td>
 
-                    {/* 10. Accounting Action */}
                     <td className="p-3.5 text-end whitespace-nowrap">
-                      {r.invoiceId ? (
+                      {record.invoiceId ? (
                         <div className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>مفوترة</span>
                         </div>
+                      ) : isReadOnly ? (
+                        <span className="text-[11px] text-neutral-400">
+                          عرض فقط
+                        </span>
                       ) : (
                         <button
-                          onClick={() => handleIssueInvoice(r.id)}
+                          type="button"
+                          onClick={() => handleIssueInvoice(record.id)}
                           disabled={actionLoading}
-                          className="px-3 py-1 bg-[#DC2626] hover:bg-[#B91C1C] text-white font-bold rounded-xl text-[10px] transition-all inline-flex items-center gap-1 shadow-sm"
+                          className="px-3 py-1 bg-[#DC2626] hover:bg-[#B91C1C] disabled:bg-neutral-400 text-white font-bold rounded-xl text-[10px] transition-all inline-flex items-center gap-1 shadow-sm"
                           title="إصدار فاتورة رسمية في قسم المحاسبة"
                         >
                           <Receipt className="w-3 h-3" />
@@ -939,19 +1170,20 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* ============================================================== */}
-      {/* IMPORT MODAL                                                   */}
-      {/* ============================================================== */}
+      {/* Import Modal */}
       {showImportModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-2xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
               <div>
-                <h3 className="font-black text-neutral-900 text-base">استيراد بيانات الميديا (Import CSV)</h3>
+                <h3 className="font-black text-neutral-900 text-base">
+                  استيراد بيانات الميديا (Import CSV)
+                </h3>
                 <p className="text-[11px] text-neutral-500 mt-0.5">
                   قم بتحميل ملف CSV يحتوي على الأعمدة المعتمدة بالترتيب الدقيق
                 </p>
               </div>
+
               <button
                 type="button"
                 onClick={() => {
@@ -965,14 +1197,17 @@ export const Dashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* Template Download Box */}
+            {/* Template Download */}
             <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
               <div>
-                <div className="font-bold text-neutral-800">تحميل القالب النموذجي المعتمد</div>
+                <div className="font-bold text-neutral-800">
+                  تحميل القالب النموذجي المعتمد
+                </div>
                 <div className="text-[11px] text-neutral-500 font-mono mt-0.5">
                   Client, supplier, Channel, Content, Content Type, Month, Net to Channel, Net to Client, Notes
                 </div>
               </div>
+
               <button
                 type="button"
                 onClick={handleDownloadTemplate}
@@ -983,7 +1218,7 @@ export const Dashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* File Upload Drop Area */}
+            {/* File Upload */}
             <div>
               <input
                 ref={fileInputRef}
@@ -992,29 +1227,37 @@ export const Dashboard: React.FC = () => {
                 onChange={handleFileChange}
                 className="hidden"
               />
+
               <div
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-neutral-300 hover:border-[#DC2626] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-neutral-50/50 hover:bg-red-50/20 space-y-2"
               >
                 <Upload className="w-8 h-8 text-neutral-400 mx-auto" />
+
                 <div className="text-xs font-bold text-neutral-700">
-                  {importFile ? importFile.name : 'اضغط هنا لاختيار ملف CSV من جهازك'}
+                  {importFile
+                    ? importFile.name
+                    : 'اضغط هنا لاختيار ملف CSV من جهازك'}
                 </div>
+
                 <div className="text-[10px] text-neutral-400">
                   يدعم ترميز UTF-8 واللغة العربية والأرقام المالية
                 </div>
               </div>
             </div>
 
-            {/* Preview of Parsed Rows */}
+            {/* Import Preview */}
             {importPreview.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-neutral-800">
                     معاينة البيانات قبل الحفظ ({importPreview.length} صف تم التعرف عليه):
                   </span>
-                  <span className="text-emerald-600 font-bold">جاهز للاستيراد</span>
+                  <span className="text-emerald-600 font-bold">
+                    جاهز للاستيراد
+                  </span>
                 </div>
+
                 <div className="max-h-48 overflow-y-auto border border-neutral-200 rounded-xl overflow-x-auto text-[11px]">
                   <table className="w-full text-start">
                     <thead className="bg-neutral-100 font-bold sticky top-0">
@@ -1030,27 +1273,43 @@ export const Dashboard: React.FC = () => {
                         <th className="p-2 text-start">Notes</th>
                       </tr>
                     </thead>
+
                     <tbody className="divide-y divide-neutral-100">
-                      {importPreview.slice(0, 10).map((row, idx) => (
-                        <tr key={idx} className="hover:bg-neutral-50">
-                          <td className="p-2 font-bold">{row['Client'] || row['client']}</td>
-                          <td className="p-2">{row['supplier'] || row['Supplier']}</td>
-                          <td className="p-2">{row['Channel'] || row['channel']}</td>
-                          <td className="p-2">{row['Content'] || row['content']}</td>
-                          <td className="p-2">{row['Content Type'] || row['content_type']}</td>
-                          <td className="p-2">{row['Month'] || row['month']}</td>
+                      {importPreview.slice(0, 10).map((row, index) => (
+                        <tr key={index} className="hover:bg-neutral-50">
+                          <td className="p-2 font-bold">
+                            {row['Client'] || row['client']}
+                          </td>
+                          <td className="p-2">
+                            {row['supplier'] || row['Supplier']}
+                          </td>
+                          <td className="p-2">
+                            {row['Channel'] || row['channel']}
+                          </td>
+                          <td className="p-2">
+                            {row['Content'] || row['content']}
+                          </td>
+                          <td className="p-2">
+                            {row['Content Type'] || row['content_type']}
+                          </td>
+                          <td className="p-2">
+                            {row['Month'] || row['month']}
+                          </td>
                           <td className="p-2 font-bold text-blue-600">
                             {row['Net to Channel'] || row['netToChannel']}
                           </td>
                           <td className="p-2 font-bold text-[#DC2626]">
                             {row['Net to Client'] || row['netToClient']}
                           </td>
-                          <td className="p-2 text-neutral-400">{row['Notes'] || row['notes']}</td>
+                          <td className="p-2 text-neutral-400">
+                            {row['Notes'] || row['notes']}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
+
                 {importPreview.length > 10 && (
                   <div className="text-[10px] text-neutral-400 text-center">
                     ... وعرض {importPreview.length - 10} صفوف أخرى
@@ -1066,8 +1325,11 @@ export const Dashboard: React.FC = () => {
                 disabled={importing || importPreview.length === 0}
                 className="flex-1 py-2.5 bg-[#DC2626] hover:bg-[#B91C1C] disabled:bg-neutral-300 text-white font-bold rounded-xl text-xs transition-colors"
               >
-                {importing ? 'جاري الاستيراد والحفظ في قاعدة البيانات...' : 'تأكيد وحفظ البيانات في النظام'}
+                {importing
+                  ? 'جاري الاستيراد والحفظ في قاعدة البيانات...'
+                  : 'تأكيد وحفظ البيانات في النظام'}
               </button>
+
               <button
                 type="button"
                 onClick={() => {
@@ -1084,44 +1346,61 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* ============================================================== */}
-      {/* ADD CAMPAIGN MODAL                                             */}
-      {/* ============================================================== */}
+      {/* Add Campaign Modal */}
       {showAddModal && facets && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-lg shadow-2xl space-y-4">
-            <h3 className="font-black text-neutral-900 text-base">تسجيل حملة ميديا جديدة</h3>
+            <h3 className="font-black text-neutral-900 text-base">
+              تسجيل حملة ميديا جديدة
+            </h3>
+
             <form onSubmit={handleCreateCampaign} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-neutral-700 mb-1">العميل (Client) *</label>
+                  <label className="block font-bold text-neutral-700 mb-1">
+                    العميل (Client) *
+                  </label>
+
                   <select
                     required
                     value={newCampaign.clientId}
-                    onChange={(e) => setNewCampaign({ ...newCampaign, clientId: e.target.value })}
+                    onChange={(e) =>
+                      setNewCampaign({
+                        ...newCampaign,
+                        clientId: e.target.value,
+                      })
+                    }
                     className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl font-bold"
                   >
                     <option value="">-- اختر العميل --</option>
-                    {facets.clients.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
+                    {facets.clients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-neutral-700 mb-1">المورد (supplier) *</label>
+                  <label className="block font-bold text-neutral-700 mb-1">
+                    المورد (Supplier) *
+                  </label>
+
                   <select
                     required
                     value={newCampaign.supplierId}
-                    onChange={(e) => setNewCampaign({ ...newCampaign, supplierId: e.target.value })}
+                    onChange={(e) =>
+                      setNewCampaign({
+                        ...newCampaign,
+                        supplierId: e.target.value,
+                      })
+                    }
                     className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl font-bold"
                   >
                     <option value="">-- اختر المورد --</option>
-                    {facets.suppliers.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
+                    {facets.suppliers.map((supplier) => (
+                      <option key={supplier.id} value={supplier.id}>
+                        {supplier.name}
                       </option>
                     ))}
                   </select>
@@ -1130,34 +1409,50 @@ export const Dashboard: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-neutral-700 mb-1">القناة (Channel) *</label>
+                  <label className="block font-bold text-neutral-700 mb-1">
+                    القناة (Channel) *
+                  </label>
+
                   <select
                     required
                     value={newCampaign.channelId}
-                    onChange={(e) => setNewCampaign({ ...newCampaign, channelId: e.target.value })}
+                    onChange={(e) =>
+                      setNewCampaign({
+                        ...newCampaign,
+                        channelId: e.target.value,
+                      })
+                    }
                     className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl font-bold"
                   >
                     <option value="">-- اختر القناة --</option>
-                    {facets.channels.map((ch) => (
-                      <option key={ch.id} value={ch.id}>
-                        {ch.name}
+                    {facets.channels.map((channel) => (
+                      <option key={channel.id} value={channel.id}>
+                        {channel.name}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-neutral-700 mb-1">المحتوى (Content) *</label>
+                  <label className="block font-bold text-neutral-700 mb-1">
+                    المحتوى (Content) *
+                  </label>
+
                   <select
                     required
                     value={newCampaign.contentId}
-                    onChange={(e) => setNewCampaign({ ...newCampaign, contentId: e.target.value })}
+                    onChange={(e) =>
+                      setNewCampaign({
+                        ...newCampaign,
+                        contentId: e.target.value,
+                      })
+                    }
                     className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl font-bold"
                   >
                     <option value="">-- اختر المحتوى --</option>
-                    {facets.contents.map((cnt) => (
-                      <option key={cnt.id} value={cnt.id}>
-                        {cnt.name} ({cnt.contentType?.name || 'نوع مخصص'})
+                    {facets.contents.map((content) => (
+                      <option key={content.id} value={content.id}>
+                        {content.name} ({content.contentType?.name || 'نوع مخصص'})
                       </option>
                     ))}
                   </select>
@@ -1166,19 +1461,30 @@ export const Dashboard: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-neutral-700 mb-1">الشهر (Month) *</label>
+                  <label className="block font-bold text-neutral-700 mb-1">
+                    الشهر (Month) *
+                  </label>
+
                   <input
                     type="text"
                     required
                     placeholder="يناير 2026"
                     value={newCampaign.month}
-                    onChange={(e) => setNewCampaign({ ...newCampaign, month: e.target.value })}
+                    onChange={(e) =>
+                      setNewCampaign({
+                        ...newCampaign,
+                        month: e.target.value,
+                      })
+                    }
                     className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-neutral-700 mb-1">Net to Channel *</label>
+                  <label className="block font-bold text-neutral-700 mb-1">
+                    Net to Channel *
+                  </label>
+
                   <input
                     type="number"
                     min="0"
@@ -1186,14 +1492,20 @@ export const Dashboard: React.FC = () => {
                     required
                     value={newCampaign.netToChannel}
                     onChange={(e) =>
-                      setNewCampaign({ ...newCampaign, netToChannel: Number(e.target.value) })
+                      setNewCampaign({
+                        ...newCampaign,
+                        netToChannel: Number(e.target.value),
+                      })
                     }
                     className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl font-black text-blue-600"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-neutral-700 mb-1">Net to Client *</label>
+                  <label className="block font-bold text-neutral-700 mb-1">
+                    Net to Client *
+                  </label>
+
                   <input
                     type="number"
                     min="0"
@@ -1201,7 +1513,10 @@ export const Dashboard: React.FC = () => {
                     required
                     value={newCampaign.netToClient}
                     onChange={(e) =>
-                      setNewCampaign({ ...newCampaign, netToClient: Number(e.target.value) })
+                      setNewCampaign({
+                        ...newCampaign,
+                        netToClient: Number(e.target.value),
+                      })
                     }
                     className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl font-black text-[#DC2626]"
                   />
@@ -1209,11 +1524,19 @@ export const Dashboard: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-neutral-700 mb-1">Notes (ملاحظات)</label>
+                <label className="block font-bold text-neutral-700 mb-1">
+                  Notes (ملاحظات)
+                </label>
+
                 <textarea
                   rows={2}
                   value={newCampaign.notes}
-                  onChange={(e) => setNewCampaign({ ...newCampaign, notes: e.target.value })}
+                  onChange={(e) =>
+                    setNewCampaign({
+                      ...newCampaign,
+                      notes: e.target.value,
+                    })
+                  }
                   placeholder="ملاحظات حول الحملة أو الاستهداف أو الاتفاق..."
                   className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl"
                 />
@@ -1223,10 +1546,11 @@ export const Dashboard: React.FC = () => {
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="flex-1 py-2.5 bg-[#DC2626] hover:bg-[#B91C1C] text-white font-bold rounded-xl"
+                  className="flex-1 py-2.5 bg-[#DC2626] hover:bg-[#B91C1C] disabled:bg-neutral-400 text-white font-bold rounded-xl"
                 >
-                  حفظ الحملة
+                  {actionLoading ? 'جاري الحفظ...' : 'حفظ الحملة'}
                 </button>
+
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
