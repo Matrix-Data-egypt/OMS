@@ -315,9 +315,6 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const totalNetToClient = records.reduce((acc, r) => acc + Number(r.netToClient || r.cost || 0), 0);
-  const totalNetToChannel = records.reduce((acc, r) => acc + Number(r.netToChannel || 0), 0);
-
   return (
     <div className="space-y-6">
       {/* Top Banner with Action Buttons (Add, Import, Export) */}
@@ -431,13 +428,6 @@ export const Dashboard: React.FC = () => {
           <div className="text-[11px] text-neutral-400">التكلفة الصافية للقنوات والموردين</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-sm space-y-2">
-          <span className="text-xs font-bold text-neutral-500">صافي هامش الربح التقديري</span>
-          <div className="text-2xl font-black text-emerald-600">
-            {(totalNetToClient - totalNetToChannel).toLocaleString()} ج.م
-          </div>
-          <div className="text-[11px] text-neutral-400">الفارق بين العميل والقناة</div>
-        </div>
       </div>
 
       {/* ============================================================== */}
