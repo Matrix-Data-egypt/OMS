@@ -21,6 +21,7 @@ const app = express();
 
 const allowedOrigins = [
   'https://matrix-data-egypt.github.io',
+  'https://oms-tur2.vercel.app',
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5175',
@@ -33,7 +34,16 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      const isAllowedVercelPreview =
+        /^https:\/\/oms-tur2-[a-z0-9-]+-pixelrun2000-9580s-projects\.vercel\.app$/.test(
+          origin || ''
+        );
+
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        isAllowedVercelPreview
+      ) {
         return callback(null, true);
       }
 
