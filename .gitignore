@@ -6,3 +6,18 @@ uploads/
 backend/data/
 *.log
 .DS_Store
+
+# Build output
+**/dist/
+**/build/
+
+# Local dependencies
+**/node_modules/
+
+# Environment files
+.env.*
+**/.env.*
+
+# Local IDE files
+.vscode/
+.idea/
