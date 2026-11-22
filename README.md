@@ -1,35 +1,161 @@
-# OMS — How to run
+# توثيق نظام OMS الشامل (OMS Business Suite)
+> **دليل توثيقي شامل لمنظومة OMS الداخلية:** يغطي بوابات **الميديا (`media/`)**، **الإدارة المركزية (`admin/`)**، و**الفواتير والمحاسبة (`Invoice/`)**.  
+> **التطوير والتنفيذ**: MDE – Matrix Data Egypt.
 
-## 1) Backend (API)
+---
+
+## 1. ما هي المنظومة ومكوناتها الأساسية (Architecture & Portals)
+
+النظام مصمم بفصل وظيفي وأمني كامل بين بوابات العمل مع قاعدة بيانات مركزية موحدة:
+
+| البوابة / المجلد | الوصف والمسؤولية | الواجهة (Frontend) | الخادم (Backend API) |
+| :--- | :--- | :--- | :--- |
+| **🛡️ بوابة الإدارة (`admin/`)** | إدارة المستخدمين المركزيين، ضبط صلاحيات الوصول (`MEDIA` / `INVOICE` / `ALL`)، تفعيل وإيقاف الحسابات. | منفذ `5175` | منفذ `5003` |
+| **📺 بوابة الميديا (`media/`)** | تخطيط وإدارة الحملات الإعلانية، حساب تكاليف القنوات والعملاء، الفلاتر المتقدمة، وتصدير/استيراد CSV. | منفذ `5174` | منفذ `5002` |
+| **📄 بوابة الفواتير (`Invoice/`)** | دورة حياة الفواتير المحاسبية، الاعتمادات المالية متعددة المستويات، الضرائب (VAT 14% & WHT 1%)، سجلات التسليم والتدقيق. | منفذ `5173` | منفذ `5001` |
+
+---
+
+## 2. السيستم معمول بإيه: اللغة والفريموورك والداتابيز (Tech Stack)
+
+* **لغات البرمجة (Languages)**:
+  * **TypeScript**: لكتابة كافة واجهات الـ Frontend وخوادم الـ Backend بنمط Type-Safe صارم.
+  * **JavaScript (ES Modules)** و **SQL**: للاستعلامات وإدارة البيانات.
+  * **HTML5 / CSS3**: مع Tailwind CSS للواجهات والتصميم الحديث المتجاوب.
+
+* **أطر العمل والمكتبات (Frameworks & Libraries)**:
+  * **الواجهات الأمامية (Frontend)**:
+    * **React 18 / 19** عبر مجمّع **Vite** السريع.
+    * **Tailwind CSS**: للتنسيق ونظام التصميم الموحد (الهوية: الأحمر الأساسي `#DC2626`، الأسود `#171717`، والأبيض).
+    * **React Router DOM**: للتوجيه وإدارة مسارات الصفحات وحمايتها بحسب الصلاحيات.
+    * **Lucide React**: للأيقونات التفاعلية.
+  * **الخوادم الخلفية (Backend APIs)**:
+    * **Node.js** مع إطار عمل **Express.js**.
+    * **Prisma ORM (v5)**: للتكامل وإدارة علاقات قاعدة البيانات وكتابة الـ Schemas.
+    * **Zod**: للتحقق الدقيق من صحة البيانات المُدخلة والمُرسلة (Validation).
+    * **JWT (JSON Web Tokens)** و **bcryptjs**: للمصادقة وتشفير كلمات المرور.
+
+* **قاعدة البيانات (Database)**:
+  * **PostgreSQL (الإصدار 18)**: تعمل محلياً كخدمة Windows (`postgresql-x64-18`) على المنفذ `5432` بقاعدة بيانات `oms_invoice_db`.
+  * **Supabase Cloud PostgreSQL**: خادم سحابي مستضاف للبيئة الإنتاجية (`szviwpregvbbxfftarvg.supabase.co`).
+
+---
+
+## 3. الكود مرفوع فين وعلى حساب مين (Repositories & Ownership)
+
+الكود المصدري للمنظومة بالكامل مدار عبر نظام **Git** ومرفوع على **GitHub** على مستودعين رسميين:
+
+1. **المستودع الرئيسي (`origin`)**:
+   * الرابط: [https://github.com/pixelrun2000-bit/OMS.git](https://github.com/pixelrun2000-bit/OMS.git)
+   * الحساب المالك: `pixelrun2000-bit`
+   * الفرع النشط: `main`
+
+2. **المستودع المؤسسي المعتمد (`mde`)**:
+   * الرابط: [https://github.com/Matrix-Data-egypt/OMS.git](https://github.com/Matrix-Data-egypt/OMS.git)
+   * الحساب المالك: `Matrix-Data-egypt` (MDE – Matrix Data Egypt)
+   * الفرع النشط: `main`
+
+---
+
+## 4. الخدمات الخارجية والـ APIs المسجلة (External Services & Accounts)
+
+| الخدمة الخارجية | الاستخدام في النظام | الحساب / المنصة المسجل عليها | الملاحظات والتفاصيل |
+| :--- | :--- | :--- | :--- |
+| **Vercel** | استضافة واجهات الـ API للباك إند: <br>• `https://oms-invoice-api.vercel.app`<br>• `https://oms-media-api.vercel.app` | حساب **Matrix Data Egypt** على منصة **Vercel** | تدير دوال Serverless السحابية والاتصال السريع بقاعدة البيانات. |
+| **GitHub Pages** | استضافة ونشر واجهات الـ Frontend الإنتاجية (`https://matrix-data-egypt.github.io`). | حساب **Matrix-Data-egypt** على **GitHub** | نشر عبر GitHub Actions و Vite Build. |
+| **Supabase** | قاعدة البيانات السحابية المركزية المستضافة (PostgreSQL). | مشروع `szviwpregvbbxfftarvg` على **Supabase** | مزامنة مباشرة للجداول، وإتاحة الوصول الآمن للـ APIs. |
+| **WhatsApp Business API** | إرسال إشعارات الفواتير المحاسبية وروابطها للعملاء آلياً عبر واتساب. | **Meta for Developers** (متغير البيئة: `WHATSAPP_API_TOKEN`) | مدمجة في مسار `deliveryController` وتعمل بنمط القوالب الرسمية وسجلات الإرسال. |
+| **خدمة الإيميل (Email)** | إرسال ملفات الفواتير بتنسيق PDF إلى بريد العميل الرسمي. | خادم البريد / SMTP الداخلي للمؤسسة | موثقة في سجلات التسليم (`delivery_logs`). |
+| **بوابات الدفع (Payment)** | **لا توجد بوابات بنكية خارجية تجارية** (مثل Stripe أو Paymob أو Fawry) لتجنب اقتطاع العمولات، حيث تعتمد المنظومة على **القيود المحاسبية الرسمية**: <br>• تحويل بنكي (Bank Transfer)<br>• كاش (Cash)<br>• شيكات بنكية (Cheques)<br>• دفع إلكتروني يدوي (Online) | تُسجل وتُعتمد دفتر ومحاسبياً من قبل المحاسبين المعتمدين داخل النظام | تخضع لدورة تدقيق مالي وسجلات غير قابلة للتلاعب (`audit_logs`). |
+
+---
+
+## 5. حسابات الأدمن الموجودة في لوحة التحكم (Admin & User Accounts)
+
+تحتوي المنظومة على حسابات محددة الأدوار تم إنشاؤها عبر الـ Seeds:
+
+| اسم المستخدم (Username) | البريد الإلكتروني (Email) | كلمة المرور الافتراضية | الدور (Role) | النظام المصرح له بالدخول |
+| :--- | :--- | :--- | :--- | :--- |
+| `admin` | `admin@oms.com` | `Oms@123456` | **ADMIN** (مدير عام) | **كافة الأنظمة** (`ALL`: الإدارة + الميديا + الفواتير) |
+| `media` | `media@oms.com` | `Oms@123456` | **MEDIA_ADMIN** | **قسم الميديا فقط** (`MEDIA`: ممنوع من دخول الفواتير) |
+| `media_admin` | `media.admin@oms.com` | `Oms@123456` | **MEDIA_ADMIN** | **قسم الميديا فقط** (`MEDIA`) |
+| `accountant` | `accountant@oms.com` | `Oms@123456` | **ACCOUNTANT** | **قسم الفواتير فقط** (`INVOICE`: ممنوع من دخول الميديا) |
+| `finance` | `finance@oms.com` | `Oms@123456` | **FINANCE_MANAGER** | **قسم الفواتير فقط** (`INVOICE`: صلاحيات الاعتماد المالي) |
+| `sales` | `sales@oms.com` | `Oms@123456` | **SALES** | **قسم الفواتير فقط** (`INVOICE`: إنشاء وتجهيز مسودات الفواتير) |
+
+---
+
+## 6. توثيق طريقة التشغيل والرفع (Run & Deployment Guide)
+
+### أ) التشغيل المحلي السريع (Quick Local Start):
+
+تتوفر ملفات تشغيل بنقرة واحدة (Batch Files) في المجلد الرئيسي:
+1. **تشغيل قاعدة بيانات PostgreSQL المحلية**:
+   👉 `start-postgres.bat` (يقوم بتشغيل خدمة `postgresql-x64-18` على المنفذ `5432`).
+2. **تشغيل كافة البوابات معاً بضغطة واحدة**:
+   👉 `start-all.bat`
+   * الفواتير: `http://localhost:5173`
+   * الميديا: `http://localhost:5174`
+   * الإدارة: `http://localhost:5175`
+3. **تشغيل قسم الميديا فقط**:
+   👉 `start-media.bat` (`http://localhost:5174` والباك إند على `5002`).
+4. **تشغيل بوابة الإدارة فقط**:
+   👉 `start-admin.bat` (`http://localhost:5175` والباك إند على `5003`).
+5. **تشغيل قسم الفواتير فقط**:
+   👉 `start-system.bat` (`http://localhost:5173` والباك إند على `5001`).
+
+### ب) التشغيل عبر موجه الأوامر (Terminal Commands):
 ```bash
-cd backend
-npm install
-npm start
+# 1. تشغيل قسم الميديا (Media)
+cd media/backend && npm run dev     # على المنفذ 5002
+cd media/frontend && npm run dev    # على المنفذ 5174
+
+# 2. تشغيل بوابة الإدارة (Admin)
+cd admin/backend && npm run dev     # على المنفذ 5003
+cd admin/frontend && npm run dev    # على المنفذ 5175
+
+# 3. تشغيل قسم الفواتير (Invoice)
+cd Invoice/server && npm run dev    # على المنفذ 5001
+cd Invoice/client && npm run dev    # على المنفذ 5173
 ```
-Runs on http://localhost:5000
 
-Default admin login (for dashboard):
-- Username: `admin`
-- Password: `omsadmin123`
+### ج) طريقة الرفع والنشر (Deployment):
+1. **نشر الواجهات الأمامية (Frontends)**:
+   * بناء الحزم الإنتاجية: `npm run build` في كل مجلد `frontend` و `client`.
+   * الرفع يتم تلقائياً عبر GitHub Actions على GitHub Pages أو من خلال لوحة تحكم Vercel.
+2. **نشر واجهات الـ Backend APIs**:
+   * الخوادم مهيأة للعمل بنمط Vercel Serverless Functions عبر ملفات `vercel.json`.
+   * يتم الرفع عبر أمر: `vercel deploy --prod` داخل كل مجلد باك إند، أو بربط المستودع مع Vercel.
+3. **مزامنة قاعدة البيانات**:
+   * توليد عميل Prisma: `npx prisma generate`
+   * ترحيل وتطبيق الجداول: `npx prisma db push` أو `npx prisma migrate deploy`
 
-## 2) Company website (frontend)
-```bash
-cd my-app
-npm start
-```
-Runs on http://localhost:3000
+---
 
-## 3) Admin dashboard (separate from website)
-```bash
-cd admin
-npm install
-npm run dev
-```
-Runs on http://localhost:5173
+## 7. النسخ الاحتياطي ومكان حفظه (Backups Status & Location)
 
-Open the dashboard only from that URL — it is not part of the public site.
+* **النسخ الاحتياطي لقاعدة البيانات المحلية (Local DB Backups)**:
+  * يتم عبر أداة `pg_dump` الرسمية لقاعدة بيانات `oms_invoice_db`:
+    ```cmd
+    pg_dump -U postgres -h 127.0.0.1 -p 5432 oms_invoice_db > backup_oms_db.sql
+    ```
+  * يُنصح بجدولة أخذ نسخة احتياطية دورية أسبوعية وتخزينها في مسار آمن خارج مسار العمل.
+* **النسخ الاحتياطي لقاعدة البيانات السحابية (Cloud DB Backups)**:
+  * ميزة **Automated Daily Backups** و **Point-in-Time Recovery (PITR)** مفعلة تلقائياً على منصة **Supabase** السحابية وتحفظ نسخاً مشفرة يومية على مدار 7 إلى 30 يوماً.
+* **النسخ الاحتياطي للكود المصدري (Code Versioning & Backups)**:
+  * محفوظ ومؤمن بنسبة 100% مع كامل سجل التعديلات عبر مستودعي GitHub:
+    * `Matrix-Data-egypt/OMS`
+    * `pixelrun2000-bit/OMS`
 
-## What the dashboard includes
-1. **Start Project** — all client briefs submitted from the website contact form
-2. **Production TV** — add YouTube links or upload video files (shown on `/production-tv`)
-3. **Blog** — create posts with title + full content (shown on `/blog`)
+---
+
+## 8. أحدث التحديثات المُضافة في قسم الميديا (`media/`)
+
+1. **اختيار تاريخ بداية ونهاية الحملة (Campaign Dates)**:
+   * إضافة منتقي تواريخ مخصص (`Date Picker`) يتيح اختيار **اليوم، الشهر، والسنة** لبداية الحملة الإعلانية، وكذلك **اليوم، الشهر، والسنة** لنهاية الحملة.
+   * فلترة متقدمة للتواريخ داخل لوحة التحكم تمكن الموظف من تصفية الحملات بنطاق زمني باليوم والشهر والسنة.
+2. **حساب وعرض الفرق بين Net to Client و Net to Channel**:
+   * إضافة كارت إحصائي مالي رابع رئيسي في لوحة التحكم يعرض **الفرق المالي (صافي الهامش والأرباح)** بين مستحقات العميل وتكلفة القناة بالجنيه المصري ونسبته المئوية.
+   * إضافة عمود مخصص في جدول السجلات يعرض الفرق الصافي لكل حملة إعلانية على حدة.
+3. **تنظيم وتطابق أعمدة المحتوى ونوع المحتوى**:
+   * ضبط عرض مادة المحتوى (`Content`) ونوع وتصنيف المحتوى (`Content Type`) في مكانهما الصحيح والدقيق داخل الجدول واستمارات التسجيل واستيراد البيانات.

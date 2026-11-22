@@ -1,0 +1,42 @@
+
+name: Create Media Admin Account
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type CREATE_MEDIA_ADMIN to confirm"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  create-media-admin:
+    if: inputs.confirm == 'CREATE_MEDIA_ADMIN'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Backend Dependencies
+        working-directory: ./media/backend
+        run: npm ci
+
+      - name: Generate Prisma Client
+        working-directory: ./media/backend
+        run: npm run prisma:generate
+
+      - name: Create Media Admin
+        working-directory: ./media/backend
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          MEDIA_ADMIN_PASSWORD: ${{ secrets.MEDIA_ADMIN_PASSWORD }}
+        run: npm run create:media-admin

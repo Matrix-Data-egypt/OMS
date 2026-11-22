@@ -1,0 +1,46 @@
+version: 2
+updates:
+  # ---------- Admin ----------
+  - package-ecosystem: "npm"
+    directory: "/admin/backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "npm"
+    directory: "/admin/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # ---------- Invoice ----------
+  - package-ecosystem: "npm"
+    directory: "/invoice/server"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "npm"
+    directory: "/invoice/client"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # ---------- Media ----------
+  - package-ecosystem: "npm"
+    directory: "/media/backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "npm"
+    directory: "/media/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # ---------- Docker images (postgres, node, nginx, caddy) ----------
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
