@@ -43,7 +43,7 @@ const FALLBACK_TV = [
     embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     thumbnail: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
     type: 'youtube',
-    desc: 'Cinematic brand commercial showcasing precision heavy machinery and engineering excellence across industrial sectors.'
+    desc: 'High-quality brand commercial showcasing precision heavy machinery and engineering excellence across industrial sectors.'
   },
   {
     id: 'tv-fb-2',
@@ -126,18 +126,18 @@ const LOCALIZED_PREVIEWS = {
     otherClients: 'باقي العملاء',
     viewAllShort: 'استعراض الكل ↗',
 
-    tvBadge: 'الإنتاج التلفزيوني والسينمائي • PRODUCTION TV',
-    tvTitle: 'إعلانات تجارية بمعايير سينمائية عالمية',
-    tvDesc: 'حيث تلتقي الفكرة الإبداعية الجريئة بالإخراج السينمائي الفاخر لبث رسالة علامتك بأعلى جودة على كبرى القنوات.',
-    tvViewAll: 'استكشف مكتبة الإنتاج كاملة ←',
+    tvBadge: 'الإنتاج التلفزيوني والإعلاني • PRODUCTION TV',
+    tvTitle: 'إعلانات تجارية بإنتاج احترافي',
+    tvDesc: 'حيث تلتقي الفكرة الإبداعية الجريئة بالإنتاج الاحترافي لبث رسالة علامتك بأعلى جودة على كبرى القنوات.',
+    tvViewAll: 'المزيد ←',
     playHint: 'مشاهدة الإعلان',
     otherTvTitle: 'باقي الإعلانات التلفزيونية',
-    otherTvDesc: 'استكشف الأرشيف الكامل للإعلانات والإنتاج السينمائي للعلامات التجارية.',
+    otherTvDesc: 'استكشف الأرشيف الكامل للإعلانات وإنتاج الفيديو للعلامات التجارية.',
 
     outdoorBadge: 'إعلانات الطرق واللوحات العملاقة • OUTDOOR & OOH',
     outdoorTitle: 'حضور استثنائي وسيطرة بصرية على أهم المحاور',
     outdoorDesc: 'شاشات رقمية DOOH، ولوحات يونيبول عملاقة، ولافتات كباري في أكثر المواقع حيوية بالقاهرة والمحافظات.',
-    outdoorViewAll: 'استكشف شبكة الطرق بالكامل ←',
+    outdoorViewAll: 'المزيد ←',
     enlargeHint: 'تكبير المعاينة',
     otherOutdoorTitle: 'باقي شبكات إعلانات الطرق',
     otherOutdoorDesc: 'تصفح خريطة المواقع الاستراتيجية واللوحات والشاشات على أهم المحاور.',
@@ -145,7 +145,7 @@ const LOCALIZED_PREVIEWS = {
     possBadge: 'منصات العرض ونقاط البيع • POSS & RETAIL',
     possTitle: 'تصميم وهندسة وحدات عرض تحول الزوار إلى مشترين',
     possDesc: 'وحدات عرض أرضية FSDU فاخرة، أكشاك تجارية تفاعلية، ومنصات نقاط بيع مخصصة لأقوى العلامات التجارية.',
-    possViewAll: 'استكشف معرض نقاط البيع POSS ←',
+    possViewAll: 'المزيد ←',
     otherPossTitle: 'باقي وحدات ومنصات العرض',
     otherPossDesc: 'اطلع على كافة حلول ونماذج نقاط البيع والأكشاك المخصصة للمتاجر.',
     
@@ -161,18 +161,18 @@ const LOCALIZED_PREVIEWS = {
     otherClients: 'Other Brands',
     viewAllShort: 'View All ↗',
 
-    tvBadge: 'CINEMATIC TV & VIDEO PRODUCTION',
-    tvTitle: 'Commercial Fire Meets Cinematic Discipline',
-    tvDesc: 'Compelling brand narratives and high-intent commercial films broadcasted across major television networks.',
-    tvViewAll: 'Explore Full TV Production Library ←',
+    tvBadge: 'TV & VIDEO PRODUCTION',
+    tvTitle: 'High-Impact Commercial Video Production',
+    tvDesc: 'Compelling brand stories and high-quality commercial videos broadcast across major television networks.',
+    tvViewAll: 'More →',
     playHint: 'Play Commercial',
     otherTvTitle: 'Other TV Commercials',
-    otherTvDesc: 'Explore our full creative portfolio of commercial films and media spots.',
+    otherTvDesc: 'Explore our full creative portfolio of commercial videos and media spots.',
 
     outdoorBadge: 'OUTDOOR & OOH NETWORK',
     outdoorTitle: 'Visual Dominance Across Key Arterial Corridors',
     outdoorDesc: 'High-frequency mega unipoles, digital DOOH screens, and highway bridges capturing maximum commuter attention.',
-    outdoorViewAll: 'Explore Full Outdoor Network ←',
+    outdoorViewAll: 'More →',
     enlargeHint: 'Enlarge Preview',
     otherOutdoorTitle: 'Other Outdoor Locations',
     otherOutdoorDesc: 'Browse our full network of strategic mega billboards and digital DOOH displays.',
@@ -180,7 +180,7 @@ const LOCALIZED_PREVIEWS = {
     possBadge: 'IN-STORE POS & RETAIL BRANDING',
     possTitle: 'Converting In-Store Footfall Into Decisive Sales',
     possDesc: 'Precision-manufactured luxury retail displays, gondolas, and experiential retail pods engineered for maximum retention.',
-    possViewAll: 'Discover All POSS Retail Solutions ←',
+    possViewAll: 'More →',
     otherPossTitle: 'Other POSS Displays',
     otherPossDesc: 'Discover our comprehensive portfolio of custom kiosks and point-of-sale displays.',
 
@@ -196,18 +196,18 @@ const LOCALIZED_PREVIEWS = {
     otherClients: 'Autres Marques',
     viewAllShort: 'Voir Tout ↗',
 
-    tvBadge: 'PRODUCTION TÉLÉVISÉE & CINÉMA',
-    tvTitle: 'Excellence Cinématographique & Impact Commercial',
-    tvDesc: 'Récits visuels captivants et réalisation cinématographique de pointe diffusés sur les plus grands réseaux.',
-    tvViewAll: 'Explorer Toute la Production TV ←',
+    tvBadge: 'PRODUCTION TV & VIDÉO',
+    tvTitle: 'Des publicités vidéo à fort impact',
+    tvDesc: 'Des récits de marque captivants et des productions vidéo de qualité diffusés sur les grands réseaux.',
+    tvViewAll: 'En savoir plus →',
     playHint: 'Lire la Vidéo',
     otherTvTitle: 'Autres Spots Télévisés',
-    otherTvDesc: 'Découvrez l’intégralité de nos réalisations audiovisuelles et films de marque.',
+    otherTvDesc: 'Découvrez l’intégralité de nos réalisations audiovisuelles et vidéos de marque.',
 
     outdoorBadge: 'AFFICHAGE EXTÉRIEUR & DOOH',
     outdoorTitle: 'Présence Dominante sur les Axes Stratégiques',
     outdoorDesc: 'Panneaux géants, écrans digitaux DOOH et affichage urbain captivant l’attention des millions d’usagers.',
-    outdoorViewAll: 'Explorer le Réseau Affichage Complet ←',
+    outdoorViewAll: 'En savoir plus →',
     enlargeHint: 'Agrandir',
     otherOutdoorTitle: 'Autres Emplacements OOH',
     otherOutdoorDesc: 'Consultez l’ensemble de nos panneaux géants et écrans digitaux urbains.',
@@ -215,7 +215,7 @@ const LOCALIZED_PREVIEWS = {
     possBadge: 'PLV & MERCHANDISING EN MAGASIN',
     possTitle: 'Transformer le Flux de Visiteurs en Actes d’Achat',
     possDesc: 'Conception et fabrication de présentoirs de luxe et stands modulaires pour sublimer votre présence en magasin.',
-    possViewAll: 'Découvrir Toutes les Réalisations POSS ←',
+    possViewAll: 'En savoir plus →',
     otherPossTitle: 'Autres Présentoirs PLV',
     otherPossDesc: 'Explorez l’ensemble de nos présentoirs de vente et kiosques sur mesure.',
 
@@ -243,7 +243,7 @@ const LOCALIZED_TIMELINE = {
       step: 3,
       title: 'الإنتاج الإبداعي والتنفيذ',
       phase: 'مرحلة الإنتاج الإبداعي والتنفيذ',
-      desc: 'نحول الاستراتيجية إلى واقع ملموس: إعلانات تلفزيونية سينمائية، تصاميم شاشات الطرق، وحدات عرض المتاجر، ومحتوى رقمي عالي التأثير.'
+      desc: 'نحول الاستراتيجية إلى واقع ملموس: إعلانات تلفزيونية احترافية، تصاميم شاشات الطرق، وحدات عرض المتاجر، ومحتوى رقمي عالي التأثير.'
     },
     {
       step: 4,
@@ -269,7 +269,7 @@ const LOCALIZED_TIMELINE = {
       step: 3,
       title: 'Production Créative & Réalisation',
       phase: 'Phase : Production Créative',
-      desc: 'Nous donnons vie à votre stratégie : spots TV cinématographiques, affichage urbain spectaculaire, PLV en magasin et contenus digitaux percutants.'
+      desc: 'Nous donnons vie à votre stratégie : spots TV professionnels, affichage urbain spectaculaire, PLV en magasin et contenus digitaux percutants.'
     },
     {
       step: 4,
@@ -283,19 +283,19 @@ const LOCALIZED_TIMELINE = {
 const LOCALIZED_PILLARS = {
   ar: [
     { id: 'p1', title: 'الرؤية الاستراتيجية', desc: 'دراسات سوق وأبحاث تحليلية متعمقة' },
-    { id: 'p2', title: 'التميز الإبداعي', desc: 'إنتاج إعلاني سينمائي ومحتوى مؤثر' },
+    { id: 'p2', title: 'التميز الإبداعي', desc: 'إنتاج إعلاني احترافي ومحتوى مؤثر' },
     { id: 'p3', title: 'الانتشار الشامل', desc: 'إعلانات التلفزيون وشاشات الطرق الكبرى' },
     { id: 'p4', title: 'قيادة السوق والنمو', desc: 'تحقيق أثر تجاري ملموس ومستدام' },
   ],
   en: [
     { id: 'p1', title: 'Strategic Vision', desc: 'Deep market intelligence & audience research' },
-    { id: 'p2', title: 'Creative Excellence', desc: 'Cinematic production & compelling storytelling' },
+    { id: 'p2', title: 'Creative Excellence', desc: 'Professional production & compelling storytelling' },
     { id: 'p3', title: 'Omni-Channel Media', desc: 'Prime TV broadcasts & iconic outdoor billboards' },
     { id: 'p4', title: 'Market Leadership', desc: 'Measurable commercial impact & brand authority' },
   ],
   fr: [
     { id: 'p1', title: 'Vision Stratégique', desc: 'Études de marché et analyse des cibles' },
-    { id: 'p2', title: 'Excellence Créative', desc: 'Production cinématographique et storytelling' },
+    { id: 'p2', title: 'Excellence Créative', desc: 'Production professionnelle et storytelling' },
     { id: 'p3', title: 'Diffusion 360°', desc: 'Télévision, affichage urbain et digital' },
     { id: 'p4', title: 'Croissance Décisive', desc: 'Impact commercial mesurable et pérenne' },
   ]
@@ -331,7 +331,7 @@ const LOCALIZED_OBJECTIVES = {
       id: "obj-4",
       tag: "الإنتاج التلفزيوني",
       title: "إعلانات تلفزيونية وإذاعية بمعايير عالمية",
-      desc: "إنتاج سينمائي تجاري فائق الجودة يروي قصة علامتك بإبهار ويبث على كبرى الشبكات التلفزيونية في مصر والمنطقة.",
+      desc: "إنتاج إعلاني عالي الجودة يروي قصة علامتك ويبث على كبرى الشبكات التلفزيونية في مصر والمنطقة.",
       agentPill: "استوديو الإبداع",
       strategicBenefit: "صورة مؤسسية راقية"
     },
@@ -381,7 +381,7 @@ const LOCALIZED_OBJECTIVES = {
       id: "obj-4",
       tag: "Production Audiovisuelle",
       title: "Spots Télévisés & Production Radio",
-      desc: "Des publicités de qualité cinématographique diffusées sur les grandes chaînes pour sublimer votre image de marque.",
+      desc: "Des publicités de grande qualité diffusées sur les grandes chaînes pour sublimer votre image de marque.",
       agentPill: "STUDIO CRÉATIF",
       strategicBenefit: "Image de Marque Premium"
     },
@@ -407,7 +407,7 @@ const LOCALIZED_OBJECTIVES = {
 const LOCALIZED_BULLETS = {
   ar: [
     'حجز وشراء الوسائط — بث تلفزيوني وإذاعي',
-    'الإنتاج والإعلانات التلفزيونية السينمائية',
+    'الإنتاج والإعلانات التلفزيونية',
     'إعلانات الطرق واللوحات العملاقة الداخلية والخارجية',
     'العلاقات العامة وتنظيم المعارض والفعاليات',
     'التصميم والطباعة الفاخرة للشركات',
@@ -417,7 +417,7 @@ const LOCALIZED_BULLETS = {
   ],
   fr: [
     'Achat d’espace — Diffusion TV & Radio',
-    'Production & Spots TV Cinématographiques',
+    'Production & Spots TV',
     'Affichage Intérieur & Mégas Panneaux OOH',
     'Relations Publiques, Salons & Événements',
     'Design & Impression Haut de Gamme',
@@ -427,7 +427,7 @@ const LOCALIZED_BULLETS = {
   ],
   en: [
     'Media Buying — TV & Radio Broadcast',
-    'Production & Cinematic TV Commercials',
+    'TV Commercial Production',
     'Indoor & Outdoor Mega Billboards',
     'PR, Booths & Experiential Events',
     'Design & Premium Print Production',
@@ -544,7 +544,7 @@ export default function HomeSection() {
   // Curated client logos & moving marquee track
   const displayClients = clients.length > 0 ? clients : DEFAULT_CLIENTS;
 
-  // Helper to build a seamless infinite loop track with 2 identical wide halves
+  // Duplicate the complete client list to create a seamless single-row marquee.
   const buildInfiniteRow = (items) => {
     if (!items || items.length === 0) return [];
     let base = [...items];
@@ -554,12 +554,7 @@ export default function HomeSection() {
     return [...base, ...base];
   };
 
-  const half = Math.max(1, Math.ceil(displayClients.length / 2));
-  const row1 = displayClients.slice(0, half);
-  const row2 = displayClients.slice(half);
-
-  const homeTrack1 = buildInfiniteRow(row1);
-  const homeTrack2 = buildInfiniteRow(row2);
+  const homeTrack = buildInfiniteRow(displayClients);
 
   return (
     <main className="home-container">
@@ -573,16 +568,6 @@ export default function HomeSection() {
           style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/hero-banner.png)` }}
         >
           <div className="hero-clean-content overlay">
-
-                      {/* Bold agency eyebrow */}
-            <div className="hero-agency-eyebrow" aria-hidden="true">
-              <span className="hero-eyebrow-line" />
-              <span className="hero-eyebrow-text">
-                {language === 'ar' ? 'وكالة التسويق الرائدة' : language === 'fr' ? 'Agence de Marketing de Référence' : 'Egypt\'s Leading Marketing Agency'}
-              </span>
-            </div>
-
-
 
             <h1 className="hero-main-title-clean">
               {t('home.heroTitle1', 'Your Vision, Amplified')}<br />
@@ -640,20 +625,10 @@ export default function HomeSection() {
 
         {/* Full-width continuous moving marquee */}
         <div className="home-clients-marquee-wrapper" dir="ltr">
-          {/* Row 1 - Smooth Left Motion */}
-          {homeTrack1.length > 0 && (
+          {homeTrack.length > 0 && (
             <div className="home-clients-marquee-track home-track-row-1">
-              {homeTrack1.map((client, idx) => (
+              {homeTrack.map((client, idx) => (
                 <ClientLogoCard key={`ht1-${client.id || idx}-${idx}`} client={client} />
-              ))}
-            </div>
-          )}
-
-          {/* Row 2 - Smooth Right Motion */}
-          {homeTrack2.length > 0 && (
-            <div className="home-clients-marquee-track home-track-row-2">
-              {homeTrack2.map((client, idx) => (
-                <ClientLogoCard key={`ht2-${client.id || idx}-${idx}`} client={client} />
               ))}
             </div>
           )}
@@ -712,7 +687,7 @@ export default function HomeSection() {
                       <span className="hint-dot" /> {P.playHint}
                     </span>
                     <span className="home-tv-format-label">
-                      {language === 'ar' ? 'إنتاج سينمائي فائق' : language === 'fr' ? 'Qualité Cinéma' : 'Cinematic Grade'}
+                      {language === 'ar' ? 'إنتاج احترافي' : language === 'fr' ? 'Production professionnelle' : 'Professional Production'}
                     </span>
                   </div>
                 </div>
@@ -720,15 +695,6 @@ export default function HomeSection() {
             );
           })}
 
-          {/* Interactive "Other / باقي الإعلانات" Card */}
-          <Link to="/production-tv" className="home-showcase-other-card tv-other-card">
-            <div className="home-other-card-inner">
-              <span className="home-other-card-tag">{language === 'ar' ? 'أرشيف الإنتاج' : language === 'fr' ? 'Archive TV' : 'TV Archive'}</span>
-              <h3 className="home-other-card-title">{P.otherTvTitle}</h3>
-              <p className="home-other-card-desc">{P.otherTvDesc}</p>
-              <span className="home-other-card-btn">{P.exploreSection}</span>
-            </div>
-          </Link>
         </div>
       </section>
 
@@ -794,15 +760,6 @@ export default function HomeSection() {
             );
           })}
 
-          {/* Interactive "Other / باقي شبكات الطرق" Card */}
-          <Link to="/outdoor" className="home-showcase-other-card outdoor-other-card">
-            <div className="home-other-card-inner">
-              <span className="home-other-card-tag">{language === 'ar' ? 'خريطة المواقع' : language === 'fr' ? 'Réseau OOH' : 'OOH Network'}</span>
-              <h3 className="home-other-card-title">{P.otherOutdoorTitle}</h3>
-              <p className="home-other-card-desc">{P.otherOutdoorDesc}</p>
-              <span className="home-other-card-btn">{P.exploreSection}</span>
-            </div>
-          </Link>
         </div>
       </section>
 
@@ -864,15 +821,6 @@ export default function HomeSection() {
             );
           })}
 
-          {/* Interactive "Other / باقي وحدات العرض" Card */}
-          <Link to="/poss" className="home-showcase-other-card poss-other-card">
-            <div className="home-other-card-inner">
-              <span className="home-other-card-tag">{language === 'ar' ? 'حلول التجزئة' : language === 'fr' ? 'Solutions Retail' : 'Retail Solutions'}</span>
-              <h3 className="home-other-card-title">{P.otherPossTitle}</h3>
-              <p className="home-other-card-desc">{P.otherPossDesc}</p>
-              <span className="home-other-card-btn">{P.exploreSection}</span>
-            </div>
-          </Link>
         </div>
       </section>
 
@@ -947,7 +895,7 @@ export default function HomeSection() {
       </section>
 
       {/* ============================================================== */}
-      {/* 5. CINEMA VIDEO PLAYER MODAL                                    */}
+      {/* 5. VIDEO PLAYER MODAL                                           */}
       {/* ============================================================== */}
       {activeVideoModal && (
         <div

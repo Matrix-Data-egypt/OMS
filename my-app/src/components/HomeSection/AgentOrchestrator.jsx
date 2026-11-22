@@ -39,7 +39,7 @@ const ORCHESTRATOR_STRINGS = {
   fr: {
     tag: 'Nos Services',
     title: 'Comment Nous Obtenons des Résultats pour Votre Marque',
-    desc: 'Des équipes spécialisées intervenant en synergie sur l’étude de marché, la création cinématographique, l’affichage et la performance média.',
+    desc: 'Des équipes spécialisées intervenant en synergie sur l’étude de marché, la création visuelle, l’affichage et la performance média.',
     liveActive: 'EXÉCUTION STRATÉGIQUE ACTIVE',
     statusLabel: 'STATUT DE SERVICE',
     statusValue: 'DISPONIBLE IMMÉDIATEMENT',

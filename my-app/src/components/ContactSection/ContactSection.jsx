@@ -296,32 +296,6 @@ export default function ContactSection() {
             </form>
           </div>
 
-          {/* Secondary Information Sidebar */}
-          <aside className="sidebar-column" aria-label="Direct Channels Support">
-            <div className="emergency-desk-card">
-              <span className="card-tag">{tContact.deskTag}</span>
-              <h3>{tContact.deskHeading}</h3>
-              <p>
-                {tContact.deskDesc}
-              </p>
-
-              <div className="contact-detail-row">
-                <span className="contact-icon" aria-hidden="true">✉️</span>
-                <div>
-                  <span className="contact-label">{tContact.emailTitle}</span>
-                  <a href="mailto:info@omsegy.agency" className="contact-link">info@omsegy.agency</a>
-                </div>
-              </div>
-
-              <div className="contact-detail-row">
-                <span className="contact-icon" aria-hidden="true">🏢</span>
-                <div>
-                  <span className="contact-label">{tContact.infoTitle}</span>
-                  <p className="contact-subdetail">{tContact.hqAddress}</p>
-                </div>
-              </div>
-            </div>
-          </aside>
         </div>
       </section>
     </main>

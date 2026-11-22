@@ -217,15 +217,15 @@ export default function ProductionTvSection() {
         <h1 className="prod-main-title">
           {language === 'ar' ? 'استوديو الإنتاج' : language === 'fr' ? 'Studio de Production' : 'OMS Production'}{' '}
           <span className="prod-text-italic">
-            {language === 'ar' ? 'التلفزيوني والسينمائي.' : language === 'fr' ? 'TV & Cinéma.' : 'TV Station.'}
+            {language === 'ar' ? 'التلفزيوني والإعلاني.' : language === 'fr' ? 'TV & Publicité.' : 'TV Station.'}
           </span>
         </h1>
         <p className="prod-subtext">
           {language === 'ar'
-            ? 'حيث تلتقي القوة الإعلانية التجارية بالاحترافية السينمائية العالمية. استكشف أقوى الأعمال والإعلانات التلفزيونية المصممة لصناعة التأثير الجماهيري.'
+            ? 'حيث تلتقي القوة الإعلانية التجارية بالإنتاج الاحترافي. استكشف أقوى الأعمال والإعلانات التلفزيونية المصممة لصناعة التأثير الجماهيري.'
             : language === 'fr'
-            ? 'Quand la puissance commerciale rencontre la rigueur cinématographique. Découvrez nos productions audiovisuelles d’envergure.'
-            : 'Where commercial fire meets premium cinematic discipline. Explore high-intent video storytelling assets engineered for national and global brand impact.'}
+            ? 'Quand la puissance commerciale rencontre une production audiovisuelle de qualité. Découvrez nos réalisations à fort impact.'
+            : 'Where commercial creativity meets professional video production. Explore high-impact storytelling assets for national and global brands.'}
         </p>
       </section>
 
@@ -292,7 +292,7 @@ export default function ProductionTvSection() {
         )}
       </section>
 
-      {/* 4. Cinema Video Player Modal */}
+      {/* 4. Video Player Modal */}
       {activeModalVideo && (
         <div
           className="prod-modal-backdrop"
