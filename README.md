@@ -80,7 +80,6 @@
 | `media_admin` | `media.admin@oms.com` | `Oms@123456` | **MEDIA_ADMIN** | **قسم الميديا فقط** (`MEDIA`) |
 | `accountant` | `accountant@oms.com` | `Oms@123456` | **ACCOUNTANT** | **قسم الفواتير فقط** (`INVOICE`: ممنوع من دخول الميديا) |
 | `finance` | `finance@oms.com` | `Oms@123456` | **FINANCE_MANAGER** | **قسم الفواتير فقط** (`INVOICE`: صلاحيات الاعتماد المالي) |
-| `sales` | `sales@oms.com` | `Oms@123456` | **SALES** | **قسم الفواتير فقط** (`INVOICE`: إنشاء وتجهيز مسودات الفواتير) |
 
 ---
 
