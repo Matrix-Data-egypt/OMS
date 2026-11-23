@@ -61,7 +61,11 @@ export const Dashboard: React.FC = () => {
     supplierId: '',
     channelId: '',
     contentId: '',
-    month: 'يناير 2026',
+    month: (() => {
+      const now = new Date();
+      const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      return `${months[now.getMonth()]} ${now.getFullYear()}`;
+    })(),
     startDate: '',
     endDate: '',
     netToChannel: 0,
@@ -570,7 +574,11 @@ export const Dashboard: React.FC = () => {
           supplierId: '',
           channelId: '',
           contentId: '',
-          month: 'يناير 2026',
+          month: (() => {
+      const now = new Date();
+      const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      return `${months[now.getMonth()]} ${now.getFullYear()}`;
+    })(),
           startDate: '',
           endDate: '',
           netToChannel: 0,
@@ -1974,19 +1982,29 @@ export const Dashboard: React.FC = () => {
                   <label className="block text-[11px] font-bold text-neutral-600 mb-1">
                     الشهر المحاسبي التابع له *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     required
-                    placeholder="يناير 2026"
                     value={newCampaign.month}
                     onChange={(e) =>
-                      setNewCampaign({
-                        ...newCampaign,
-                        month: e.target.value,
-                      })
+                      setNewCampaign({ ...newCampaign, month: e.target.value })
                     }
-                    className="w-full p-2 bg-white border border-neutral-200 rounded-xl font-bold text-xs focus:border-[#DC2626]"
-                  />
+                    className="w-full p-2 bg-white border border-neutral-200 rounded-xl font-bold text-xs focus:border-[#DC2626] cursor-pointer"
+                  >
+                    <option value="" disabled>اختر الشهر المحاسبي...</option>
+                    {(() => {
+                      const opts: JSX.Element[] = [];
+                      const currentYear = new Date().getFullYear();
+                      for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+                        ARABIC_MONTHS.forEach((m) => {
+                          const val = `${m} ${y}`;
+                          opts.push(
+                            <option key={val} value={val}>{val}</option>
+                          );
+                        });
+                      }
+                      return opts;
+                    })()}
+                  </select>
                 </div>
               </div>
 
