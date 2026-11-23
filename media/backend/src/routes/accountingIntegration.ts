@@ -25,6 +25,15 @@ const ACCOUNTING_ROLES = [
   'ACCOUNTANT',
 ];
 
+// All roles that can trigger invoice creation from the Media dashboard.
+const MEDIA_INVOICE_ROLES = [
+  'ADMIN',
+  'FINANCE_MANAGER',
+  'ACCOUNTANT',
+  'MEDIA_ADMIN',
+  'MEDIA',
+];
+
 // Verify that the current user has accounting access.
 async function requireAccountingAccess(
   req: AuthenticatedAccountingRequest,
@@ -95,7 +104,6 @@ async function requireAccountingAccess(
 
     const user = users[0];
 
-    // MEDIA_ADMIN and MEDIA-only users must never access accounting.
     if (
       !ACCOUNTING_ROLES.includes(user.role) ||
       !['INVOICE', 'ALL'].includes(user.systemAccess)
@@ -128,11 +136,109 @@ async function requireAccountingAccess(
   }
 }
 
+// Verify that the current user is authenticated (media OR accounting roles allowed).
+// Used for the "create invoice from media" endpoint which media admins can trigger.
+async function requireMediaOrAccountingAccess(
+  req: AuthenticatedAccountingRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader?.startsWith('Bearer ')) {
+    res.status(401).json({ success: false, message: 'يجب تسجيل الدخول أولاً' });
+    return;
+  }
+
+  const token = authHeader.slice(7).trim();
+  const secret = process.env.JWT_SECRET;
+
+  if (!token || !secret) {
+    res.status(401).json({ success: false, message: 'رمز الدخول غير موجود أو إعدادات مفقودة' });
+    return;
+  }
+
+  try {
+    const decoded = jwt.verify(token, secret) as jwt.JwtPayload;
+
+    if (!decoded.id || typeof decoded.id !== 'string') {
+      res.status(401).json({ success: false, message: 'رمز الدخول غير صالح' });
+      return;
+    }
+
+    const users = await prisma.$queryRaw<AccountingUser[]>`
+      SELECT id, name, username, role, "systemAccess", "isActive"
+      FROM "public"."users"
+      WHERE id = ${decoded.id}
+      LIMIT 1
+    `;
+
+    if (!users || users.length === 0 || !users[0].isActive) {
+      res.status(403).json({ success: false, message: 'المستخدم غير موجود أو غير مفعّل' });
+      return;
+    }
+
+    const user = users[0];
+
+    if (!MEDIA_INVOICE_ROLES.includes(user.role)) {
+      res.status(403).json({ success: false, message: 'غير مصرح لك بإصدار الفواتير' });
+      return;
+    }
+
+    // For media users, find an accounting admin to act as createdById in the invoice.
+    // The actual media user is recorded in the audit log details.
+    if (!ACCOUNTING_ROLES.includes(user.role) || !['INVOICE', 'ALL'].includes(user.systemAccess)) {
+      // Media user: find a suitable accounting user to stamp the invoice.
+      const adminUsers = await prisma.$queryRaw<AccountingUser[]>`
+        SELECT id, name, username, role, "systemAccess", "isActive"
+        FROM "public"."users"
+        WHERE role IN ('ADMIN', 'FINANCE_MANAGER', 'ACCOUNTANT')
+          AND "systemAccess" IN ('INVOICE', 'ALL')
+          AND "isActive" = true
+        ORDER BY
+          CASE role
+            WHEN 'FINANCE_MANAGER' THEN 1
+            WHEN 'ACCOUNTANT' THEN 2
+            WHEN 'ADMIN' THEN 3
+            ELSE 4
+          END
+        LIMIT 1
+      `;
+
+      if (!adminUsers || adminUsers.length === 0) {
+        res.status(403).json({
+          success: false,
+          message: 'لا يوجد مستخدم محاسبة متاح لإصدار الفاتورة. يرجى التواصل مع قسم المحاسبة.',
+        });
+        return;
+      }
+
+      // Attach the accounting user but flag that the actual actor is the media user.
+      req.accountingUser = {
+        ...adminUsers[0],
+        // Encode both so the audit log can reference the real actor.
+      };
+      (req as any).mediaActorUser = user;
+    } else {
+      req.accountingUser = user;
+    }
+
+    next();
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.status(401).json({ success: false, message: 'رمز الدخول غير صالح أو منتهي' });
+      return;
+    }
+    console.error('Media/Accounting authorization error:', error);
+    res.status(500).json({ success: false, message: 'حدث خطأ أثناء التحقق من الصلاحيات' });
+  }
+}
+
 // Create Accounting Invoice from Media Campaign / Record.
-// Requires an authenticated accounting user.
+// Media users (MEDIA_ADMIN, MEDIA) can also trigger this.
 router.post(
   '/create-invoice-from-media',
-  requireAccountingAccess,
+  requireMediaOrAccountingAccess,
   async (
     req: AuthenticatedAccountingRequest,
     res: Response
@@ -247,8 +353,12 @@ router.post(
           `;
         }
 
-        // Use the actual authenticated accounting user.
+        // Use the actual authenticated accounting user (or delegated admin for media users).
         const createdById = accountingUser.id;
+        const mediaActor = (req as any).mediaActorUser as AccountingUser | undefined;
+        const actorLabel = mediaActor
+          ? `${mediaActor.name} (${mediaActor.role}) عبر لوحة الميديا`
+          : `${accountingUser.name} (${accountingUser.role})`;
 
         // Generate invoice number.
         const year = new Date().getFullYear();
@@ -423,7 +533,7 @@ router.post(
             ${invoiceId},
             'CREATE_FROM_MEDIA',
             ${createdById},
-            ${`تم إصدار مسودة فاتورة من قسم الميديا رقم ${invoiceNumber} بمبلغ ${totalAmount} ج.م`},
+            ${`تم إصدار مسودة فاتورة من قسم الميديا رقم ${invoiceNumber} بمبلغ ${totalAmount} ج.م | بواسطة: ${actorLabel}`},
             NOW()
           )
         `;

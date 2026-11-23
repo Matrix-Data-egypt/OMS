@@ -1545,19 +1545,15 @@ export const Dashboard: React.FC = () => {
                         {record.invoiceId ? (
                           <div className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600">
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>مفوترة</span>
+                            <span>مفوترة ✓</span>
                           </div>
-                        ) : isReadOnly ? (
-                          <span className="text-[11px] text-neutral-400">
-                            عرض فقط
-                          </span>
                         ) : (
                           <button
                             type="button"
                             onClick={() => handleIssueInvoice(record.id)}
                             disabled={actionLoading}
                             className="px-3 py-1 bg-[#DC2626] hover:bg-[#B91C1C] disabled:bg-neutral-400 text-white font-bold rounded-xl text-[10px] transition-all inline-flex items-center gap-1 shadow-sm"
-                            title="إصدار فاتورة رسمية في قسم المحاسبة"
+                            title="إصدار فاتورة رسمية في نظام المحاسبة"
                           >
                             <Receipt className="w-3 h-3" />
                             <span>إصدار فاتورة</span>
