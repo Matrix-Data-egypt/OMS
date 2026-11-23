@@ -460,45 +460,62 @@ router.post(
         }
 
         const clientName = String(
-          row['Client'] || row['client'] || ''
+          row['Client'] || row['client'] || row['العميل'] || ''
         ).trim();
 
         const supplierName = String(
-          row['supplier'] || row['Supplier'] || ''
+          row['supplier'] || row['Supplier'] || row['المورد'] || ''
         ).trim();
 
         const channelName = String(
-          row['Channel'] || row['channel'] || ''
+          row['Channel'] || row['channel'] || row['القناة'] || ''
         ).trim();
 
         const contentName = String(
-          row['Content'] || row['content'] || ''
+          row['Content'] || row['content'] || row['المحتوى'] || ''
         ).trim();
 
         const contentTypeName = String(
           row['Content Type'] ||
           row['content_type'] ||
           row['contentType'] ||
+          row['نوع المحتوى'] ||
           'عام'
         ).trim();
 
         const month = String(
-          row['Month'] || row['month'] || 'غير محدد'
+          row['Month'] || row['month'] || row['الشهر'] || 'غير محدد'
         ).trim();
 
         const netToChannel =
           parseFloat(
-            String(row['Net to Channel'] || row['netToChannel'] || 0)
+            String(row['Net to Channel'] || row['netToChannel'] || row['صافي القناة'] || row['مصاريف القناة'] || 0)
           ) || 0;
 
         const netToClient =
           parseFloat(
-            String(row['Net to Client'] || row['netToClient'] || 0)
+            String(row['Net to Client'] || row['netToClient'] || row['صافي العميل'] || row['فلوس العميل'] || 0)
           ) || 0;
 
-        const notes = String(
-          row['Notes'] || row['notes'] || ''
+        const fromDate = String(
+          row['From Date'] || row['من تاريخ'] || row['startDate'] || row['start_date'] || ''
         ).trim();
+
+        const toDate = String(
+          row['To Date'] || row['إلى تاريخ'] || row['endDate'] || row['end_date'] || ''
+        ).trim();
+
+        let rawNotes = String(
+          row['Notes'] || row['notes'] || row['الملاحظات'] || ''
+        ).trim();
+
+        let notes = rawNotes;
+        if (fromDate || toDate) {
+          const dateRangeStr = `تاريخ الحملة: من ${fromDate || 'غير محدد'} إلى ${toDate || 'غير محدد'}`;
+          if (!notes.includes('تاريخ الحملة: من')) {
+            notes = notes ? `${dateRangeStr} | ${notes}` : dateRangeStr;
+          }
+        }
 
         if (
           !clientName ||

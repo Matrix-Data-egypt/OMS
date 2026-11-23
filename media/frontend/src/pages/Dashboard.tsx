@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { apiRequest } from '../services/api.js';
 import { MediaRecord, FilterFacets } from '../types/index.js';
 import { useAuth } from '../context/AuthContext.js';
@@ -19,6 +20,8 @@ import {
   Upload,
   FileDown,
   Eye,
+  FileSpreadsheet,
+  Calculator,
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
@@ -237,7 +240,24 @@ export const Dashboard: React.FC = () => {
     return params;
   };
 
-  // Export Data
+  // Helper to extract From Date and To Date reliably
+  const extractRecordDates = (record: MediaRecord) => {
+    let start = record.startDate || '';
+    let end = record.endDate || '';
+    if ((!start || !end) && record.notes) {
+      const match = record.notes.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2})/g);
+      if (match && match.length >= 2) {
+        start = start || match[0];
+        end = end || match[1];
+      }
+    }
+    return {
+      start: start || '-',
+      end: end || '-',
+    };
+  };
+
+  // Export Data to CSV
   const handleExport = () => {
     const params = buildFilterParams();
     const query = params.toString();
@@ -248,7 +268,43 @@ export const Dashboard: React.FC = () => {
     );
   };
 
-  // Download Empty Template
+  // Export Data to Excel (.xlsx)
+  const handleExportExcel = () => {
+    if (records.length === 0) {
+      setMessage({ text: 'لا توجد بيانات حالية لتصديرها كملف Excel', type: 'error' });
+      return;
+    }
+
+    const exportRows = records.map((record) => {
+      const dates = extractRecordDates(record);
+      const clientNet = Number(record.netToClient ?? record.cost ?? 0);
+      const channelNet = Number(record.netToChannel || 0);
+      const margin = clientNet - channelNet;
+
+      return {
+        'العميل (Client)': record.client?.name || '',
+        'المورد (Supplier)': record.supplier?.name || '',
+        'القناة (Channel)': record.channel?.name || '',
+        'نوع المحتوى (Content Type)': record.content?.contentType?.name || 'عام',
+        'المحتوى (Content)': record.content?.name || '',
+        'من تاريخ (From Date)': dates.start,
+        'إلى تاريخ (To Date)': dates.end,
+        'الشهر (Month)': record.month,
+        'مصاريف القناة (Net to Channel)': channelNet,
+        'فلوس العميل (Net to Client)': clientNet,
+        'معادلة الفرق (Client - Channel)': margin,
+        'الملاحظات (Notes)': record.notes || '',
+        'الحالة المحاسبية': record.invoiceId ? 'مفوترة' : 'جاهزة للفوترة',
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(exportRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'سجلات_الميديا');
+    XLSX.writeFile(wb, `OMS_Media_Campaigns_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  // Download Empty Template CSV
   const handleDownloadTemplate = () => {
     window.open(
       'https://oms-media-api.vercel.app/api/records/template',
@@ -256,29 +312,110 @@ export const Dashboard: React.FC = () => {
     );
   };
 
-  // Parse CSV File
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // Download Empty Template Excel (.xlsx)
+  const handleDownloadExcelTemplate = () => {
+    const headers = [
+      'Client',
+      'supplier',
+      'Channel',
+      'Content Type',
+      'Content',
+      'From Date',
+      'To Date',
+      'Month',
+      'Net to Channel',
+      'Net to Client',
+      'Notes',
+    ];
 
+    const sampleRows = [
+      {
+        Client: 'شركة النيل للاستثمار العقاري',
+        supplier: 'Meta Platforms (Facebook & Instagram Ads)',
+        Channel: 'Facebook',
+        'Content Type': 'فيديو إعلاني سينمائي',
+        Content: 'فيديو إطلاق المرحلة الأولى للمشروع العقاري',
+        'From Date': '2026-01-01',
+        'To Date': '2026-01-31',
+        Month: 'يناير 2026',
+        'Net to Channel': 25000,
+        'Net to Client': 32000,
+        Notes: 'حملة مستهدفة للتجمع والشيخ زايد',
+      },
+      {
+        Client: 'مطاعم برجر شوب مصر',
+        supplier: 'TikTok Ads MENA',
+        Channel: 'TikTok',
+        'Content Type': 'ريلز ومقاطع قصيرة',
+        Content: 'ريلز عرض التخفيضات الأسبوعية 30%',
+        'From Date': '2026-02-01',
+        'To Date': '2026-02-28',
+        Month: 'فبراير 2026',
+        'Net to Channel': 12000,
+        'Net to Client': 16500,
+        Notes: 'فيديوهات ريلز مع فود بلوجرز',
+      },
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(sampleRows, { header: headers });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'OMS_Media_Template');
+    XLSX.writeFile(wb, 'OMS_Media_Template.xlsx');
+  };
+
+  // Parse Excel (.xlsx, .xls) or CSV File
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     setImportFile(file);
+    const fileName = file.name.toLowerCase();
 
-    const reader = new FileReader();
+    try {
+      if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const rawJson: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      parseCSVText(text);
-    };
+        if (!rawJson || rawJson.length === 0) {
+          setMessage({
+            text: 'ملف الإكسل فارغ أو لا يحتوي على صفوف بيانات صالحة',
+            type: 'error',
+          });
+          return;
+        }
 
-    reader.onerror = () => {
+        const parsedRows = rawJson.map((row) => {
+          const rowObj: Record<string, any> = {};
+          Object.keys(row).forEach((k) => {
+            rowObj[k.trim()] = row[k];
+          });
+          return rowObj;
+        });
+
+        setImportPreview(parsedRows);
+      } else {
+        const text = await file.text();
+        parseCSVText(text);
+      }
+    } catch (error) {
+      console.error('File parse error:', error);
       setMessage({
-        text: 'تعذر قراءة الملف المحدد',
+        text: 'تعذر قراءة ملف الإكسل أو CSV المحدد',
         type: 'error',
       });
-    };
+    }
+  };
 
-    reader.readAsText(file, 'UTF-8');
+  // Update specific row in import preview (for quick easy editing of Net Client & Net Channel)
+  const handleUpdatePreviewRow = (index: number, field: string, value: any) => {
+    setImportPreview((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
   };
 
   // CSV Parser supporting commas within quotes
@@ -533,20 +670,29 @@ export const Dashboard: React.FC = () => {
               <button
                 onClick={() => setShowImportModal(true)}
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold border border-neutral-700 shadow-md transition-all"
-                title="استيراد بيانات من ملف CSV"
+                title="استيراد بيانات من ملف Excel (.xlsx) أو CSV"
               >
-                <Upload className="w-4 h-4 text-[#20BEFF]" />
-                <span>استيراد بيانات (Import)</span>
+                <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                <span>استيراد ملف Excel / CSV</span>
               </button>
             )}
 
             <button
-              onClick={handleExport}
+              onClick={handleExportExcel}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold border border-neutral-700 shadow-md transition-all"
+              title="تصدير البيانات كملف Excel (.xlsx)"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+              <span>تصدير Excel</span>
+            </button>
+
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-2xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs font-bold border border-neutral-700 shadow-md transition-all"
               title="تصدير البيانات الحالية كملف CSV"
             >
-              <Download className="w-4 h-4 text-emerald-400" />
-              <span>تصدير بيانات (Export)</span>
+              <Download className="w-3.5 h-3.5 text-neutral-400" />
+              <span>CSV</span>
             </button>
 
             {!isReadOnly ? (
@@ -1200,14 +1346,85 @@ export const Dashboard: React.FC = () => {
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={handleExport}
-            className="text-xs font-bold text-[#DC2626] hover:underline flex items-center gap-1"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>تصدير هذا الجدول</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 shadow-sm transition-all"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>تصدير Excel</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExport}
+              className="text-xs font-bold text-[#DC2626] hover:underline flex items-center gap-1 px-2 py-1.5"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>تصدير CSV</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Date Filter Bar: From Date & To Date directly above table */}
+        <div className="p-3.5 bg-neutral-50/80 border-b border-neutral-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-red-100 text-[#DC2626] flex items-center justify-center font-black">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-black text-neutral-800 text-xs">
+                تصفية سريعة بالتواريخ:
+              </span>
+              <span className="text-[10px] text-neutral-400 ms-1 font-semibold">
+                (من تاريخ الحملة وإلى تاريخ الحملة)
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-neutral-200 shadow-sm">
+              <span className="font-bold text-neutral-500 text-[11px]">من تاريخ:</span>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setMonthFilterMode('dateRange');
+                }}
+                className="font-bold text-neutral-800 text-xs focus:outline-none"
+              />
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-neutral-200 shadow-sm">
+              <span className="font-bold text-neutral-500 text-[11px]">إلى تاريخ:</span>
+              <input
+                type="date"
+                min={fromDate || undefined}
+                value={toDate}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setMonthFilterMode('dateRange');
+                }}
+                className="font-bold text-neutral-800 text-xs focus:outline-none"
+              />
+            </div>
+
+            {(fromDate || toDate) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFromDate('');
+                  setToDate('');
+                  setMonthFilterMode('single');
+                }}
+                className="text-[11px] font-bold text-[#DC2626] hover:underline px-2 py-1"
+              >
+                مسح التواريخ
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -1219,10 +1436,12 @@ export const Dashboard: React.FC = () => {
                 <th className="p-3.5 text-start">Channel</th>
                 <th className="p-3.5 text-start">Content Type</th>
                 <th className="p-3.5 text-start">Content</th>
-                <th className="p-3.5 text-start">Month / تاريخ الحملة</th>
+                <th className="p-3.5 text-start bg-red-950/60 text-red-200 border-x border-neutral-800">من تاريخ (Start)</th>
+                <th className="p-3.5 text-start bg-red-950/60 text-red-200 border-x border-neutral-800">إلى تاريخ (End)</th>
+                <th className="p-3.5 text-start">الشهر (Month)</th>
                 <th className="p-3.5 text-start">Net to Channel</th>
                 <th className="p-3.5 text-start">Net to Client</th>
-                <th className="p-3.5 text-start">الفرق (Margin)</th>
+                <th className="p-3.5 text-start">معادلة الفرق (Client - Channel)</th>
                 <th className="p-3.5 text-start">Notes</th>
                 <th className="p-3.5 text-end">إجراء المحاسبة</th>
               </tr>
@@ -1231,18 +1450,19 @@ export const Dashboard: React.FC = () => {
             <tbody className="divide-y divide-neutral-100 font-medium">
               {loading ? (
                 <tr>
-                  <td colSpan={11} className="p-12 text-center text-neutral-400 font-bold">
+                  <td colSpan={13} className="p-12 text-center text-neutral-400 font-bold">
                     جاري تحميل البيانات...
                   </td>
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="p-12 text-center text-neutral-400 font-bold">
+                  <td colSpan={13} className="p-12 text-center text-neutral-400 font-bold">
                     لا توجد بيانات مطابقة. يمكنك استخدام زر Import لاستيراد ملف البيانات أو إضافة حملة يدوياً.
                   </td>
                 </tr>
               ) : (
                 records.map((record) => {
+                  const dates = extractRecordDates(record);
                   const clientNet = Number(record.netToClient ?? record.cost ?? 0);
                   const channelNet = Number(record.netToChannel || 0);
                   const rowDiff = clientNet - channelNet;
@@ -1276,13 +1496,20 @@ export const Dashboard: React.FC = () => {
                         {record.content?.name || '-'}
                       </td>
 
+                      <td className="p-3.5 font-bold text-neutral-800 whitespace-nowrap bg-red-50/20 border-x border-neutral-100">
+                        <span className="font-mono text-xs text-red-900 bg-red-100/70 px-2 py-0.5 rounded-md font-bold">
+                          {dates.start}
+                        </span>
+                      </td>
+
+                      <td className="p-3.5 font-bold text-neutral-800 whitespace-nowrap bg-red-50/20 border-x border-neutral-100">
+                        <span className="font-mono text-xs text-red-900 bg-red-100/70 px-2 py-0.5 rounded-md font-bold">
+                          {dates.end}
+                        </span>
+                      </td>
+
                       <td className="p-3.5 font-bold text-neutral-700 whitespace-nowrap">
-                        <div>{record.month}</div>
-                        {record.startDate && record.endDate && (
-                          <div className="text-[10px] text-neutral-400 font-mono mt-0.5">
-                            {record.startDate} → {record.endDate}
-                          </div>
-                        )}
+                        {record.month}
                       </td>
 
                       <td className="p-3.5 font-black text-blue-700 whitespace-nowrap">
@@ -1294,15 +1521,20 @@ export const Dashboard: React.FC = () => {
                       </td>
 
                       <td className="p-3.5 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 rounded-xl font-black text-xs inline-flex items-center gap-1 ${
-                            rowDiff >= 0
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                              : 'bg-red-50 text-red-700 border border-red-100'
-                          }`}
-                        >
-                          {rowDiff >= 0 ? `+${rowDiff.toLocaleString('en-US')}` : rowDiff.toLocaleString('en-US')} ج.م
-                        </span>
+                        <div className="space-y-0.5">
+                          <span
+                            className={`px-2.5 py-1 rounded-xl font-black text-xs inline-flex items-center gap-1 ${
+                              rowDiff >= 0
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                : 'bg-red-50 text-red-700 border border-red-100'
+                            }`}
+                          >
+                            {rowDiff >= 0 ? `+${rowDiff.toLocaleString('en-US')}` : rowDiff.toLocaleString('en-US')} ج.م
+                          </span>
+                          <div className="text-[10px] text-neutral-400 font-mono">
+                            {clientNet.toLocaleString('en-US')} - {channelNet.toLocaleString('en-US')}
+                          </div>
+                        </div>
                       </td>
 
                       <td className="p-3.5 text-neutral-500 max-w-xs truncate">
@@ -1344,14 +1576,15 @@ export const Dashboard: React.FC = () => {
       {/* Import Modal */}
       {showImportModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-2xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-4xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
               <div>
-                <h3 className="font-black text-neutral-900 text-base">
-                  استيراد بيانات الميديا (Import CSV)
+                <h3 className="font-black text-neutral-900 text-base flex items-center gap-2">
+                  <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+                  <span>استيراد بيانات الميديا (Excel / CSV Import)</span>
                 </h3>
                 <p className="text-[11px] text-neutral-500 mt-0.5">
-                  قم بتحميل ملف CSV يحتوي على الأعمدة المعتمدة بالترتيب الدقيق
+                  قم بتحميل ملف إكسل عادي (.xlsx / .xls) أو ملف CSV بالأعمدة المعتمدة، مع إمكانية تعديل الأرقام واحتساب المعادلة تلقائياً
                 </p>
               </div>
 
@@ -1368,33 +1601,45 @@ export const Dashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* Template Download */}
+            {/* Template Download (Excel & CSV) */}
             <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
               <div>
-                <div className="font-bold text-neutral-800">
-                  تحميل القالب النموذجي المعتمد
+                <div className="font-bold text-neutral-800 flex items-center gap-1.5">
+                  <FileDown className="w-4 h-4 text-[#DC2626]" />
+                  <span>تحميل القوالب النموذجية الفارغة:</span>
                 </div>
                 <div className="text-[11px] text-neutral-500 font-mono mt-0.5">
-                  Client, supplier, Channel, Content, Content Type, Month, Net to Channel, Net to Client, Notes
+                  Client, supplier, Channel, Content Type, Content, From Date, To Date, Month, Net to Channel, Net to Client, Notes
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleDownloadTemplate}
-                className="px-3.5 py-2 bg-neutral-900 hover:bg-neutral-800 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shrink-0 transition-colors"
-              >
-                <FileDown className="w-4 h-4 text-[#20BEFF]" />
-                <span>تحميل القالب الفارغ</span>
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleDownloadExcelTemplate}
+                  className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>تحميل قالب Excel (.xlsx)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadTemplate}
+                  className="px-3.5 py-2 bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-colors"
+                >
+                  <Download className="w-4 h-4 text-neutral-300" />
+                  <span>قالب CSV</span>
+                </button>
+              </div>
             </div>
 
-            {/* File Upload */}
+            {/* File Upload Zone */}
             <div>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".csv,text/csv"
+                accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
                 onChange={handleFileChange}
                 className="hidden"
               />
@@ -1403,89 +1648,132 @@ export const Dashboard: React.FC = () => {
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-neutral-300 hover:border-[#DC2626] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-neutral-50/50 hover:bg-red-50/20 space-y-2"
               >
-                <Upload className="w-8 h-8 text-neutral-400 mx-auto" />
+                <FileSpreadsheet className="w-8 h-8 text-emerald-600 mx-auto" />
 
                 <div className="text-xs font-bold text-neutral-700">
                   {importFile
                     ? importFile.name
-                    : 'اضغط هنا لاختيار ملف CSV من جهازك'}
+                    : 'اضغط هنا لاختيار ملف Excel (.xlsx / .xls) أو CSV من جهازك'}
                 </div>
 
                 <div className="text-[10px] text-neutral-400">
-                  يدعم ترميز UTF-8 واللغة العربية والأرقام المالية
+                  يدعم ملفات الإكسل العادية و CSV وترميز UTF-8 والأرقام والمعادلات المالية
                 </div>
               </div>
             </div>
 
-            {/* Import Preview */}
+            {/* Import Preview with interactive formula calculation and live editing */}
             {importPreview.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-neutral-800">
-                    معاينة البيانات قبل الحفظ ({importPreview.length} صف تم التعرف عليه):
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-neutral-800">
+                      معاينة البيانات وتعديل الأرقام ({importPreview.length} صف تم التعرف عليه):
+                    </span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-black px-2 py-0.5 rounded-full">
+                      المعادلة مفعلة: (فلوس Client - مصاريف Channel)
+                    </span>
+                  </div>
                   <span className="text-emerald-600 font-bold">
                     جاهز للاستيراد
                   </span>
                 </div>
 
-                <div className="max-h-48 overflow-y-auto border border-neutral-200 rounded-xl overflow-x-auto text-[11px]">
+                <div className="max-h-64 overflow-y-auto border border-neutral-200 rounded-xl overflow-x-auto text-[11px]">
                   <table className="w-full text-start">
-                    <thead className="bg-neutral-100 font-bold sticky top-0">
+                    <thead className="bg-neutral-100 font-bold sticky top-0 z-10">
                       <tr>
                         <th className="p-2 text-start">Client</th>
-                        <th className="p-2 text-start">supplier</th>
+                        <th className="p-2 text-start">Supplier</th>
                         <th className="p-2 text-start">Channel</th>
-                        <th className="p-2 text-start">Content</th>
                         <th className="p-2 text-start">Content Type</th>
+                        <th className="p-2 text-start">Content</th>
+                        <th className="p-2 text-start bg-red-100/60 text-red-900">من تاريخ</th>
+                        <th className="p-2 text-start bg-red-100/60 text-red-900">إلى تاريخ</th>
                         <th className="p-2 text-start">Month</th>
-                        <th className="p-2 text-start">Net to Channel</th>
-                        <th className="p-2 text-start">Net to Client</th>
+                        <th className="p-2 text-start text-blue-700">Net to Channel (تعديل)</th>
+                        <th className="p-2 text-start text-[#DC2626]">Net to Client (تعديل)</th>
+                        <th className="p-2 text-start bg-emerald-50 text-emerald-800">معادلة الفرق</th>
                         <th className="p-2 text-start">Notes</th>
                       </tr>
                     </thead>
 
                     <tbody className="divide-y divide-neutral-100">
-                      {importPreview.slice(0, 10).map((row, index) => (
-                        <tr key={index} className="hover:bg-neutral-50">
-                          <td className="p-2 font-bold">
-                            {row['Client'] || row['client']}
-                          </td>
-                          <td className="p-2">
-                            {row['supplier'] || row['Supplier']}
-                          </td>
-                          <td className="p-2">
-                            {row['Channel'] || row['channel']}
-                          </td>
-                          <td className="p-2">
-                            {row['Content'] || row['content']}
-                          </td>
-                          <td className="p-2">
-                            {row['Content Type'] || row['content_type']}
-                          </td>
-                          <td className="p-2">
-                            {row['Month'] || row['month']}
-                          </td>
-                          <td className="p-2 font-bold text-blue-600">
-                            {row['Net to Channel'] || row['netToChannel']}
-                          </td>
-                          <td className="p-2 font-bold text-[#DC2626]">
-                            {row['Net to Client'] || row['netToClient']}
-                          </td>
-                          <td className="p-2 text-neutral-400">
-                            {row['Notes'] || row['notes']}
-                          </td>
-                        </tr>
-                      ))}
+                      {importPreview.map((row, index) => {
+                        const channelVal = parseFloat(String(row['Net to Channel'] ?? row['netToChannel'] ?? 0)) || 0;
+                        const clientVal = parseFloat(String(row['Net to Client'] ?? row['netToClient'] ?? 0)) || 0;
+                        const diff = clientVal - channelVal;
+
+                        return (
+                          <tr key={index} className="hover:bg-neutral-50/80">
+                            <td className="p-2 font-bold whitespace-nowrap">
+                              {row['Client'] || row['client'] || '-'}
+                            </td>
+                            <td className="p-2 whitespace-nowrap">
+                              {row['supplier'] || row['Supplier'] || '-'}
+                            </td>
+                            <td className="p-2 whitespace-nowrap">
+                              {row['Channel'] || row['channel'] || '-'}
+                            </td>
+                            <td className="p-2 whitespace-nowrap">
+                              {row['Content Type'] || row['content_type'] || 'عام'}
+                            </td>
+                            <td className="p-2 whitespace-nowrap">
+                              {row['Content'] || row['content'] || '-'}
+                            </td>
+                            <td className="p-2 whitespace-nowrap font-mono bg-red-50/30">
+                              {row['From Date'] || row['fromDate'] || row['من تاريخ'] || '-'}
+                            </td>
+                            <td className="p-2 whitespace-nowrap font-mono bg-red-50/30">
+                              {row['To Date'] || row['toDate'] || row['إلى تاريخ'] || '-'}
+                            </td>
+                            <td className="p-2 whitespace-nowrap">
+                              {row['Month'] || row['month'] || '-'}
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={channelVal}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  handleUpdatePreviewRow(index, 'Net to Channel', val);
+                                  handleUpdatePreviewRow(index, 'netToChannel', val);
+                                }}
+                                className="w-24 p-1 border border-neutral-300 rounded font-black text-blue-700 bg-white text-xs"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={clientVal}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  handleUpdatePreviewRow(index, 'Net to Client', val);
+                                  handleUpdatePreviewRow(index, 'netToClient', val);
+                                }}
+                                className="w-24 p-1 border border-neutral-300 rounded font-black text-[#DC2626] bg-white text-xs"
+                              />
+                            </td>
+                            <td className="p-2 whitespace-nowrap bg-emerald-50/40">
+                              <span className={`px-2 py-0.5 rounded font-black text-xs ${
+                                diff >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {diff >= 0 ? `+${diff.toLocaleString()}` : diff.toLocaleString()} ج.م
+                              </span>
+                            </td>
+                            <td className="p-2 text-neutral-400 max-w-xs truncate">
+                              {row['Notes'] || row['notes'] || '-'}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
-
-                {importPreview.length > 10 && (
-                  <div className="text-[10px] text-neutral-400 text-center">
-                    ... وعرض {importPreview.length - 10} صفوف أخرى
-                  </div>
-                )}
               </div>
             )}
 
@@ -1706,62 +1994,101 @@ export const Dashboard: React.FC = () => {
                 </div>
               </div>
 
-              {/* Financial Inputs & Real-time Net Difference */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-bold text-neutral-700 mb-1">
-                    Net to Channel *
-                  </label>
+              {/* Financial Inputs & Interactive Formula Box */}
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-neutral-700 mb-1">
+                      مصاريف القناة (Net to Channel) *
+                    </label>
 
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    required
-                    value={newCampaign.netToChannel}
-                    onChange={(e) =>
-                      setNewCampaign({
-                        ...newCampaign,
-                        netToChannel: Number(e.target.value),
-                      })
-                    }
-                    className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl font-black text-blue-600"
-                  />
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      required
+                      value={newCampaign.netToChannel}
+                      onChange={(e) =>
+                        setNewCampaign({
+                          ...newCampaign,
+                          netToChannel: Number(e.target.value),
+                        })
+                      }
+                      className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl font-black text-blue-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-neutral-700 mb-1">
+                      فلوس العميل (Net to Client) *
+                    </label>
+
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      required
+                      value={newCampaign.netToClient}
+                      onChange={(e) =>
+                        setNewCampaign({
+                          ...newCampaign,
+                          netToClient: Number(e.target.value),
+                        })
+                      }
+                      className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl font-black text-[#DC2626]"
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block font-bold text-neutral-700 mb-1">
-                    Net to Client *
-                  </label>
+                {/* Live Formula Box (Client - Channel) with Quick Margin Adjusters */}
+                <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/90 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-extrabold text-neutral-700 flex items-center gap-1.5">
+                      <Calculator className="w-4 h-4 text-[#DC2626]" />
+                      <span>المعادلة التلقائية: (فلوس Client - مصاريف Channel)</span>
+                    </span>
+                    <span
+                      className={`text-xs font-black px-2.5 py-0.5 rounded-full ${
+                        Number(newCampaign.netToClient) - Number(newCampaign.netToChannel) >= 0
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      الفرق: {(Number(newCampaign.netToClient) - Number(newCampaign.netToChannel)).toLocaleString('en-US')} ج.م
+                    </span>
+                  </div>
 
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    required
-                    value={newCampaign.netToClient}
-                    onChange={(e) =>
-                      setNewCampaign({
-                        ...newCampaign,
-                        netToClient: Number(e.target.value),
-                      })
-                    }
-                    className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl font-black text-[#DC2626]"
-                  />
-                </div>
+                  <div className="text-[11px] font-mono text-neutral-600 bg-white p-2 rounded-xl border border-neutral-200 flex items-center justify-between">
+                    <span>
+                      {Number(newCampaign.netToClient || 0).toLocaleString()} (Client) - {Number(newCampaign.netToChannel || 0).toLocaleString()} (Channel)
+                    </span>
+                    <span className="font-bold text-emerald-700">
+                      = {(Number(newCampaign.netToClient || 0) - Number(newCampaign.netToChannel || 0)).toLocaleString()} ج.م
+                    </span>
+                  </div>
 
-                <div>
-                  <label className="block font-bold text-neutral-700 mb-1">
-                    الفرق (Margin)
-                  </label>
-                  <div
-                    className={`p-2.5 rounded-xl font-black text-xs border flex items-center justify-center ${
-                      Number(newCampaign.netToClient) - Number(newCampaign.netToChannel) >= 0
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-red-50 text-red-700 border-red-200'
-                    }`}
-                  >
-                    {(Number(newCampaign.netToClient) - Number(newCampaign.netToChannel)).toLocaleString('en-US')} ج.م
+                  {/* Fast Margin Adjustment Buttons */}
+                  <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-neutral-200/60">
+                    <span className="text-[10px] font-bold text-neutral-500">
+                      تعديل سريع لفلوس العميل بنسبة ربح:
+                    </span>
+                    {[10, 15, 20, 25, 30].map((pct) => (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => {
+                          const cost = Number(newCampaign.netToChannel) || 0;
+                          const calculatedClient = Math.round(cost * (1 + pct / 100));
+                          setNewCampaign({
+                            ...newCampaign,
+                            netToClient: calculatedClient,
+                          });
+                        }}
+                        className="px-2 py-1 rounded-lg bg-white hover:bg-neutral-100 text-neutral-700 border border-neutral-300 text-[10px] font-bold transition-all shadow-sm"
+                      >
+                        +{pct}% ({Math.round((Number(newCampaign.netToChannel) || 0) * (pct / 100))} ج.م)
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
