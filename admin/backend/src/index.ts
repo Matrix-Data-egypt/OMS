@@ -34,7 +34,7 @@ interface AuthRequest extends Request {
 const requireAdmin = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ');
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
       res.status(401).json({ success: false, message: 'مطلوب تسجيل الدخول كمسؤول' });
@@ -47,12 +47,12 @@ const requireAdmin = async (req: AuthRequest, res: Response, next: NextFunction)
       [decoded.id]
     );
 
-    if (rows.length === 0 || !rows.isActive) {
+    if (rows.length === 0 || !rows[0].isActive) {
       res.status(403).json({ success: false, message: 'الحساب غير مفعّل أو غير موجود' });
       return;
     }
 
-    const user = rows;
+    const user = rows[0];
     if (user.role !== 'ADMIN' && user.systemAccess !== 'ALL') {
       res.status(403).json({ success: false, message: 'ليس لديك صلاحية إدارة المستخدمين (Admin only)' });
       return;
@@ -101,7 +101,7 @@ app.post('/api/auth/login', async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const user = rows;
+    const user = rows[0];
 
     if (!user.isActive) {
       res.status(403).json({ success: false, message: 'هذا الحساب غير مفعّل' });
@@ -205,15 +205,15 @@ app.post('/api/users', requireAdmin, async (req: AuthRequest, res: Response): Pr
     );
 
     if (existing.rows.length > 0) {
-      const match = existing.rows;
-      if (match.email.toLowerCase() === email.trim().toLowerCase()) {
+      const emailTaken = existing.rows.some(
+        (r: any) => r.email?.toLowerCase() === email.trim().toLowerCase()
+      );
+      if (emailTaken) {
         res.status(400).json({ success: false, message: 'هذا البريد الإلكتروني مسجل بالفعل لمستخدم آخر' });
         return;
       }
-      if (match.username && match.username.toLowerCase() === username.trim().toLowerCase()) {
-        res.status(400).json({ success: false, message: 'اسم المستخدم هذا مستخدم بالفعل، اختر اسماً آخر' });
-        return;
-      }
+      res.status(400).json({ success: false, message: 'اسم المستخدم هذا مستخدم بالفعل، اختر اسماً آخر' });
+      return;
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -244,7 +244,7 @@ app.post('/api/users', requireAdmin, async (req: AuthRequest, res: Response): Pr
 
     res.status(201).json({
       success: true,
-      data: rows,
+      data: rows[0],
       message: `تم إنشاء المستخدم (${name.trim()}) بنجاح وتحديد اختصاصه على [${systemAccess === 'MEDIA' ? 'قسم الميديا فقط' : systemAccess === 'INVOICE' ? 'قسم الفواتير فقط' : 'كافة الأنظمة'}]`,
     });
   } catch (error: any) {
@@ -252,6 +252,7 @@ app.post('/api/users', requireAdmin, async (req: AuthRequest, res: Response): Pr
     res.status(500).json({ success: false, message: 'خطأ أثناء إنشاء المستخدم: ' + error.message });
   }
 });
+
 // Update user details & system access
 app.put('/api/users/:id', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -306,7 +307,7 @@ app.put('/api/users/:id', requireAdmin, async (req: AuthRequest, res: Response):
 
     res.json({
       success: true,
-      data: rows,
+      data: rows[0],
       message: 'تم تحديث بيانات وصلاحيات المستخدم بنجاح',
     });
   } catch (error: any) {
@@ -340,8 +341,8 @@ app.patch('/api/users/:id/toggle-status', requireAdmin, async (req: AuthRequest,
 
     res.json({
       success: true,
-      data: rows,
-      message: rows.isActive ? `تم تفعيل حساب (${rows.name})` : `تم تعطيل حساب (${rows.name})`,
+      data: rows[0],
+      message: rows[0].isActive ? `تم تفعيل حساب (${rows[0].name})` : `تم تعطيل حساب (${rows[0].name})`,
     });
   } catch (error: any) {
     console.error('toggle status error:', error);
@@ -374,7 +375,7 @@ app.put('/api/users/:id/password', requireAdmin, async (req: AuthRequest, res: R
 
     res.json({
       success: true,
-      message: `تم تغيير كلمة مرور (${rows.name}) بنجاح`,
+      message: `تم تغيير كلمة مرور (${rows[0].name}) بنجاح`,
     });
   } catch (error: any) {
     console.error('reset password error:', error);
@@ -401,7 +402,7 @@ app.delete('/api/users/:id', requireAdmin, async (req: AuthRequest, res: Respons
 
     res.json({
       success: true,
-      message: `تم حذف المستخدم (${rows.name}) بنجاح`,
+      message: `تم حذف المستخدم (${rows[0].name}) بنجاح`,
     });
   } catch (error: any) {
     console.error('delete user error:', error);
@@ -409,8 +410,12 @@ app.delete('/api/users/:id', requireAdmin, async (req: AuthRequest, res: Respons
   }
 });
 
-// Start Server on 0.0.0.0 for Render
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 OMS Admin Hub API running on port ${PORT}`);
-  console.log(`🌟 System: OMS Admin | Developed by MDE – Matrix Data Egypt`);
-});
+// Start server locally only (Vercel runs the app as a serverless function)
+if (!process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 OMS Admin Hub API running on port ${PORT}`);
+    console.log(`🌟 System: OMS Admin | Developed by MDE – Matrix Data Egypt`);
+  });
+}
+
+export default app;
