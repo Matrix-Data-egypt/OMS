@@ -1,111 +1,143 @@
+import 'dotenv/config';
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 
-import authRoutes from './modules/auth/authRoutes.js';
-import clientRoutes from './modules/clients/clientRoutes.js';
-import serviceRoutes from './modules/services/serviceRoutes.js';
-import invoiceRoutes from './modules/invoices/invoiceRoutes.js';
-import approvalRoutes from './modules/approvals/approvalRoutes.js';
-import paymentRoutes from './modules/payments/paymentRoutes.js';
-import deliveryRoutes from './modules/delivery/deliveryRoutes.js';
-import settingsRoutes from './modules/settings/settingsRoutes.js';
-import reportRoutes from './modules/reports/reportRoutes.js';
-
-dotenv.config();
+import clientRoutes from './routes/clients.js';
+import supplierRoutes from './routes/suppliers.js';
+import channelRoutes from './routes/channels.js';
+import contentTypeRoutes from './routes/contentTypes.js';
+import contentRoutes from './routes/contents.js';
+import recordRoutes from './routes/records.js';
+import accountingRoutes from './routes/accountingIntegration.js';
+import authRoutes from './routes/auth.js';
 
 const app = express();
-const PORT = Number(process.env.PORT) || 5001;
 
-// إعدادات CORS مرنة وشاملة لـ GitHub Pages و Vercel والمحلي
-const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    // السماح بالطلبات بدون origin (مثل Postman أو تطبيقات الموبايل)
-    if (!origin) return callback(null, true);
+// ==========================================
+// CORS
+// ==========================================
 
-    const allowedOrigins = [
-      'https://matrix-data-egypt.github.io',
-      'https://github.io',
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5175',
-    ];
+const allowedOrigins = [
+  'https://matrix-data-egypt.github.io',
+  'https://oms-tur2.vercel.app',
+  'https://oms-admin-frontend.vercel.app',
+  'https://oms-invoice-client-lyart.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  ...(process.env.FRONTEND_URLS || process.env.FRONTEND_URL || '')
+    .split(',')
+    .map((url) => url.trim().replace(/\/$/, ''))
+    .filter(Boolean),
+];
 
-    if (
-      allowedOrigins.includes(origin) ||
-      origin.endsWith('.github.io') ||
-      origin.endsWith('.vercel.app')
-    ) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-};
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      const isAllowedVercelPreview =
+        /^https:\/\/oms-tur2-[a-z0-9-]+-pixelrun2000-9580s-projects\.vercel\.app$/.test(
+          origin || ''
+        );
 
-app.use(cors(corsOptions));
-// معالجة طلبات Preflight (OPTIONS) لجميع المسارات فوراً
-app.options('*', cors(corsOptions));
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        isAllowedVercelPreview
+      ) {
+        return callback(null, true);
+      }
 
-app.use(express.json());
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  })
+);
 
-// Request logger for audit
-app.use((req, res, next) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  }
-  next();
-});
+// ==========================================
+// Middleware
+// ==========================================
 
-// Root route for quick verification
-app.get('/', (req, res) => {
-  res.json({
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// ==========================================
+// Root
+// ==========================================
+
+app.get('/', (_req, res) => {
+  res.status(200).json({
     status: 'ok',
-    message: 'OMS Invoice API is running on Vercel',
+    message: 'OMS Media Department API is running',
+    company: 'MDE - Matrix Data Egypt',
+    health: '/api/health',
   });
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/clients', clientRoutes);
-app.use('/api/services', serviceRoutes);
-app.use('/api/invoices', invoiceRoutes);
-app.use('/api/approvals', approvalRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/delivery', deliveryRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/reports', reportRoutes);
+// ==========================================
+// Health Check
+// ==========================================
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({
     status: 'ok',
-    system: 'OMS Invoice Management System',
+    system: 'OMS Media Department API',
     company: 'OMS',
-    developer: 'MDE – Matrix Data Egypt',
+    developer: 'MDE - Matrix Data Egypt',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
   });
 });
 
-// Global Error Handler
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Unhandled Server Error:', err);
-  res.status(500).json({
+// ==========================================
+// API Routes
+// ==========================================
+
+app.use('/api/auth', authRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/channels', channelRoutes);
+app.use('/api/content-types', contentTypeRoutes);
+app.use('/api/contents', contentRoutes);
+app.use('/api/records', recordRoutes);
+app.use('/api/accounting', accountingRoutes);
+
+// ==========================================
+// 404
+// ==========================================
+
+app.use((_req, res) => {
+  res.status(404).json({
     success: false,
-    message: 'حدث خطأ غير متوقع في الخادم الداخلي',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    message: 'API endpoint not found',
   });
 });
 
-// تشغيل الخادم محليًا فقط؛ أما على Vercel فيتم تصديره كـ Serverless Function
-if (!process.env.VERCEL) {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 OMS Invoice API running on port ${PORT}`);
-  });
-}
+// ==========================================
+// Error Handler
+// ==========================================
+
+app.use(
+  (
+    error: Error,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction
+  ) => {
+    console.error('API Error:', error.message);
+
+    res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+      ...(process.env.NODE_ENV !== 'production' && {
+        error: error.message,
+      }),
+    });
+  }
+);
+
+// ==========================================
+// Vercel Serverless
+// ==========================================
 
 export default app;
