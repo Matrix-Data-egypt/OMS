@@ -1,4 +1,3 @@
-
 import pkg from 'pg';
 import dotenv from 'dotenv';
 
@@ -14,7 +13,8 @@ if (!databaseUrl) {
 
 export const pool = new Pool({
   connectionString: databaseUrl,
-  ssl: false,
+  ssl: { rejectUnauthorized: false },
+  max: 1,
 });
 
 pool.on('error', (err) => {
