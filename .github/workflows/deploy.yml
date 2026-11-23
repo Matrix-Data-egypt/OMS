@@ -1,135 +1,14 @@
 
-name: Deploy OMS to Vercel
+name: Deploy OMS
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "Invoice/**"
-      - "admin/**"
-      - "media/**"
-      - ".github/workflows/deploy.yml"
-
   workflow_dispatch:
 
 jobs:
-  deploy-invoice-frontend:
-    name: Deploy Invoice Frontend
+  deploy:
+    name: Deployment Managed by Vercel
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - run: npm install -g vercel
-
-      - name: Pull Vercel Environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: Invoice/client
-
-      - name: Build and Deploy
-        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: Invoice/client
-
-  deploy-invoice-backend:
-    name: Deploy Invoice Backend
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - run: npm install -g vercel
-
-      - name: Pull Vercel Environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: Invoice/server
-
-      - name: Build and Deploy
-        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: Invoice/server
-
-  deploy-admin-frontend:
-    name: Deploy Admin Frontend
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - run: npm install -g vercel
-
-      - name: Pull Vercel Environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: admin/frontend
-
-      - name: Build and Deploy
-        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: admin/frontend
-
-  deploy-admin-backend:
-    name: Deploy Admin Backend
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - run: npm install -g vercel
-
-      - name: Pull Vercel Environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: admin/backend
-
-      - name: Build and Deploy
-        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: admin/backend
-
-  deploy-media-frontend:
-    name: Deploy Media Frontend
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - run: npm install -g vercel
-
-      - name: Pull Vercel Environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: media/frontend
-
-      - name: Build and Deploy
-        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: media/frontend
-
-  deploy-media-backend:
-    name: Deploy Media Backend
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - run: npm install -g vercel
-
-      - name: Pull Vercel Environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: media/backend
-
-      - name: Build and Deploy
-        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: media/backend
+      - name: Vercel Deployment Notice
+        run: echo "OMS deployments are managed automatically by Vercel Git Integration."
