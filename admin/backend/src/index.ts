@@ -16,7 +16,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'oms_admin_jwt_secret_secure_key_20
 app.use(
   cors({
     origin: [
-      'https://github.io',
+      'https://oms-admin-frontend.vercel.app',
+      'https://oms-tur2.vercel.app',
+      'https://oms-invoice-client-lyart.vercel.app',
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:5175',
@@ -66,6 +68,11 @@ const requireAdmin = async (req: AuthRequest, res: Response, next: NextFunction)
 };
 
 // ----------------- ROUTES -----------------
+
+// Root
+app.get('/', (req: Request, res: Response) => {
+  res.json({ status: 'ok', system: 'OMS Admin Hub', health: '/api/health' });
+});
 
 // Health Check
 app.get('/api/health', (req: Request, res: Response) => {
