@@ -64,7 +64,6 @@
 | **Vercel** | استضافة واجهات الـ API للباك إند: <br>• `https://oms-invoice-api.vercel.app`<br>• `https://oms-media-api.vercel.app` | حساب **Matrix Data Egypt** على منصة **Vercel** | تدير دوال Serverless السحابية والاتصال السريع بقاعدة البيانات. |
 | **GitHub Pages** | استضافة ونشر واجهات الـ Frontend الإنتاجية (`https://matrix-data-egypt.github.io`). | حساب **Matrix-Data-egypt** على **GitHub** | نشر عبر GitHub Actions و Vite Build. |
 | **Supabase** | قاعدة البيانات السحابية المركزية المستضافة (PostgreSQL). | مشروع `szviwpregvbbxfftarvg` على **Supabase** | مزامنة مباشرة للجداول، وإتاحة الوصول الآمن للـ APIs. |
-| **WhatsApp Business API** | إرسال إشعارات الفواتير المحاسبية وروابطها للعملاء آلياً عبر واتساب. | **Meta for Developers** (متغير البيئة: `WHATSAPP_API_TOKEN`) | مدمجة في مسار `deliveryController` وتعمل بنمط القوالب الرسمية وسجلات الإرسال. |
 | **خدمة الإيميل (Email)** | إرسال ملفات الفواتير بتنسيق PDF إلى بريد العميل الرسمي. | خادم البريد / SMTP الداخلي للمؤسسة | موثقة في سجلات التسليم (`delivery_logs`). |
 | **بوابات الدفع (Payment)** | **لا توجد بوابات بنكية خارجية تجارية** (مثل Stripe أو Paymob أو Fawry) لتجنب اقتطاع العمولات، حيث تعتمد المنظومة على **القيود المحاسبية الرسمية**: <br>• تحويل بنكي (Bank Transfer)<br>• كاش (Cash)<br>• شيكات بنكية (Cheques)<br>• دفع إلكتروني يدوي (Online) | تُسجل وتُعتمد دفتر ومحاسبياً من قبل المحاسبين المعتمدين داخل النظام | تخضع لدورة تدقيق مالي وسجلات غير قابلة للتلاعب (`audit_logs`). |
 
@@ -81,7 +80,6 @@
 | `media_admin` | `media.admin@oms.com` | `Oms@123456` | **MEDIA_ADMIN** | **قسم الميديا فقط** (`MEDIA`) |
 | `accountant` | `accountant@oms.com` | `Oms@123456` | **ACCOUNTANT** | **قسم الفواتير فقط** (`INVOICE`: ممنوع من دخول الميديا) |
 | `finance` | `finance@oms.com` | `Oms@123456` | **FINANCE_MANAGER** | **قسم الفواتير فقط** (`INVOICE`: صلاحيات الاعتماد المالي) |
-| `sales` | `sales@oms.com` | `Oms@123456` | **SALES** | **قسم الفواتير فقط** (`INVOICE`: إنشاء وتجهيز مسودات الفواتير) |
 
 ---
 
