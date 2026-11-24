@@ -1,5 +1,6 @@
+
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { UserRole } from '@prisma/client';
 import prisma from '../prisma/prismaClient.js';
 
@@ -21,31 +22,98 @@ export const authenticateToken = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ')
+    ? authHeader.substring(7)
+    : null;
 
   if (!token) {
-    res.status(401).json({ success: false, message: 'مطلوب تسجيل الدخول (Authentication required)' });
+    res.status(401).json({
+      success: false,
+      message: 'مطلوب تسجيل الدخول (Authentication required)',
+    });
     return;
   }
 
-  try {
-    const secret = process.env.JWT_SECRET || 'oms_jwt_secret_super_secure_key_2026_mde';
-    const decoded = jwt.verify(token, secret) as AuthUser;
+  const secret = process.env.JWT_SECRET;
 
-    // Check if user still active in DB
+  if (!secret) {
+    console.error('JWT_SECRET is missing');
+    res.status(500).json({
+      success: false,
+      message: 'إعدادات المصادقة غير مكتملة',
+    });
+    return;
+  }
+
+  let decoded: JwtPayload;
+
+  // 1. Verify JWT
+  try {
+    const verified = jwt.verify(token, secret);
+
+    if (typeof verified === 'string' || !verified.id) {
+      res.status(403).json({
+        success: false,
+        message: 'جلسة الدخول غير صالحة',
+      });
+      return;
+    }
+
+    decoded = verified;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      res.status(401).json({
+        success: false,
+        message: 'انتهت صلاحية جلسة الدخول، يرجى تسجيل الدخول مرة أخرى',
+      });
+      return;
+    }
+
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.status(403).json({
+        success: false,
+        message: 'جلسة الدخول غير صالحة',
+      });
+      return;
+    }
+
+    console.error('JWT verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'حدث خطأ أثناء التحقق من تسجيل الدخول',
+    });
+    return;
+  }
+
+  // 2. Verify user in database
+  try {
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
-      select: { id: true, email: true, username: true, name: true, role: true, systemAccess: true, isActive: true },
+      where: { id: String(decoded.id) },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        name: true,
+        role: true,
+        systemAccess: true,
+        isActive: true,
+      },
     });
 
     if (!user || !user.isActive) {
-      res.status(403).json({ success: false, message: 'الحساب غير مفعّل أو غير موجود' });
+      res.status(403).json({
+        success: false,
+        message: 'الحساب غير مفعّل أو غير موجود',
+      });
       return;
     }
 
     if (user.systemAccess === 'MEDIA') {
-      res.status(403).json({ success: false, message: 'عفواً، هذا الحساب مصرح له بالدخول لقسم الميديا فقط.' });
+      res.status(403).json({
+        success: false,
+        message: 'عفواً، هذا الحساب مصرح له بالدخول لقسم الميديا فقط.',
+      });
       return;
     }
 
@@ -57,17 +125,27 @@ export const authenticateToken = async (
       role: user.role,
       systemAccess: user.systemAccess,
     };
+
     next();
   } catch (error) {
-    res.status(403).json({ success: false, message: 'جلسة الدخول غير صالحة أو منتهية' });
-    return;
+    console.error('AUTH DATABASE ERROR:', error);
+
+    next(error);
   }
 };
 
+// Role-based authorization
 export const requireRoles = (roles: UserRole[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): void => {
     if (!req.user) {
-      res.status(401).json({ success: false, message: 'غير مصرح' });
+      res.status(401).json({
+        success: false,
+        message: 'غير مصرح',
+      });
       return;
     }
 
