@@ -36,30 +36,34 @@ const allowedOrigins = [
     .filter(Boolean),
 ];
 
+const isAllowedOrigin = (origin: string): boolean => {
+  const normalizedOrigin = origin.replace(/\/$/, '');
+
+  if (allowedOrigins.includes(normalizedOrigin)) {
+    return true;
+  }
+
+  // Allow Vercel preview deployments for this frontend.
+  return /^https:\/\/oms-invoice-client-[a-z0-9-]+-pixelrun2000-9580s-projects\.vercel\.app$/.test(
+    normalizedOrigin
+  );
+};
+
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
+    // Requests without an Origin header are allowed.
     if (!origin) {
       return callback(null, true);
     }
 
-    const normalizedOrigin = origin.replace(/\/$/, '');
-
-    if (allowedOrigins.includes(normalizedOrigin)) {
-      return callback(null, true);
-    }
-
-    const isInvoicePreview =
-      /^https:\/\/oms-invoice-client-[a-z0-9-]+-pixelrun2000-9580s-projects\.vercel\.app$/.test(
-        normalizedOrigin
-      );
-
-    if (isInvoicePreview) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 
     console.warn('CORS BLOCKED ORIGIN:', origin);
 
-    return callback(new Error('Not allowed by CORS'));
+    // Do not throw an Express error for a blocked origin.
+    return callback(null, false);
   },
 
   credentials: true,
@@ -84,7 +88,7 @@ const corsOptions: CorsOptions = {
   preflightContinue: false,
 };
 
-// Apply CORS before routes and other middleware.
+// CORS must run before all routes and body parsing.
 app.use(cors(corsOptions));
 
 // ==========================================
