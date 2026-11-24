@@ -2,10 +2,10 @@
 import 'dotenv/config';
 
 import express, { Request, Response, NextFunction } from 'express';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 
 // ==========================================
-// Routes
+// ROUTES
 // ==========================================
 
 import approvalRoutes from './modules/approvals/approvalRoutes.js';
@@ -21,7 +21,7 @@ import settingsRoutes from './modules/settings/settingsRoutes.js';
 const app = express();
 
 // ==========================================
-// CORS Configuration
+// CORS CONFIGURATION
 // ==========================================
 
 const allowedOrigins = [
@@ -36,51 +36,80 @@ const allowedOrigins = [
     .filter(Boolean),
 ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests without an Origin header
-      if (!origin) {
-        return callback(null, true);
-      }
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    }
 
-      // Allow configured production and local origins
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+    const normalizedOrigin = origin.replace(/\/$/, '');
 
-      // Allow Invoice Vercel preview deployments
-      const isInvoicePreview =
-        /^https:\/\/oms-invoice-client-[a-z0-9-]+-pixelrun2000-9580s-projects\.vercel\.app$/.test(
-          origin
-        );
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
 
-      if (isInvoicePreview) {
-        return callback(null, true);
-      }
+    const isInvoicePreview =
+      /^https:\/\/oms-invoice-client-[a-z0-9-]+-pixelrun2000-9580s-projects\.vercel\.app$/.test(
+        normalizedOrigin
+      );
 
-      return callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'Accept',
-      'X-Requested-With',
-    ],
-  })
-);
+    if (isInvoicePreview) {
+      return callback(null, true);
+    }
+
+    console.warn('CORS BLOCKED ORIGIN:', origin);
+
+    return callback(new Error('Not allowed by CORS'));
+  },
+
+  credentials: true,
+
+  methods: [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+  ],
+
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Accept',
+    'X-Requested-With',
+  ],
+
+  optionsSuccessStatus: 204,
+  preflightContinue: false,
+};
+
+// Apply CORS before routes and other middleware.
+app.use(cors(corsOptions));
 
 // ==========================================
-// Middleware
+// REQUEST LOGGING
+// ==========================================
+
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  console.log('API REQUEST:', {
+    method: req.method,
+    path: req.path,
+    origin: req.headers.origin || null,
+  });
+
+  next();
+});
+
+// ==========================================
+// BODY PARSING
 // ==========================================
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // ==========================================
-// Health Check
+// HEALTH CHECK
 // ==========================================
 
 app.get('/', (_req: Request, res: Response) => {
@@ -105,7 +134,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
 });
 
 // ==========================================
-// API Routes
+// API ROUTES
 // ==========================================
 
 app.use('/api/auth', authRoutes);
@@ -119,7 +148,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/settings', settingsRoutes);
 
 // ==========================================
-// 404 Handler
+// 404 HANDLER
 // ==========================================
 
 app.use((_req: Request, res: Response) => {
@@ -130,7 +159,7 @@ app.use((_req: Request, res: Response) => {
 });
 
 // ==========================================
-// Global Error Handler
+// GLOBAL ERROR HANDLER
 // ==========================================
 
 app.use(
@@ -140,7 +169,15 @@ app.use(
     res: Response,
     _next: NextFunction
   ) => {
-    console.error('API Error:', error);
+    console.error('GLOBAL API ERROR:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    });
+
+    if (res.headersSent) {
+      return;
+    }
 
     res.status(500).json({
       success: false,
@@ -153,7 +190,7 @@ app.use(
 );
 
 // ==========================================
-// Export for Vercel
+// EXPORT FOR VERCEL
 // ==========================================
 
 export default app;
