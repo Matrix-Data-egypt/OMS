@@ -27,8 +27,10 @@ export const login = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  let loginStage = 'VALIDATION';
+
   try {
-    // Validate request body
+    // 1. Validate request body
     const parseResult = loginSchema.safeParse(req.body);
 
     if (!parseResult.success) {
@@ -47,7 +49,7 @@ export const login = async (
       password,
     } = parseResult.data;
 
-    // Resolve login identifier
+    // 2. Resolve login identifier
     const identifier = (
       loginIdentifier ||
       username ||
@@ -63,18 +65,42 @@ export const login = async (
       return;
     }
 
-    // ==========================================
-    // FIND USER
-    // ==========================================
+    // 3. Check Supabase configuration
+    loginStage = 'SUPABASE_CONFIGURATION';
 
-    const user = await prisma.user.findFirst({
+    if (
+      !process.env.SUPABASE_URL ||
+      !process.env.SUPABASE_SERVICE_KEY
+    ) {
+      console.error('LOGIN ERROR: Supabase environment variables are missing');
+
+      res.status(500).json({
+        success: false,
+        message: 'إعدادات الاتصال بقاعدة البيانات غير مكتملة',
+      });
+      return;
+    }
+
+    // 4. Find user by email first, then username
+    loginStage = 'FIND_USER_BY_EMAIL';
+
+    let user = await prisma.user.findFirst({
       where: {
-        OR: [
-          { email: identifier },
-          { username: identifier },
-        ],
+        email: identifier,
       },
     });
+
+    if (!user) {
+      loginStage = 'FIND_USER_BY_USERNAME';
+
+      user = await prisma.user.findFirst({
+        where: {
+          username: identifier,
+        },
+      });
+    }
+
+    console.log('LOGIN USER FOUND:', Boolean(user));
 
     if (!user) {
       res.status(401).json({
@@ -84,9 +110,8 @@ export const login = async (
       return;
     }
 
-    // ==========================================
-    // CHECK ACCOUNT STATUS
-    // ==========================================
+    // 5. Check account status
+    loginStage = 'CHECK_ACCOUNT_STATUS';
 
     if (!user.isActive) {
       res.status(403).json({
@@ -96,9 +121,8 @@ export const login = async (
       return;
     }
 
-    // ==========================================
-    // CHECK SYSTEM ACCESS
-    // ==========================================
+    // 6. Check system access
+    loginStage = 'CHECK_SYSTEM_ACCESS';
 
     if (user.systemAccess === 'MEDIA') {
       res.status(403).json({
@@ -109,9 +133,21 @@ export const login = async (
       return;
     }
 
-    // ==========================================
-    // VERIFY PASSWORD
-    // ==========================================
+    // 7. Verify password hash
+    loginStage = 'VERIFY_PASSWORD';
+
+    if (
+      typeof user.passwordHash !== 'string' ||
+      !user.passwordHash
+    ) {
+      console.error('LOGIN ERROR: User password hash is missing or invalid');
+
+      res.status(500).json({
+        success: false,
+        message: 'تعذر التحقق من بيانات الحساب',
+      });
+      return;
+    }
 
     const passwordMatch = await bcrypt.compare(
       password,
@@ -126,9 +162,8 @@ export const login = async (
       return;
     }
 
-    // ==========================================
-    // JWT CONFIGURATION
-    // ==========================================
+    // 8. Validate JWT configuration
+    loginStage = 'JWT_CONFIGURATION';
 
     const secret = process.env.JWT_SECRET;
 
@@ -144,9 +179,8 @@ export const login = async (
 
     const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
-    // ==========================================
-    // GENERATE TOKEN
-    // ==========================================
+    // 9. Generate JWT
+    loginStage = 'GENERATE_TOKEN';
 
     const token = jwt.sign(
       {
@@ -163,9 +197,8 @@ export const login = async (
       }
     );
 
-    // ==========================================
-    // SUCCESS RESPONSE
-    // ==========================================
+    // 10. Return safe user information
+    loginStage = 'SUCCESS_RESPONSE';
 
     res.status(200).json({
       success: true,
@@ -185,15 +218,13 @@ export const login = async (
     });
 
   } catch (error: any) {
-    // ==========================================
-    // ERROR LOGGING
-    // ==========================================
-
     console.error('========== LOGIN ERROR ==========');
+    console.error('Stage:', loginStage);
     console.error('Error name:', error?.name);
     console.error('Error message:', error?.message);
     console.error('Error code:', error?.code);
-    console.error('Error meta:', error?.meta);
+    console.error('Error details:', error?.details);
+    console.error('Error hint:', error?.hint);
     console.error('=================================');
 
     res.status(500).json({
@@ -225,16 +256,6 @@ export const getProfile = async (
       where: {
         id: req.user.id,
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        username: true,
-        role: true,
-        systemAccess: true,
-        phone: true,
-        createdAt: true,
-      },
     });
 
     if (!user) {
@@ -245,9 +266,21 @@ export const getProfile = async (
       return;
     }
 
+    // Never expose passwordHash or other private fields
+    const safeUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      systemAccess: user.systemAccess,
+      phone: user.phone,
+      createdAt: user.createdAt,
+    };
+
     res.status(200).json({
       success: true,
-      data: user,
+      data: safeUser,
     });
 
   } catch (error: any) {
@@ -255,6 +288,7 @@ export const getProfile = async (
     console.error('Error name:', error?.name);
     console.error('Error message:', error?.message);
     console.error('Error code:', error?.code);
+    console.error('Error details:', error?.details);
     console.error('========================================');
 
     res.status(500).json({
