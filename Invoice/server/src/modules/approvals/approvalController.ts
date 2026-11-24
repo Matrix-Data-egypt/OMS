@@ -1,14 +1,42 @@
+
 import { Response } from 'express';
 import { z } from 'zod';
 import prisma from '../../prisma/prismaClient.js';
 import { AuthenticatedRequest } from '../../middleware/auth.js';
-import { InvoiceStatus, ApprovalStatus, UserRole } from '@prisma/client';
+import {
+  InvoiceStatus,
+  ApprovalStatus,
+  UserRole,
+} from '@prisma/client';
 
-export const submitForApproval = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+// ==========================================
+// SUBMIT INVOICE FOR APPROVAL
+// ==========================================
+
+export const submitForApproval = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
+
     if (!req.user) {
-      res.status(401).json({ success: false, message: 'غير مصرح' });
+      res.status(401).json({
+        success: false,
+        message: 'غير مصرح',
+      });
+      return;
+    }
+
+    // Prevent media-only accounts from submitting invoices.
+    if (
+      req.user.role === UserRole.MEDIA_ADMIN ||
+      req.user.systemAccess === 'MEDIA'
+    ) {
+      res.status(403).json({
+        success: false,
+        message: 'حساب الميديا غير مصرح له باستخدام نظام الفواتير',
+      });
       return;
     }
 
@@ -18,7 +46,10 @@ export const submitForApproval = async (req: AuthenticatedRequest, res: Response
     });
 
     if (!invoice) {
-      res.status(404).json({ success: false, message: 'الفاتورة غير موجودة' });
+      res.status(404).json({
+        success: false,
+        message: 'الفاتورة غير موجودة',
+      });
       return;
     }
 
@@ -32,7 +63,7 @@ export const submitForApproval = async (req: AuthenticatedRequest, res: Response
 
     const amount = Number(invoice.totalAmount);
 
-    // Fetch dynamic approval rules from DB
+    // Fetch dynamic approval rules from DB.
     const applicableRules = await prisma.approvalRule.findMany({
       where: {
         isActive: true,
@@ -49,16 +80,20 @@ export const submitForApproval = async (req: AuthenticatedRequest, res: Response
       return;
     }
 
-    // Determine target rule: rule where amount falls in [minAmount, maxAmount]
+    // Determine target rule.
     const targetRule = applicableRules.find(
-      (r) => amount >= Number(r.minAmount) && amount <= Number(r.maxAmount)
+      (rule) =>
+        amount >= Number(rule.minAmount) &&
+        amount <= Number(rule.maxAmount)
     ) || applicableRules[applicableRules.length - 1];
 
     await prisma.$transaction(async (tx) => {
-      // Clear any previous pending steps
-      await tx.approvalStep.deleteMany({ where: { invoiceId: id } });
+      // Clear previous approval steps.
+      await tx.approvalStep.deleteMany({
+        where: { invoiceId: id },
+      });
 
-      // Create step for the required tier
+      // Create the required approval step.
       await tx.approvalStep.create({
         data: {
           invoiceId: id,
@@ -68,13 +103,15 @@ export const submitForApproval = async (req: AuthenticatedRequest, res: Response
         },
       });
 
-      // Update invoice status
+      // Update invoice status.
       await tx.invoice.update({
         where: { id },
-        data: { status: InvoiceStatus.PENDING_APPROVAL },
+        data: {
+          status: InvoiceStatus.PENDING_APPROVAL,
+        },
       });
 
-      // Audit Log
+      // Create audit log.
       await tx.auditLog.create({
         data: {
           entity: 'INVOICE',
@@ -90,41 +127,92 @@ export const submitForApproval = async (req: AuthenticatedRequest, res: Response
       success: true,
       message: `تم إرسال الفاتورة بنجاح للاعتماد (المستوى ${targetRule.levelOrder} - ${targetRule.requiredRole})`,
     });
+
   } catch (error: any) {
     console.error('submitForApproval error:', error);
-    res.status(500).json({ success: false, message: 'خطأ أثناء إرسال الفاتورة للاعتماد' });
+
+    res.status(500).json({
+      success: false,
+      message: 'خطأ أثناء إرسال الفاتورة للاعتماد',
+    });
   }
 };
+
+// ==========================================
+// APPROVE INVOICE VALIDATION
+// ==========================================
 
 const approveSchema = z.object({
   comments: z.string().optional(),
 });
 
-export const approveInvoice = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+// ==========================================
+// APPROVE AND ISSUE INVOICE
+// ==========================================
+
+export const approveInvoice = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
+
     if (!req.user) {
-      res.status(401).json({ success: false, message: 'غير مصرح' });
+      res.status(401).json({
+        success: false,
+        message: 'غير مصرح',
+      });
       return;
     }
 
     const parseResult = approveSchema.safeParse(req.body);
-    const comments = parseResult.success ? parseResult.data.comments : undefined;
+
+    if (!parseResult.success) {
+      res.status(400).json({
+        success: false,
+        message: 'بيانات الطلب غير صحيحة',
+        errors: parseResult.error.errors,
+      });
+      return;
+    }
+
+    const comments = parseResult.data.comments;
+
+    // Block media accounts.
+    if (
+      req.user.role === UserRole.MEDIA_ADMIN ||
+      req.user.systemAccess === 'MEDIA'
+    ) {
+      res.status(403).json({
+        success: false,
+        message: 'حساب الميديا غير مصرح له باعتماد الفواتير',
+      });
+      return;
+    }
 
     const invoice = await prisma.invoice.findUnique({
       where: { id },
       include: {
         approvalSteps: {
-          where: { status: ApprovalStatus.PENDING },
-          include: { rule: true },
-          orderBy: { levelOrder: 'asc' },
+          where: {
+            status: ApprovalStatus.PENDING,
+          },
+          include: {
+            rule: true,
+          },
+          orderBy: {
+            levelOrder: 'asc',
+          },
         },
         items: true,
       },
     });
 
     if (!invoice) {
-      res.status(404).json({ success: false, message: 'الفاتورة غير موجودة' });
+      res.status(404).json({
+        success: false,
+        message: 'الفاتورة غير موجودة',
+      });
       return;
     }
 
@@ -136,8 +224,8 @@ export const approveInvoice = async (req: AuthenticatedRequest, res: Response): 
       return;
     }
 
-    // STRICT BUSINESS RULE: SEPARATION OF DUTIES
-    // "مفيش حد يعتمد فاتورة هو اللي أنشأها"
+    // Separation of duties:
+    // The creator cannot approve their own invoice.
     if (invoice.createdById === req.user.id) {
       res.status(403).json({
         success: false,
@@ -147,6 +235,7 @@ export const approveInvoice = async (req: AuthenticatedRequest, res: Response): 
     }
 
     const pendingStep = invoice.approvalSteps[0];
+
     if (!pendingStep) {
       res.status(400).json({
         success: false,
@@ -155,34 +244,63 @@ export const approveInvoice = async (req: AuthenticatedRequest, res: Response): 
       return;
     }
 
-    // Check Role Authority
-    // Admin has super approval power; otherwise role must match or exceed requiredRole
+    // ==========================================
+    // ROLE AUTHORITY
+    // ==========================================
+
     const userRole = req.user.role;
     const requiredRole = pendingStep.rule?.requiredRole;
 
+    // Higher number means higher approval authority.
     const roleHierarchies: Record<UserRole, number> = {
       SALES: 1,
       ACCOUNTANT: 2,
       FINANCE_MANAGER: 3,
       ADMIN: 4,
+      MEDIA_ADMIN: 0,
     };
 
-    if (
-      userRole !== UserRole.ADMIN &&
-      roleHierarchies[userRole] < (requiredRole ? roleHierarchies[requiredRole] : 3)
-    ) {
-      res.status(403).json({
+    // MEDIA_ADMIN cannot be an invoice approver.
+    if (requiredRole === UserRole.MEDIA_ADMIN) {
+      console.error(
+        'APPROVAL CONFIGURATION ERROR: MEDIA_ADMIN cannot approve invoices'
+      );
+
+      res.status(500).json({
         success: false,
-        message: `هذا المستوى من الفواتير يتطلب اعتماد رتبة (${requiredRole}) أو أعلى`,
+        message: 'إعدادات مستوى الاعتماد غير صحيحة. يرجى مراجعة مسؤول النظام.',
       });
       return;
     }
 
-    // Execute approval and freeze taxes!
+    const userLevel = roleHierarchies[userRole];
+
+    const requiredLevel = requiredRole
+      ? roleHierarchies[requiredRole]
+      : roleHierarchies.FINANCE_MANAGER;
+
+    // Admin has super approval authority.
+    if (
+      userRole !== UserRole.ADMIN &&
+      userLevel < requiredLevel
+    ) {
+      res.status(403).json({
+        success: false,
+        message: `هذا المستوى من الفواتير يتطلب اعتماد رتبة (${requiredRole || 'FINANCE_MANAGER'}) أو أعلى`,
+      });
+      return;
+    }
+
+    // ==========================================
+    // EXECUTE APPROVAL
+    // ==========================================
+
     await prisma.$transaction(async (tx) => {
-      // 1. Update step
+      // 1. Update approval step.
       await tx.approvalStep.update({
-        where: { id: pendingStep.id },
+        where: {
+          id: pendingStep.id,
+        },
         data: {
           status: ApprovalStatus.APPROVED,
           approverId: req.user!.id,
@@ -191,12 +309,13 @@ export const approveInvoice = async (req: AuthenticatedRequest, res: Response): 
         },
       });
 
-      // 2. Freeze taxes into `invoice_taxes` table
-      // Clear existing in case of re-approval
-      await tx.invoiceTax.deleteMany({ where: { invoiceId: id } });
+      // 2. Freeze taxes into invoice_taxes.
+      await tx.invoiceTax.deleteMany({
+        where: { invoiceId: id },
+      });
 
       const vatAmount = Number(invoice.taxAmount);
-      // Standard VAT 14%
+
       await tx.invoiceTax.create({
         data: {
           invoiceId: id,
@@ -207,7 +326,7 @@ export const approveInvoice = async (req: AuthenticatedRequest, res: Response): 
         },
       });
 
-      // 3. Update invoice status to ISSUED
+      // 3. Update invoice status.
       await tx.invoice.update({
         where: { id },
         data: {
@@ -215,7 +334,7 @@ export const approveInvoice = async (req: AuthenticatedRequest, res: Response): 
         },
       });
 
-      // 4. Audit Log
+      // 4. Create audit log.
       await tx.auditLog.create({
         data: {
           entity: 'INVOICE',
@@ -231,24 +350,57 @@ export const approveInvoice = async (req: AuthenticatedRequest, res: Response): 
       success: true,
       message: `تم اعتماد وإصدار الفاتورة رقم ${invoice.invoiceNumber} بنجاح وتجميد الضرائب`,
     });
+
   } catch (error: any) {
     console.error('approveInvoice error:', error);
-    res.status(500).json({ success: false, message: 'خطأ أثناء اعتماد الفاتورة' });
+
+    res.status(500).json({
+      success: false,
+      message: 'خطأ أثناء اعتماد الفاتورة',
+    });
   }
 };
 
-export const rejectInvoice = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+// ==========================================
+// REJECT INVOICE
+// ==========================================
+
+export const rejectInvoice = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
     const { comments } = req.body;
 
     if (!req.user) {
-      res.status(401).json({ success: false, message: 'غير مصرح' });
+      res.status(401).json({
+        success: false,
+        message: 'غير مصرح',
+      });
       return;
     }
 
-    if (!comments || comments.trim().length === 0) {
-      res.status(400).json({ success: false, message: 'يجب ذكر سبب الرفض في الملاحظات' });
+    // Block media accounts.
+    if (
+      req.user.role === UserRole.MEDIA_ADMIN ||
+      req.user.systemAccess === 'MEDIA'
+    ) {
+      res.status(403).json({
+        success: false,
+        message: 'حساب الميديا غير مصرح له برفض الفواتير',
+      });
+      return;
+    }
+
+    if (
+      typeof comments !== 'string' ||
+      comments.trim().length === 0
+    ) {
+      res.status(400).json({
+        success: false,
+        message: 'يجب ذكر سبب الرفض في الملاحظات',
+      });
       return;
     }
 
@@ -256,34 +408,120 @@ export const rejectInvoice = async (req: AuthenticatedRequest, res: Response): P
       where: { id },
       include: {
         approvalSteps: {
-          where: { status: ApprovalStatus.PENDING },
+          where: {
+            status: ApprovalStatus.PENDING,
+          },
         },
       },
     });
 
     if (!invoice) {
-      res.status(404).json({ success: false, message: 'الفاتورة غير موجودة' });
+      res.status(404).json({
+        success: false,
+        message: 'الفاتورة غير موجودة',
+      });
+      return;
+    }
+
+    if (invoice.status !== InvoiceStatus.PENDING_APPROVAL) {
+      res.status(400).json({
+        success: false,
+        message: 'الفاتورة ليست في حالة انتظار الاعتماد',
+      });
+      return;
+    }
+
+    if (invoice.createdById === req.user.id) {
+      res.status(403).json({
+        success: false,
+        message: 'لا يمكنك رفض فاتورة قمت بإنشائها بنفسك',
+      });
       return;
     }
 
     const pendingStep = invoice.approvalSteps[0];
 
+    if (!pendingStep) {
+      res.status(400).json({
+        success: false,
+        message: 'لا توجد خطوة اعتماد معلقة لهذه الفاتورة',
+      });
+      return;
+    }
+
+    // ==========================================
+    // ROLE AUTHORITY FOR REJECTION
+    // ==========================================
+
+    const roleHierarchies: Record<UserRole, number> = {
+      SALES: 1,
+      ACCOUNTANT: 2,
+      FINANCE_MANAGER: 3,
+      ADMIN: 4,
+      MEDIA_ADMIN: 0,
+    };
+
+    const userRole = req.user.role;
+    const requiredRole = pendingStep.rule?.requiredRole;
+
+    if (
+      userRole === UserRole.MEDIA_ADMIN ||
+      req.user.systemAccess === 'MEDIA'
+    ) {
+      res.status(403).json({
+        success: false,
+        message: 'حساب الميديا غير مصرح له برفض الفواتير',
+      });
+      return;
+    }
+
+    if (requiredRole === UserRole.MEDIA_ADMIN) {
+      res.status(500).json({
+        success: false,
+        message: 'إعدادات مستوى الاعتماد غير صحيحة. يرجى مراجعة مسؤول النظام.',
+      });
+      return;
+    }
+
+    const userLevel = roleHierarchies[userRole];
+
+    const requiredLevel = requiredRole
+      ? roleHierarchies[requiredRole]
+      : roleHierarchies.FINANCE_MANAGER;
+
+    if (
+      userRole !== UserRole.ADMIN &&
+      userLevel < requiredLevel
+    ) {
+      res.status(403).json({
+        success: false,
+        message: `هذا المستوى من الفواتير يتطلب رتبة (${requiredRole || 'FINANCE_MANAGER'}) أو أعلى`,
+      });
+      return;
+    }
+
+    // ==========================================
+    // EXECUTE REJECTION
+    // ==========================================
+
     await prisma.$transaction(async (tx) => {
-      if (pendingStep) {
-        await tx.approvalStep.update({
-          where: { id: pendingStep.id },
-          data: {
-            status: ApprovalStatus.REJECTED,
-            approverId: req.user!.id,
-            comments,
-            actionDate: new Date(),
-          },
-        });
-      }
+      await tx.approvalStep.update({
+        where: {
+          id: pendingStep.id,
+        },
+        data: {
+          status: ApprovalStatus.REJECTED,
+          approverId: req.user!.id,
+          comments: comments.trim(),
+          actionDate: new Date(),
+        },
+      });
 
       await tx.invoice.update({
         where: { id },
-        data: { status: InvoiceStatus.DRAFT },
+        data: {
+          status: InvoiceStatus.DRAFT,
+        },
       });
 
       await tx.auditLog.create({
@@ -292,7 +530,7 @@ export const rejectInvoice = async (req: AuthenticatedRequest, res: Response): P
           entityId: id,
           action: 'REJECT',
           performedById: req.user!.id,
-          details: `تم رفض الفاتورة رقم ${invoice.invoiceNumber} وإعادتها لمسودة. السبب: ${comments}`,
+          details: `تم رفض الفاتورة رقم ${invoice.invoiceNumber} وإعادتها لمسودة. السبب: ${comments.trim()}`,
         },
       });
     });
@@ -301,43 +539,97 @@ export const rejectInvoice = async (req: AuthenticatedRequest, res: Response): P
       success: true,
       message: 'تم رفض الفاتورة وإعادتها إلى مسودة للتعديل',
     });
+
   } catch (error: any) {
-    res.status(500).json({ success: false, message: 'خطأ أثناء رفض الفاتورة' });
+    console.error('rejectInvoice error:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'خطأ أثناء رفض الفاتورة',
+    });
   }
 };
 
-export const getPendingApprovals = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+// ==========================================
+// GET PENDING APPROVALS
+// ==========================================
+
+export const getPendingApprovals = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
   try {
     if (!req.user) {
-      res.status(401).json({ success: false, message: 'غير مصرح' });
+      res.status(401).json({
+        success: false,
+        message: 'غير مصرح',
+      });
+      return;
+    }
+
+    // Block media-only accounts.
+    if (
+      req.user.role === UserRole.MEDIA_ADMIN ||
+      req.user.systemAccess === 'MEDIA'
+    ) {
+      res.status(403).json({
+        success: false,
+        message: 'حساب الميديا غير مصرح له بعرض طلبات اعتماد الفواتير',
+      });
       return;
     }
 
     const currentUserId = req.user.id;
 
-    // Fetch invoices pending approval where current user is NOT creator
     const invoices = await prisma.invoice.findMany({
       where: {
         status: InvoiceStatus.PENDING_APPROVAL,
-        createdById: { not: currentUserId }, // Enforce separation of duties
+        createdById: {
+          not: currentUserId,
+        },
       },
       include: {
         client: {
-          select: { id: true, name: true, companyName: true },
+          select: {
+            id: true,
+            name: true,
+            companyName: true,
+          },
         },
         createdBy: {
-          select: { id: true, name: true, email: true, role: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
         },
         approvalSteps: {
-          where: { status: ApprovalStatus.PENDING },
-          include: { rule: true },
+          where: {
+            status: ApprovalStatus.PENDING,
+          },
+          include: {
+            rule: true,
+          },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
-    res.json({ success: true, data: invoices });
+    // Return pending invoices.
+    res.json({
+      success: true,
+      data: invoices,
+    });
+
   } catch (error: any) {
-    res.status(500).json({ success: false, message: 'خطأ في جلب طلبات الاعتماد' });
+    console.error('getPendingApprovals error:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'خطأ في جلب طلبات الاعتماد',
+    });
   }
 };
