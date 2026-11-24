@@ -4,16 +4,19 @@ import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 
+// ==========================================
 // Routes
-import approvalRoutes from './routes/approvals/approvalRoutes.js';
-import authRoutes from './routes/auth/authRoutes.js';
-import clientRoutes from './routes/clients/clientRoutes.js';
-import deliveryRoutes from './routes/delivery/deliveryRoutes.js';
-import invoiceRoutes from './routes/invoices/invoiceRoutes.js';
-import paymentRoutes from './routes/payments/paymentRoutes.js';
-import reportRoutes from './routes/reports/reportRoutes.js';
-import serviceRoutes from './routes/services/serviceRoutes.js';
-import settingsRoutes from './routes/settings/settingsRoutes.js';
+// ==========================================
+
+import approvalRoutes from './modules/approvals/approvalRoutes.js';
+import authRoutes from './modules/auth/authRoutes.js';
+import clientRoutes from './modules/clients/clientRoutes.js';
+import deliveryRoutes from './modules/delivery/deliveryRoutes.js';
+import invoiceRoutes from './modules/invoices/invoiceRoutes.js';
+import paymentRoutes from './modules/payments/paymentRoutes.js';
+import reportRoutes from './modules/reports/reportRoutes.js';
+import serviceRoutes from './modules/services/serviceRoutes.js';
+import settingsRoutes from './modules/settings/settingsRoutes.js';
 
 const app = express();
 
